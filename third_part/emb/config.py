@@ -17,7 +17,7 @@ class Config(ConfigBase):
         return 24_000
 
     p_additional_prompt: float = 0.8
-    max_prompts: int = 3
+    max_prompts: int = 1024
 
     max_num_val: int = 20
     max_val_ar_steps: int = 300
