@@ -343,4 +343,13 @@ if __name__ == '__main__':
     wav = audio.load_wav(args.audio, 16000)
     mel = audio.melspectrogram(wav)
     print(mel.shape)
-    #main()
+    fps = 25
+    mel_step_size, mel_idx_multiplier, i, mel_chunks = 16, 80. / fps, 0, []
+    while True:
+        start_idx = int(i * mel_idx_multiplier)
+        if start_idx + mel_step_size > len(mel[0]):
+            mel_chunks.append(mel[:, len(mel[0]) - mel_step_size:])
+            break
+        mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
+        i += 1
+    print(len(mel_chunks))
