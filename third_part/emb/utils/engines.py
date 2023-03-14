@@ -61,7 +61,7 @@ class Engine(DeepSpeedEngine):
 class TrainFeeder(Protocol):
     def __call__(
         self, *, engines: "Engines", batch: Any, name: str
-    ) -> None | tuple[Tensor, Stats]:
+    ):
         ...
 
 
