@@ -93,17 +93,22 @@ def main():
     parser.add_argument("folder", type=Path)
     parser.add_argument("--suffix", default=".wav")
     args = parser.parse_args()
+    if os.path.isdir(args.folder):
+        paths = [*args.folder.rglob(f"*{args.suffix}")]
+        random.shuffle(paths)
 
-    paths = [*args.folder.rglob(f"*{args.suffix}")]
-    random.shuffle(paths)
-
-    for path in tqdm(paths):
+        for path in tqdm(paths):
+            out_path = _replace_file_extension(path, ".qnt.pt")
+            if out_path.exists():
+                continue
+            qnt = encode_from_file(path)
+            torch.save(qnt.cpu(), out_path)
+    else:
         out_path = _replace_file_extension(path, ".qnt.pt")
         if out_path.exists():
             continue
         qnt = encode_from_file(path)
         torch.save(qnt.cpu(), out_path)
-
 
 if __name__ == "__main__":
     main()
