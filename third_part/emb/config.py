@@ -4,7 +4,7 @@ from pathlib import Path
 
 import diskcache
 
-from utils import Config as ConfigBase
+from .utils import Config as ConfigBase
 
 
 @dataclass(frozen=True)
