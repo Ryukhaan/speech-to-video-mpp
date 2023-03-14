@@ -77,6 +77,7 @@ def encode(wav: Tensor, sr: int, device="cuda"):
             break
         chunk = wav[:, :, start_idx:start_idx + N]
         encoded_frames = model.encode(chunk)
+        print(chunk.shape, encoded_frames.shape)
         mel_chunks.append(encoded_frames)
         i += 1
     print(len(mel_chunks))
