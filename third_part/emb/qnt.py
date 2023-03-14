@@ -61,25 +61,29 @@ def encode(wav: Tensor, sr: int, device="cuda"):
     model = _load_model(device)
     wav = wav.unsqueeze(0)
     wav = convert_audio(wav, sr, model.sample_rate, model.channels)
-    print(wav)
-    wav = wav.to(device)
-    # 200 ms = 5 frames
     duration = 0.2
     N = int(sr * duration)
-    frames = wav.shape[-1]
-    fps = 25
-    mel_step_size, mel_idx_multiplier, i, mel_chunks = N, 80. / fps, 0, []
-    while True:
-        start_idx = int(i * N)
-        if start_idx + N > frames:
-            chunk = wav[:, :, frames - N:]
-            encoded_frames = model.encode(chunk)
-            mel_chunks.append(encoded_frames)
-            break
-        chunk = wav[:, :, start_idx:start_idx + N]
-        encoded_frames = model.encode(chunk)
-        mel_chunks.append(encoded_frames)
-        i += 1
+    p1d = (N, N)
+    wav = torch.nn.functional.pad(wav, p1d)
+    wav = wav.to(device)
+    # 200 ms = 5 frames
+    mel_chunks = []
+    for i in tqdm(range(N, wav.shape[-1]-N+1)):
+        mel_chunks.append(model.encode(wav[:,:, i:i+N+1]))
+    #frames = wav.shape[-1]
+    #fps = 25
+    #mel_step_size, mel_idx_multiplier, i, mel_chunks = N, 80. / fps, 0, []
+    #while True:
+    #    start_idx = int(i * N)
+    #    if start_idx + N > frames:
+    #        chunk = wav[:, :, frames - N:]
+    #        encoded_frames = model.encode(chunk)
+    #        mel_chunks.append(encoded_frames)
+    #        break
+    #    chunk = wav[:, :, start_idx:start_idx + N]
+    #    encoded_frames = model.encode(chunk)
+    #    mel_chunks.append(encoded_frames)
+    #    i += 1
     #encoded_frames = model.encode(wav)
     #print([encoded for encoded in mel_chunks])
     qnt = torch.cat([encoded[0][0] for encoded in mel_chunks], dim=0)  # (b q t)
