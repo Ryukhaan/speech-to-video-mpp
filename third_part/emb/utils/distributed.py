@@ -61,7 +61,7 @@ def local_leader_only(fn=None, *, default=None) -> Callable:
     return wrapper(fn)
 
 
-def global_leader_only(fn: Callable | None = None, *, default=None) -> Callable:
+def global_leader_only(fn = None, *, default=None) -> Callable:
     def wrapper(fn):
         @wraps(fn)
         def wrapped(*args, **kwargs):
