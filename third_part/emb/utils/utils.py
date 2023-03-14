@@ -45,7 +45,7 @@ def dispatch_attribute(
     module,
     attrname,
     value,
-    filter_fn: Callable[[nn.Module], bool] | None = None,
+    filter_fn = None,
 ):
     for _, module in _get_named_modules(module, attrname):
         if filter_fn is None or filter_fn(module):
@@ -75,7 +75,7 @@ def load_state_dict_non_strict(model, state_dict, logger=None):
     model.load_state_dict(state_dict, strict=False)
 
 
-def setup_logging(log_dir: str | Path | None = "log", log_level="info"):
+def setup_logging(log_dir = "log", log_level="info"):
     handlers = []
     stdout_handler = StreamHandler()
     stdout_handler.setLevel(logging.INFO)
