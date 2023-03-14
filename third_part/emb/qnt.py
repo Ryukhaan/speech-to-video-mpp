@@ -80,7 +80,7 @@ def encode(wav: Tensor, sr: int, device="cuda"):
         mel_chunks.append(encoded_frames)
         i += 1
     #encoded_frames = model.encode(wav)
-    #print([encoded.shape for encoded in mel_chunks])
+    print([encoded for encoded in mel_chunks])
     qnt = torch.cat([encoded for encoded, _ in mel_chunks], dim=0)  # (b q t)
     print(qnt.shape)
     return qnt
