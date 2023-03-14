@@ -175,7 +175,7 @@ def main():
         args.audio = 'temp/{}/temp.wav'.format(args.tmp_dir)
     wav = audio.load_wav(args.audio, 16000)
     mel = audio.melspectrogram(wav)
-    print(mel.size())
+
     if np.isnan(mel.reshape(-1)).sum() > 0:
         raise ValueError('Mel contains nan! Using a TTS voice? Add a small epsilon noise to the wav file and try again')
 
@@ -342,5 +342,5 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 if __name__ == '__main__':
     wav = audio.load_wav(args.audio, 16000)
     mel = audio.melspectrogram(wav)
-    print(mel.size())
+    print(mel)
     #main()
