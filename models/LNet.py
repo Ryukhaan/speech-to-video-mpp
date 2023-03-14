@@ -99,36 +99,37 @@ class LNet(nn.Module):
 
         self.encoder = encoder(image_nc, base_nc, max_nc, layer, **kwargs)
         self.decoder = decoder(image_nc, self.descriptor_nc, base_nc, max_nc, layer, num_res_blocks, **kwargs)
-        self.audio_encoder = nn.Sequential(
-            Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
-            Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
-            Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
+        #self.audio_encoder = nn.Sequential(
+        #    Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
+        #    Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
+        #    Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
+        #
+        #    Conv2d(32, 64, kernel_size=3, stride=(3, 1), padding=1),
+        #    Conv2d(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
+        #    Conv2d(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
+        #
+        #     Conv2d(64, 128, kernel_size=3, stride=3, padding=1),
+        #     Conv2d(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
+        #     Conv2d(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
+        #
+        #     Conv2d(128, 256, kernel_size=3, stride=(3, 2), padding=1),
+        #     Conv2d(256, 256, kernel_size=3, stride=1, padding=1, residual=True),
+        #
+        #     Conv2d(256, 512, kernel_size=3, stride=1, padding=0),
+        #     Conv2d(512, descriptor_nc, kernel_size=1, stride=1, padding=0),
+        #     )
 
-            Conv2d(32, 64, kernel_size=3, stride=(3, 1), padding=1),
-            Conv2d(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
-            Conv2d(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
-
-            Conv2d(64, 128, kernel_size=3, stride=3, padding=1),
-            Conv2d(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
-            Conv2d(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
-
-            Conv2d(128, 256, kernel_size=3, stride=(3, 2), padding=1),
-            Conv2d(256, 256, kernel_size=3, stride=1, padding=1, residual=True),
-
-            Conv2d(256, 512, kernel_size=3, stride=1, padding=0),
-            Conv2d(512, descriptor_nc, kernel_size=1, stride=1, padding=0),
-            )
-
-    def forward(self, audio_sequences, face_sequences):
-        B = audio_sequences.size(0)
+    def forward(self, audio_feat, face_sequences):
+        B = audio_feat.size(0)
         input_dim_size = len(face_sequences.size())
         if input_dim_size > 4:
-            audio_sequences = torch.cat([audio_sequences[:, i] for i in range(audio_sequences.size(1))], dim=0)
+            #audio_sequences = torch.cat([audio_sequences[:, i] for i in range(audio_sequences.size(1))], dim=0)
             face_sequences = torch.cat([face_sequences[:, :, i] for i in range(face_sequences.size(2))], dim=0)
         cropped, ref = torch.split(face_sequences, 3, dim=1)
 
         vis_feat = self.encoder(cropped, ref)
-        audio_feat = self.audio_encoder(audio_sequences) 
+        # Take the first Residual Vector Quantization (RVQ)
+        audio_feat = audio_feat[:, 0] #self.audio_encoder(audio_sequences)
         _outputs = self.decoder(vis_feat, audio_feat)
 
         if input_dim_size > 4:
