@@ -18,11 +18,11 @@ class Config:
     device: str = "cuda"
 
     max_iter: int = 100_000
-    max_grad_norm: float | None = None
+    max_grad_norm = None
 
     eval_every: int = 1_000
-    save_artifacts_every: int | None = 100
-    save_ckpt_every: int | None = None
+    save_artifacts_every = 100
+    save_ckpt_every = None
 
     save_on_oom: bool = True
     save_on_quit: bool = True
