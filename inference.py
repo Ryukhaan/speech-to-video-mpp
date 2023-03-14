@@ -342,5 +342,5 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 if __name__ == '__main__':
     wav = audio.load_wav(args.audio, 16000)
     mel = audio.melspectrogram(wav)
-    print(mel)
+    print(mel.shape)
     #main()
