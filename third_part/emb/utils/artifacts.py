@@ -59,9 +59,9 @@ def save_wav(name, wav, sr):
 
 def save_tsne(
     name,
-    x: np.ndarray | list,
-    y: np.ndarray | list | None = None,
-    c: np.ndarray | list | None = None,
+    x,
+    y = None,
+    c = None,
     n_jobs: int = 8,
 ):
     """
