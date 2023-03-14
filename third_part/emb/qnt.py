@@ -71,7 +71,7 @@ def encode(wav: Tensor, sr: int, device="cuda"):
 
     wav = wav.to(device)
     mel_chunks = []
-    bar_progress = range(win_size//2, wav.shape[-1]-win_size//2+1, hop_size):
+    bar_progress = range(win_size//2, wav.shape[-1]-win_size//2+1, hop_size)
     for i in tqdm(bar_progress):
         mel_chunks.append(model.encode(wav[:, :, i-win_size//2:i+win_size//2]))
 
