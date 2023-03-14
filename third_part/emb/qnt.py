@@ -64,7 +64,7 @@ def encode(wav: Tensor, sr: int, device="cuda"):
 
     # Parameters
     n_fft = 800
-    hop_size = 200
+    hop_size = 1000
     win_size = 800
     # Padding
     #p1d = (win_size//2, win_size//2)
