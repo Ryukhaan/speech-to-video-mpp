@@ -75,7 +75,7 @@ def encode(wav: Tensor, sr: int, device="cuda"):
     bar_progress = range(win_size//2, wav.shape[-1]-win_size//2+1, hop_size)
     for i in tqdm(bar_progress):
         mel_chunks.append(model.encode(wav[:, :, i-win_size//2:i+win_size//2]))
-    print(model.encode(wav)[0][0].shape)
+    print(wav.shape, model.encode(wav)[0][0].shape)
     qnt = torch.cat([encoded[0][0] for encoded in mel_chunks], dim=0)  # (b q t)
     print(qnt.shape)
     return qnt
