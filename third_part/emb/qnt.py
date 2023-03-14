@@ -65,16 +65,17 @@ def encode(wav: Tensor, sr: int, device="cuda"):
     # 200 ms = 5 frames
     duration = 0.2
     N = int(sr * duration)
+    frames = wav.shape[-1]
     fps = 25
     mel_step_size, mel_idx_multiplier, i, mel_chunks = N, 80. / fps, 0, []
     while True:
-        start_idx = int(i * mel_idx_multiplier)
-        if start_idx + mel_step_size > len(wav[0]):
-            chunk = wav[:, :, len(wav[0]) - mel_step_size:]
+        start_idx = int(i * N)
+        if start_idx + N > frames:
+            chunk = wav[0, 0, frames - N:]
             encoded_frames = model.encode(chunk)
             mel_chunks.append(encoded_frames)
             break
-        chunk = wav[:, start_idx: start_idx + mel_step_size]
+        chunk = wav[0, 0, start_idx:start_idx + N]
         encoded_frames = model.encode(chunk)
         mel_chunks.append(encoded_frames)
         i += 1
