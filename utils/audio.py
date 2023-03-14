@@ -36,6 +36,7 @@ def get_hop_size():
 
 def linearspectrogram(wav):
     D = _stft(preemphasis(wav, hp.preemphasis, hp.preemphasize))
+    print(preemphasis(wav, hp.preemphasis, hp.preemphasize).shape)
     S = _amp_to_db(np.abs(D)) - hp.ref_level_db
     
     if hp.signal_normalization:
@@ -44,7 +45,6 @@ def linearspectrogram(wav):
 
 def melspectrogram(wav):
     D = _stft(preemphasis(wav, hp.preemphasis, hp.preemphasize))
-    print(D.shape)
     S = _amp_to_db(_linear_to_mel(np.abs(D))) - hp.ref_level_db
     
     if hp.signal_normalization:
