@@ -105,6 +105,7 @@ def main():
             qnt = encode_from_file(path)
             torch.save(qnt.cpu(), out_path)
     else:
+        path = args.folder
         out_path = _replace_file_extension(path, ".qnt.pt")
         if out_path.exists():
             return
