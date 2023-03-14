@@ -61,6 +61,7 @@ def encode(wav: Tensor, sr: int, device="cuda"):
     model = _load_model(device)
     wav = wav.unsqueeze(0)
     wav = convert_audio(wav, sr, model.sample_rate, model.channels)
+    print(wav)
     wav = wav.to(device)
     # 200 ms = 5 frames
     duration = 0.2
