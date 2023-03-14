@@ -64,7 +64,8 @@ def encode(wav: Tensor, sr: int, device="cuda"):
     wav = wav.to(device)
     # 200 ms = 5 frames
     duration = 0.2
-    N = int(sr * 0.2)
+    N = int(sr * duration)
+    fps = 25
     mel_step_size, mel_idx_multiplier, i, mel_chunks = N, 80. / fps, 0, []
     while True:
         start_idx = int(i * mel_idx_multiplier)
