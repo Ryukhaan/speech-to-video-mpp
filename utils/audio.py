@@ -38,7 +38,7 @@ def linearspectrogram(wav):
     D = _stft(preemphasis(wav, hp.preemphasis, hp.preemphasize))
     print(preemphasis(wav, hp.preemphasis, hp.preemphasize).shape, D.shape)
     S = _amp_to_db(np.abs(D)) - hp.ref_level_db
-    
+    print(S.shape)
     if hp.signal_normalization:
         return _normalize(S)
     return S
