@@ -63,7 +63,7 @@ def main():
     # face detection & cropping, cropping the first frame as the style of FFHQ
     croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
     full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in full_frames]
-    full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512)
+    _ , crop, quad = croper.crop(full_frames_RGB, xsize=512)
 
     clx, cly, crx, cry = crop
     lx, ly, rx, ry = quad
@@ -249,21 +249,21 @@ def main():
             ff[y1:y2, x1:x2] = p
             
             # month region enhancement by GFPGAN
-            cropped_faces, restored_faces, restored_img = restorer.enhance(
-                ff, has_aligned=False, only_center_face=True, paste_back=True)
-                # 0,   1,   2,   3,   4,   5,   6,   7,   8,  9, 10,  11,  12,
-            mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
-            mouse_mask = np.zeros_like(restored_img)
-            tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
-            mouse_mask[y1:y2, x1:x2]= cv2.resize(tmp_mask, (x2 - x1, y2 - y1))[:, :, np.newaxis] / 255.
+            #cropped_faces, restored_faces, restored_img = restorer.enhance(
+            #    ff, has_aligned=False, only_center_face=True, paste_back=True)
+            #    # 0,   1,   2,   3,   4,   5,   6,   7,   8,  9, 10,  11,  12,
+            #mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            #mouse_mask = np.zeros_like(restored_img)
+            #tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
+            #mouse_mask[y1:y2, x1:x2]= cv2.resize(tmp_mask, (x2 - x1, y2 - y1))[:, :, np.newaxis] / 255.
+            #
+            #height, width = ff.shape[:2]
+            #restored_img, ff, full_mask = [cv2.resize(x, (512, 512)) for x in (restored_img, ff, np.float32(mouse_mask))]
+            #img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
+            #pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
-            height, width = ff.shape[:2]
-            restored_img, ff, full_mask = [cv2.resize(x, (512, 512)) for x in (restored_img, ff, np.float32(mouse_mask))]
-            img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
-            pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
-
-            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
-            out.write(pp)
+            #pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
+            out.write(ff)
     out.release()
     
     if not os.path.isdir(os.path.dirname(args.outfile)):
@@ -340,17 +340,4 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 
 
 if __name__ == '__main__':
-    wav = audio.load_wav(args.audio, 16000)
-    print(wav.shape)
-    mel = audio.melspectrogram(wav)
-    print(mel.shape)
-    fps = 25
-    mel_step_size, mel_idx_multiplier, i, mel_chunks = 16, 80. / fps, 0, []
-    while True:
-        start_idx = int(i * mel_idx_multiplier)
-        if start_idx + mel_step_size > len(mel[0]):
-            mel_chunks.append(mel[:, len(mel[0]) - mel_step_size:])
-            break
-        mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
-        i += 1
-    print(len(mel_chunks))
+    main()
