@@ -140,27 +140,20 @@ class ADAIN(nn.Module):
         self.mlp_gamma = nn.Linear(nhidden, norm_nc, bias=use_bias)    
         self.mlp_beta = nn.Linear(nhidden, norm_nc, bias=use_bias)    
 
-    def forward(self, x, features):
+    def forward(self, x, feature):
+
         # Part 1. generate parameter-free normalized activations
         normalized = self.param_free_norm(x)
+        # Part 2. produce scaling and bias conditioned on feature
+        feature = feature.view(feature.size(0), -1)
+        actv = self.mlp_shared(feature)
+        gamma = self.mlp_gamma(actv)
+        beta = self.mlp_beta(actv)
 
-        k = features.size(1)
-        out = torch.zeros_like(normalized)
-        for i in range(k):
-            if i == k-1:
-                wk = 1. / 2**(k-1)
-            else:
-                wk = 1. / 2**k
-            # Part 2. produce scaling and bias conditioned on feature
-            feature = features.view(features[:,i].size(0), -1)
-            actv = self.mlp_shared(feature)
-            gamma = self.mlp_gamma(actv)
-            beta = self.mlp_beta(actv)
-
-            # apply scale and bias
-            gamma = gamma.view(*gamma.size()[:2], 1,1)
-            beta = beta.view(*beta.size()[:2], 1,1)
-            out = out + wk * (normalized * (1 + gamma) + beta)
+        # apply scale and bias
+        gamma = gamma.view(*gamma.size()[:2], 1,1)
+        beta = beta.view(*beta.size()[:2], 1,1)
+        out = normalized * (1 + gamma) + beta
         return out
 
 
