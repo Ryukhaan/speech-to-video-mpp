@@ -5,6 +5,8 @@ import cv2, os, sys, subprocess, platform, torch
 from tqdm import tqdm
 from PIL import Image
 from scipy.io import loadmat
+import matplotlib.pyplot as plt
+from scipy.signal import correlate
 
 sys.path.append('third_part')
 # 3dmm extraction
@@ -31,7 +33,6 @@ def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     torch.cuda.empty_cache()
     print('[Info] Using {} for inference.'.format(device))
-    os.makedirs(os.path.join('temp', args.tmp_dir), exist_ok=True)
 
     enhancer = FaceEnhancement(base_dir='checkpoints', size=512, model='GPEN-BFR-512', use_sr=False, \
                                sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
@@ -164,7 +165,7 @@ def main():
             coeff = transform_semantic(semantic_npy, idx, ratio).unsqueeze(0).to(device)
         
             # hacking the new expression
-            coeff[:, :64, :] = expression[None, :64, None].to(device) 
+            coeff[:, :64, :] = 0.0 #expression[None, :64, None].to(device)
             with torch.no_grad():
                 output = D_Net(source_img, coeff)
             img_stablized = np.uint8((output['fake_image'].squeeze(0).permute(1,2,0).cpu().clamp_(-1, 1).numpy() + 1 )/2. * 255)
@@ -352,22 +353,39 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 
 def find_best_audio():
     base_name = args.face.split('/')[-1]
+    os.makedirs(os.path.join('temp', args.tmp_dir), exist_ok=True)
     if not os.path.isfile('temp/'+base_name+'_best_audio.txt') or args.re_preprocess:
         # TODO
         # Make choice of data according to actor
-        audio_database = glob.glob(os.getcwd() + "/../../data/audio/antoine/*.wav")
+        audio_database = glob.glob('/'.join(args.audio.split('/')[:-1]) + '/*.wav')
+        #audio_database = glob.glob(os.getcwd() + "/../../data/audio/antoine/*.wav")
 
         src_wav = audio.load_wav(args.audio, 16000)
         src_mel = audio.melspectrogram(src_wav)
         _, src_length = src_mel.shape
         sim = np.inf
         best_vid = ""
+        fig, axs = plt.subplots(2, 2)
+        axs = axs.flatten()
         for file in tqdm(audio_database, desc='[Step 0 bis] Finding best audio:'):
             if file == args.audio: continue
             dst_wav = audio.load_wav(file, 16000)
             dst_mel = audio.melspectrogram(dst_wav)
             _, dst_length = dst_mel.shape
             if dst_length >= src_length:
+
+                axs[0].imshow(src_mel)
+                axs[0].axis('image')
+                axs[1].imshow(dst_mel)
+                axs[1].axis('image')
+                xcorr = correlate(dst_mel, src_mel)
+                axs[2].imshow(xcorr)
+                ymax, xmax = np.unravel_index(xcorr[80, :].argmax(), xcorr.shape)
+                cp = dst_mel.copy()
+                cp[:, xmax - src_length//2:xmax+src_length//2+1] = 0
+                axs[3].imshow(cp)
+                plt.show()
+
                 tmp_src_mel = np.pad(src_mel, ((0,0),(0,dst_length-src_length)))
                 current_sim = np.mean(np.linalg.norm(tmp_src_mel - dst_mel, axis=1))
                 if current_sim < sim:
@@ -381,5 +399,5 @@ def find_best_audio():
     print(args.face)
 
 if __name__ == '__main__':
-    find_best_audio()
+    #find_best_audio()
     main()
