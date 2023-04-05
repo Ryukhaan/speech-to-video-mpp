@@ -366,7 +366,7 @@ def find_best_audio():
         else:
             tmp_src_mel = np.pad(src_mel, ((0,0),(0,dst_length-src_length)))
             current_sim = np.mean(np.linalg.norm(tmp_src_mel - dst_mel, axis=1))
-        print(file, "Sim = " + current_sim)
+        print(file, "Sim = " + str(current_sim))
         if current_sim > sim:
             args.audio = file
             sim = current_sim
