@@ -271,7 +271,8 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
-            #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
+            print(pp.shape)
+            ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
             out.write(pp)
     out.release()
     
@@ -349,25 +350,36 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 
 
 def find_best_audio():
-    audio_database = glob.glob(os.getcwd() + "/../../data/audio/antoine/*.wav")
-    audio_file = os.getcwd() + "/../../data/audio/antoine/" + args.face.split('/')[-1][:-3] + 'wav'
-    print(audio_file)
-    src_wav = audio.load_wav(audio_file, 16000)
-    src_mel = audio.melspectrogram(src_wav)
-    _, src_length = src_mel.shape
-    sim = np.inf
-    for file in tqdm(audio_database, desc='[Step 0 bis] Finding best audio:'):
-        dst_wav = audio.load_wav(file, 16000)
-        dst_mel = audio.melspectrogram(dst_wav)
-        _, dst_length = dst_mel.shape
-        if dst_length < src_length:
-            dst_mel = np.pad(dst_mel, ((0,0),(0,src_length-dst_length)))
-            current_sim = np.mean(np.linalg.norm(src_mel - dst_mel, axis=1))
-            if current_sim < sim:
-                args.audio = file
-                sim = current_sim
+    base_name = args.face.split('/')[-1]
+    if not os.path.isfile('temp/'+base_name+'_best_audio.txt')) or args.re_preprocess:
+        # TODO
+        # Make choice of data according to actor
+        audio_database = glob.glob(os.getcwd() + "/../../data/audio/antoine/*.wav")
+
+        src_wav = audio.load_wav(args.audio, 16000)
+        src_mel = audio.melspectrogram(src_wav)
+        _, src_length = src_mel.shape
+        sim = np.inf
+        for file in tqdm(audio_database, desc='[Step 0 bis] Finding best audio:'):
+            print(file, args.audio)
+            continue
+            if file == audio_file: continue
+            dst_wav = audio.load_wav(file, 16000)
+            dst_mel = audio.melspectrogram(dst_wav)
+            _, dst_length = dst_mel.shape
+            if dst_length < src_length:
+                dst_mel = np.pad(dst_mel, ((0,0),(0,src_length-dst_length)))
+                current_sim = np.mean(np.linalg.norm(src_mel - dst_mel, axis=1))
+                if current_sim < sim:
+                    best_vid = file
+                    sim = current_sim
+        best_vid = "../../data/audio/antoine/" + best_vid[:-3] + 'mp4'
+        print(best_vid)
+        np.savetxt('temp/' + base_name + '_best_audio.txt', args.audio)
+    else:
+        args.face = np.loadtxt('temp/' + base_name + '_best_audio.txt')
     print("Best audio found : " + args.audio)
 
 if __name__ == '__main__':
     find_best_audio()
-    main()
+    #main()
