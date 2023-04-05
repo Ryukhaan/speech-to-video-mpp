@@ -377,7 +377,7 @@ def find_best_audio():
         args.face = best_vid
         np.save('temp/' + base_name + '_best_audio.npy', best_vid)
     else:
-        args.face = np.load('temp/' + base_name + '_best_audio.npy')
+        args.face = np.load('temp/' + base_name + '_best_audio.npy')[0]
     print(args.face)
 
 if __name__ == '__main__':
