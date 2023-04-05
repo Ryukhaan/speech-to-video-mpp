@@ -346,5 +346,22 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
 
 
+def find_best_audio():
+    audio_database = glob.glob(os.getcwd() + "../../data/audio/antoine/*.wav")
+    audio_file = os.getcwd() + "../../data/audio/antoine/" + args.face.split('/')[-1][:-3] + 'wav'
+    print(audio_file)
+    src_wav = audio.load_wav(audio_file, 16000)
+    src_mel = audio.melspectrogram(src_wav)
+    sim = -1.0
+    for file in audio_database:
+        print(file)
+        dst_wav = audio.load_wav(file, 16000)
+        dst_mel = audio.melspectrogram(dst_wav)
+        current_sim = np.mean(np.linalg.norm(src_mel - dst_mel, axis=1))
+        if current_sim > sim:
+            args.audio = file
+            sim = current_sim
+
+
 if __name__ == '__main__':
     main()
