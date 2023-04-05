@@ -354,14 +354,15 @@ def find_best_audio():
     src_mel = audio.melspectrogram(src_wav)
     sim = -1.0
     for file in audio_database:
-        print(file)
         dst_wav = audio.load_wav(file, 16000)
         dst_mel = audio.melspectrogram(dst_wav)
         current_sim = np.mean(np.linalg.norm(src_mel - dst_mel, axis=1))
+        print(file, "Sim = " + current_sim)
         if current_sim > sim:
             args.audio = file
             sim = current_sim
 
 
 if __name__ == '__main__':
-    main()
+    find_best_audio()
+    #main()
