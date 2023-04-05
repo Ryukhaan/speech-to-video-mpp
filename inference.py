@@ -362,11 +362,11 @@ def find_best_audio():
         sim = np.inf
         best_vid = ""
         for file in tqdm(audio_database, desc='[Step 0 bis] Finding best audio:'):
-            if file == audio_file: continue
+            if file == args.audio: continue
             dst_wav = audio.load_wav(file, 16000)
             dst_mel = audio.melspectrogram(dst_wav)
             _, dst_length = dst_mel.shape
-            if dst_length <= src_length:
+            if dst_length >= src_length:
                 dst_mel = np.pad(dst_mel, ((0,0),(0,src_length-dst_length)))
                 current_sim = np.mean(np.linalg.norm(src_mel - dst_mel, axis=1))
                 if current_sim < sim:
