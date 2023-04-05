@@ -367,7 +367,7 @@ def find_best_audio():
             dst_mel = audio.melspectrogram(dst_wav)
             _, dst_length = dst_mel.shape
             if dst_length >= src_length:
-                dst_mel = np.pad(dst_mel, ((0,0),(0,src_length-dst_length)))
+                dst_mel = np.pad(dst_mel, ((0,0),(0,dst_length-src_length)))
                 current_sim = np.mean(np.linalg.norm(src_mel - dst_mel, axis=1))
                 if current_sim < sim:
                     best_vid = file
