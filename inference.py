@@ -351,7 +351,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 
 def find_best_audio():
     base_name = args.face.split('/')[-1]
-    if not os.path.isfile('temp/'+base_name+'_best_audio.txt')) or args.re_preprocess:
+    if not os.path.isfile('temp/'+base_name+'_best_audio.txt') or args.re_preprocess:
         # TODO
         # Make choice of data according to actor
         audio_database = glob.glob(os.getcwd() + "/../../data/audio/antoine/*.wav")
