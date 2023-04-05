@@ -349,8 +349,8 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 
 
 def find_best_audio():
-    audio_database = glob.glob(os.getcwd() + "../../data/audio/antoine/*.wav")
-    audio_file = os.getcwd() + "../../data/audio/antoine/" + args.face.split('/')[-1][:-3] + 'wav'
+    audio_database = glob.glob(os.getcwd() + "/../../data/audio/antoine/*.wav")
+    audio_file = os.getcwd() + "/../../data/audio/antoine/" + args.face.split('/')[-1][:-3] + 'wav'
     print(audio_file)
     src_wav = audio.load_wav(audio_file, 16000)
     src_mel = audio.melspectrogram(src_wav)
