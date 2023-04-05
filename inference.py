@@ -147,7 +147,7 @@ def main():
 
     # Video Image Stabilized
     out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(args.tmp_dir),
-                          cv2.VideoWriter_fourcc(*'mp4v'), fps, (384, 384))
+                          cv2.VideoWriter_fourcc(*'mp4v'), fps, (256, 256))
     if not os.path.isfile('temp/'+base_name+'_stablized.npy') or args.re_preprocess:
         imgs = []
         for idx in tqdm(range(len(frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
@@ -166,7 +166,7 @@ def main():
                 output = D_Net(source_img, coeff)
             img_stablized = np.uint8((output['fake_image'].squeeze(0).permute(1,2,0).cpu().clamp_(-1, 1).numpy() + 1 )/2. * 255)
             imgs.append(cv2.cvtColor(img_stablized,cv2.COLOR_RGB2BGR))
-            print(img_stablized.shape)
+
             out.write(cv2.cvtColor(img_stablized,cv2.COLOR_RGB2BGR))
         np.save('temp/'+base_name+'_stablized.npy',imgs)
         del D_Net
