@@ -34,10 +34,10 @@ def main():
     torch.cuda.empty_cache()
     print('[Info] Using {} for inference.'.format(device))
 
-    enhancer = FaceEnhancement(base_dir='checkpoints', size=512, model='GPEN-BFR-512', use_sr=False, \
-                               sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
-    restorer = GFPGANer(model_path='checkpoints/GFPGANv1.3.pth', upscale=1, arch='clean', \
-                        channel_multiplier=2, bg_upsampler=None)
+    #enhancer = FaceEnhancement(base_dir='checkpoints', size=512, model='GPEN-BFR-512', use_sr=False, \
+    #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
+    #restorer = GFPGANer(model_path='checkpoints/GFPGANv1.3.pth', upscale=1, arch='clean', \
+    #                    channel_multiplier=2, bg_upsampler=None)
 
     base_name = args.face.split('/')[-1]
     # Image or Video ?
