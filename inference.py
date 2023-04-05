@@ -372,11 +372,11 @@ def find_best_audio():
                 if current_sim < sim:
                     best_vid = file
                     sim = current_sim
-        best_vid = "../../data/audio/antoine/" + best_vid[:-3] + 'mp4'
-        print(best_vid)
-        np.savetxt('temp/' + base_name + '_best_audio.txt', args.audio)
+        #best_vid = "../../data/audio/antoine/" + best_vid[:-3] + 'mp4'
+        print(file, best_vid)
+        np.save('temp/' + base_name + '_best_audio.npy', best_vid)
     else:
-        args.face = np.loadtxt('temp/' + base_name + '_best_audio.txt')
+        args.face = np.load('temp/' + base_name + '_best_audio.npy')
     print("Best audio found : " + args.audio)
 
 if __name__ == '__main__':
