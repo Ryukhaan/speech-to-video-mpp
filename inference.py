@@ -34,10 +34,10 @@ def main():
     torch.cuda.empty_cache()
     print('[Info] Using {} for inference.'.format(device))
 
-    #enhancer = FaceEnhancement(base_dir='checkpoints', size=512, model='GPEN-BFR-512', use_sr=False, \
-    #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
-    #restorer = GFPGANer(model_path='checkpoints/GFPGANv1.3.pth', upscale=1, arch='clean', \
-    #                    channel_multiplier=2, bg_upsampler=None)
+    enhancer = FaceEnhancement(base_dir='checkpoints', size=512, model='GPEN-BFR-512', use_sr=False, \
+                               sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
+    restorer = GFPGANer(model_path='checkpoints/GFPGANv1.3.pth', upscale=1, arch='clean', \
+                        channel_multiplier=2, bg_upsampler=None)
 
     base_name = args.face.split('/')[-1]
     # Image or Video ?
@@ -374,17 +374,17 @@ def find_best_audio():
             _, dst_length = dst_mel.shape
             if dst_length >= src_length:
 
-                axs[0].imshow(src_mel)
-                axs[0].axis('image')
-                axs[1].imshow(dst_mel)
-                axs[1].axis('image')
-                xcorr = correlate(dst_mel, src_mel)
-                axs[2].imshow(xcorr)
-                ymax, xmax = np.unravel_index(xcorr[80, :].argmax(), xcorr.shape)
-                cp = dst_mel.copy()
-                cp[:, xmax - src_length//2:xmax+src_length//2+1] = 0
-                axs[3].imshow(cp)
-                plt.show()
+                # axs[0].imshow(src_mel)
+                # axs[0].axis('image')
+                # axs[1].imshow(dst_mel)
+                # axs[1].axis('image')
+                # xcorr = correlate(dst_mel, src_mel)
+                # axs[2].imshow(xcorr)
+                # ymax, xmax = np.unravel_index(xcorr[80, :].argmax(), xcorr.shape)
+                # cp = dst_mel.copy()
+                # cp[:, xmax - src_length//2:xmax+src_length//2+1] = 0
+                # axs[3].imshow(cp)
+                # plt.show()
 
                 tmp_src_mel = np.pad(src_mel, ((0,0),(0,dst_length-src_length)))
                 current_sim = np.mean(np.linalg.norm(tmp_src_mel - dst_mel, axis=1))
