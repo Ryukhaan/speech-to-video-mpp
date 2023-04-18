@@ -165,7 +165,7 @@ def main():
             coeff = transform_semantic(semantic_npy, idx, ratio).unsqueeze(0).to(device)
         
             # hacking the new expression
-            coeff[:, :64, :] = 0.0 #expression[None, :64, None].to(device)
+            coeff[:, :64, :] = expression[None, :64, None].to(device)
             with torch.no_grad():
                 output = D_Net(source_img, coeff)
             img_stablized = np.uint8((output['fake_image'].squeeze(0).permute(1,2,0).cpu().clamp_(-1, 1).numpy() + 1 )/2. * 255)
@@ -273,8 +273,8 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
-            print(pp.shape)
-            ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
+            print(pp.shape, y1, y2, x1, x2)
+            ff[y1:y2, x1:x2, :] = pp[y1:y2, x1:x2, :]
             out.write(pp)
     out.release()
     
