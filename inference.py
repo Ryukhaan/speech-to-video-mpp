@@ -178,7 +178,7 @@ def main():
         print('[Step 3] Using saved stablized video.')
         imgs = np.load('temp/'+base_name+'_stablized.npy')
     torch.cuda.empty_cache()
-    return 0
+    #return 0
 
     if not args.audio.endswith('.wav'):
         command = 'ffmpeg -loglevel error -y -i {} -strict -2 {}'.format(args.audio, 'temp/{}/temp.wav'.format(args.tmp_dir))
