@@ -261,6 +261,7 @@ def main():
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
 
         torch.cuda.empty_cache()
+        delta = 0
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
             y1, y2, x1, x2 = c
             p = cv2.resize(p.astype(np.uint8), (x2 - x1, y2 - y1))
@@ -283,6 +284,8 @@ def main():
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
+            cv2.imwrite("./results/{}.png".format(delta), pp)
+            delta+=1
             pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=True)
             #enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
             #print(pp.shape, y1, y2, x1, x2, ff.shape)
