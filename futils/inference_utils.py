@@ -222,7 +222,6 @@ def Laplacian_Pyramid_Blending_with_mask(A, B, m, num_levels = 6):
 
 def load_model(args, device):
     torch.cuda.empty_cache()
-    torch.cuda.mem_get_info()
     D_Net = load_DNet(args).to(device)
     model = load_network(args).to(device)
     return D_Net, model
@@ -249,6 +248,7 @@ def normalize_kp(kp_source, kp_driving, kp_driving_initial, adapt_movement_scale
 
 def load_face3d_net(ckpt_path, device):
     torch.cuda.empty_cache()
+    torch.cuda.mem_get_info()
     net_recon = networks.define_net_recon(net_recon='resnet50', use_last_fc=False, init_path='').to(device)
     checkpoint = torch.load(ckpt_path, map_location=device)    
     net_recon.load_state_dict(checkpoint['net_recon'])
