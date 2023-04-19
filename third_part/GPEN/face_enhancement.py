@@ -45,7 +45,7 @@ from .align_faces import warp_and_crop_face, get_reference_facial_points
 class FaceEnhancement(object):
     def __init__(self, args, base_dir='./', in_size=512, out_size=None, model=None, use_sr=True, device='cuda',
                  sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1):
-        sr_scale = 2
+        sr_scale = 4
         tile_size = 0
         self.facedetector = RetinaFaceDetection(base_dir, device)
         self.facegan = FaceGAN(base_dir, in_size, out_size, model, channel_multiplier, narrow, None, device=device)
