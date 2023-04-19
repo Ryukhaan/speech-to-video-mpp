@@ -8,6 +8,7 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 from itertools import cycle
+import torch
 
 from torch.multiprocessing import Pool, Process, set_start_method
 
