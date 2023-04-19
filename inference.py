@@ -14,7 +14,7 @@ from third_part.face3d.util.preprocess import align_img
 from third_part.face3d.util.load_mats import load_lm3d
 from third_part.face3d.extract_kp_videos import KeypointExtractor
 # face enhancement
-from third_part.GPEN.gpen_face_enhancer import FaceEnhancement
+from third_part.GPEN.face_enhancement import FaceEnhancement
 from third_part.GFPGAN.gfpgan import GFPGANer
 # expression control
 from third_part.ganimation_replicate.model.ganimation import GANimationModel
