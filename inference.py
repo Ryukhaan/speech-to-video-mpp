@@ -85,6 +85,7 @@ def main():
        
     if not os.path.isfile('temp/'+base_name+'_coeffs.npy') or args.exp_img is not None or args.re_preprocess:
         torch.cuda.empty_cache()
+        torch.cuda.mem_get_info()
         net_recon = load_face3d_net(args.face3d_net_path, device)
         lm3d_std = load_lm3d('checkpoints/BFM')
 
