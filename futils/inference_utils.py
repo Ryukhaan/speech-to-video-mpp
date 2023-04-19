@@ -248,7 +248,6 @@ def normalize_kp(kp_source, kp_driving, kp_driving_initial, adapt_movement_scale
 
 def load_face3d_net(ckpt_path, device):
     torch.cuda.empty_cache()
-    torch.cuda.mem_get_info()
     net_recon = networks.define_net_recon(net_recon='resnet50', use_last_fc=False, init_path='').to(device)
     checkpoint = torch.load(ckpt_path, map_location=device)    
     net_recon.load_state_dict(checkpoint['net_recon'])
