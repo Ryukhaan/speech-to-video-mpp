@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utils import flow_util
+from futils import flow_util
 from models.base_blocks import LayerNorm2d, ADAINHourglass, FineEncoder, FineDecoder
 
 # DNet
