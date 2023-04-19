@@ -36,11 +36,11 @@ add_path(path)
 path = osp.join(this_dir, 'training/data_loader')
 add_path(path)
 
-from face_detect.retinaface_detection import RetinaFaceDetection
-from face_parse.face_parsing import FaceParse
-from face_model.face_gan import FaceGAN
-from sr_model.real_esrnet import RealESRNet
-from align_faces import warp_and_crop_face, get_reference_facial_points
+from .face_detect.retinaface_detection import RetinaFaceDetection
+from .face_parse.face_parsing import FaceParse
+from .face_model.face_gan import FaceGAN
+from .sr_model.real_esrnet import RealESRNet
+from .align_faces import warp_and_crop_face, get_reference_facial_points
 
 class FaceEnhancement(object):
     def __init__(self, args, base_dir='./', in_size=512, out_size=None, model=None, use_sr=True, device='cuda',
