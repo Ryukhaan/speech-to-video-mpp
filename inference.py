@@ -356,7 +356,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 def find_best_audio():
     base_name = args.face.split('/')[-1]
     os.makedirs(os.path.join('temp', args.tmp_dir), exist_ok=True)
-    if not os.path.isfile('temp/'+base_name+'_best_audio.txt') or args.re_preprocess:
+    if not os.path.isfile('temp/'+base_name+'_best_audio.npy') or args.re_preprocess:
         # TODO
         # Make choice of data according to actor
         audio_database = glob.glob('/'.join(args.audio.split('/')[:-1]) + '/*.wav')
@@ -375,18 +375,6 @@ def find_best_audio():
             dst_mel = audio.melspectrogram(dst_wav)
             _, dst_length = dst_mel.shape
             if dst_length >= src_length:
-
-                # axs[0].imshow(src_mel)
-                # axs[0].axis('image')
-                # axs[1].imshow(dst_mel)
-                # axs[1].axis('image')
-                # xcorr = correlate(dst_mel, src_mel)
-                # axs[2].imshow(xcorr)
-                # ymax, xmax = np.unravel_index(xcorr[80, :].argmax(), xcorr.shape)
-                # cp = dst_mel.copy()
-                # cp[:, xmax - src_length//2:xmax+src_length//2+1] = 0
-                # axs[3].imshow(cp)
-                # plt.show()
 
                 tmp_src_mel = np.pad(src_mel, ((0,0),(0,dst_length-src_length)))
                 current_sim = np.mean(np.linalg.norm(tmp_src_mel - dst_mel, axis=1))
