@@ -2,8 +2,6 @@ import glob
 
 import gc
 import torch
-gc.collect()
-torch.cuda.empty_cache()
 
 import numpy as np
 import cv2, os, sys, subprocess, platform, torch
@@ -36,7 +34,8 @@ args = options()
 
 def main():    
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
+    gc.collect()
+    torch.cuda.empty_cache()
     print('[Info] Using {} for inference.'.format(device))
 
     base_name = args.face.split('/')[-1]
