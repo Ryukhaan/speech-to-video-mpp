@@ -213,7 +213,8 @@ def main():
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
         img = imgs[idx]
-        pred, _, _ = enhancer.process(img, img, face_enhance=True, possion_blending=False)
+        pred, _, _ = enhancer.process(img, aligned=True)
+        #enhancer.process(img, img, face_enhance=True, possion_blending=False)
         imgs_enhanced.append(pred)
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1,oy2,ox1,ox2))
 
@@ -281,7 +282,8 @@ def main():
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
-            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
+            pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=True)
+            #enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
             #print(pp.shape, y1, y2, x1, x2, ff.shape)
             #ff = xf.copy()
             #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
