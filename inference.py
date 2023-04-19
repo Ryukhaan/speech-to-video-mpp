@@ -290,6 +290,7 @@ def main():
             #enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
             #print(pp.shape, y1, y2, x1, x2, ff.shape)
             ff = xf.copy()
+            print(ff.shape, pp.shape, enhanced_faces.shape)
             ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
             cv2.imwrite("./results/{}.png".format(delta), ff)
             out.write(ff)
