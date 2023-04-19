@@ -5,7 +5,7 @@
 import cv2
 import time
 import numpy as np
-import .__init_paths
+import __init_paths
 from face_detect.retinaface_detection import RetinaFaceDetection
 from face_parse.face_parsing import FaceParse
 from face_model.face_gan import FaceGAN
