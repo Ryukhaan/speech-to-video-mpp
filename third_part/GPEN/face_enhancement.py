@@ -5,7 +5,37 @@
 import cv2
 import time
 import numpy as np
-import __init_paths
+#import __init_paths
+import os.path as osp
+import sys
+
+def add_path(path):
+    if path not in sys.path:
+        sys.path.insert(0, path)
+
+this_dir = osp.dirname(__file__)
+
+path = osp.join(this_dir, 'face_detect')
+add_path(path)
+
+path = osp.join(this_dir, 'face_parse')
+add_path(path)
+
+path = osp.join(this_dir, 'face_model')
+add_path(path)
+
+path = osp.join(this_dir, 'sr_model')
+add_path(path)
+
+path = osp.join(this_dir, 'training')
+add_path(path)
+
+path = osp.join(this_dir, 'training/loss')
+add_path(path)
+
+path = osp.join(this_dir, 'training/data_loader')
+add_path(path)
+
 from face_detect.retinaface_detection import RetinaFaceDetection
 from face_parse.face_parsing import FaceParse
 from face_model.face_gan import FaceGAN
