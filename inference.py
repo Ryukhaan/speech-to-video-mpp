@@ -145,6 +145,7 @@ def main():
         expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
 
     # load DNet, model(LNet and ENet)
+    torch.cuda.empty_cache()
     D_Net, model = load_model(args, device)
 
     # Video Image Stabilized

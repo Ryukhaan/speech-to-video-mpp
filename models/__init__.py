@@ -22,6 +22,7 @@ def load_checkpoint(path, model):
     return model
 
 def load_network(args):
+    torch.cuda.empty_cache()
     L_net = LNet()
     L_net = load_checkpoint(args.LNet_path, L_net)
     E_net = ENet(lnet=L_net)
@@ -29,6 +30,7 @@ def load_network(args):
     return model.eval()
 
 def load_DNet(args):
+    torch.cuda.empty_cache()
     D_Net = DNet()
     print("Load checkpoint from: {}".format(args.DNet_path))
     checkpoint =  torch.load(args.DNet_path, map_location=lambda storage, loc: storage)
