@@ -222,6 +222,7 @@ def Laplacian_Pyramid_Blending_with_mask(A, B, m, num_levels = 6):
 
 def load_model(args, device):
     torch.cuda.empty_cache()
+    torch.cuda.mem_get_info()
     D_Net = load_DNet(args).to(device)
     model = load_network(args).to(device)
     return D_Net, model
