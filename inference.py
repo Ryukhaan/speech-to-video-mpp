@@ -31,7 +31,7 @@ args = options()
 
 def main():    
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    torch.cuda.empty_cache()
+
     print('[Info] Using {} for inference.'.format(device))
 
     base_name = args.face.split('/')[-1]
@@ -74,6 +74,7 @@ def main():
 
     # get the landmark according to the detected face.
     if not os.path.isfile('temp/'+base_name+'_landmarks.txt') or args.re_preprocess:
+        torch.cuda.empty_cache()
         print('[Step 1] Landmarks Extraction in Video.')
         kp_extractor = KeypointExtractor()
         lm = kp_extractor.extract_keypoint(frames_pil, './temp/'+base_name+'_landmarks.txt')
@@ -172,7 +173,7 @@ def main():
     else:
         print('[Step 3] Using saved stablized video.')
         imgs = np.load('temp/'+base_name+'_stablized.npy')
-    torch.cuda.empty_cache()
+
     #return 0
 
     if not args.audio.endswith('.wav'):
