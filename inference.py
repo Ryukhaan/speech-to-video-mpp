@@ -199,8 +199,9 @@ def main():
     full_frames = full_frames[:len(mel_chunks)]  
     lm = lm[:len(mel_chunks)]
 
-    enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
-                               sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
+    #enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
+    #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
+    enhancer = FaceEnhancement(base_dir='checkpoints', in_size=512, model='GPEN-BFR-1024', use_sr=False)
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
         img = imgs[idx]

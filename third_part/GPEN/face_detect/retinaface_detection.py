@@ -6,12 +6,12 @@ import os
 import torch
 import torch.backends.cudnn as cudnn
 import numpy as np
-from face_detect.data import cfg_re50
-from face_detect.layers.functions.prior_box import PriorBox
-from face_detect.utils.nms.py_cpu_nms import py_cpu_nms
+from data import cfg_re50
+from layers.functions.prior_box import PriorBox
+from utils.nms.py_cpu_nms import py_cpu_nms
 import cv2
-from face_detect.facemodels.retinaface import RetinaFace
-from face_detect.utils.box_utils import decode, decode_landm
+from facemodels.retinaface import RetinaFace
+from utils.box_utils import decode, decode_landm
 import time
 import torch.nn.functional as F
 
@@ -20,7 +20,7 @@ class RetinaFaceDetection(object):
     def __init__(self, base_dir, device='cuda', network='RetinaFace-R50'):
         torch.set_grad_enabled(False)
         cudnn.benchmark = True
-        self.pretrained_path = os.path.join(base_dir, network+'.pth')
+        self.pretrained_path = os.path.join(base_dir, 'weights', network+'.pth')
         self.device = device #torch.cuda.current_device()
         self.cfg = cfg_re50
         self.net = RetinaFace(cfg=self.cfg, phase='test')
@@ -74,9 +74,9 @@ class RetinaFaceDetection(object):
         img = torch.from_numpy(img).unsqueeze(0)
         img = img.to(self.device)
         scale = scale.to(self.device)
-        
-        with torch.no_grad():
-            loc, conf, landms = self.net(img)  # forward pass
+
+        loc, conf, landms = self.net(img)  # forward pass
+        del img
 
         priorbox = PriorBox(self.cfg, image_size=(im_height, im_width))
         priors = priorbox.forward()
@@ -87,9 +87,9 @@ class RetinaFaceDetection(object):
         boxes = boxes.cpu().numpy()
         scores = conf.squeeze(0).data.cpu().numpy()[:, 1]
         landms = decode_landm(landms.data.squeeze(0), prior_data, self.cfg['variance'])
-        scale1 = torch.Tensor([img.shape[3], img.shape[2], img.shape[3], img.shape[2],
-                               img.shape[3], img.shape[2], img.shape[3], img.shape[2],
-                               img.shape[3], img.shape[2]])
+        scale1 = torch.Tensor([im_width, im_height, im_width, im_height,
+                               im_width, im_height, im_width, im_height,
+                               im_width, im_height])
         scale1 = scale1.to(self.device)
         landms = landms * scale1 / resize
         landms = landms.cpu().numpy()

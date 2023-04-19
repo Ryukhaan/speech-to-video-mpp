@@ -4,7 +4,7 @@
 @Modified by yangxy (yangtao9009@gmail.com)
 '''
 
-from face_parse.blocks import *
+from blocks import *
 import torch
 from torch import nn
 import numpy as np

@@ -228,20 +228,20 @@ def warp_and_crop_face(src_img,
 
     ref_pts = np.float32(reference_pts)
     ref_pts_shp = ref_pts.shape
-    if max(ref_pts_shp) < 3: #  or min(ref_pts_shp) != 2:
+    if max(ref_pts_shp) < 3 or min(ref_pts_shp) != 2:
         raise FaceWarpException(
             'reference_pts.shape must be (K,2) or (2,K) and K>2')
 
-    if ref_pts_shp[0] == 2 or ref_pts_shp[0] == 3:
+    if ref_pts_shp[0] == 2:
         ref_pts = ref_pts.T
 
     src_pts = np.float32(facial_pts)
     src_pts_shp = src_pts.shape
-    if max(src_pts_shp) < 3: # or min(src_pts_shp) != 2:
+    if max(src_pts_shp) < 3 or min(src_pts_shp) != 2:
         raise FaceWarpException(
             'facial_pts.shape must be (K,2) or (2,K) and K>2')
 
-    if src_pts_shp[0] == 2 or src_pts_shp[0] == 3:
+    if src_pts_shp[0] == 2:
         src_pts = src_pts.T
 
     if src_pts.shape != ref_pts.shape:
@@ -251,9 +251,6 @@ def warp_and_crop_face(src_img,
     if align_type is 'cv2_affine':
         tfm = cv2.getAffineTransform(src_pts[0:3], ref_pts[0:3])
         tfm_inv = cv2.getAffineTransform(ref_pts[0:3], src_pts[0:3])
-    elif align_type is 'cv2_rigid':
-        tfm, _ = cv2.estimateAffinePartial2D(src_pts[0:3], ref_pts[0:3])
-        tfm_inv, _ = cv2.estimateAffinePartial2D(ref_pts[0:3], src_pts[0:3])
     elif align_type is 'affine':
         tfm = get_affine_transform_matrix(src_pts, ref_pts)
         tfm_inv = get_affine_transform_matrix(ref_pts, src_pts)
@@ -264,8 +261,6 @@ def warp_and_crop_face(src_img,
         params, _ = _umeyama(ref_pts, src_pts, False, scale=1.0/scale)
         tfm_inv = params[:2, :]
 
-    # M = cv2.getPerspectiveTransform(ref_pts[0:4], src_pts[0:4])
     face_img = cv2.warpAffine(src_img, tfm, (crop_size[0], crop_size[1]), flags=3)
-    # face_img = cv2.warpPerspective(src_img, M, (crop_size[0], crop_size[1]), flags=cv2.INTER_LINEAR )
 
     return face_img, tfm_inv
