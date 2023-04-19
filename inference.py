@@ -284,7 +284,6 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
             pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=True)
-            print(pp)
             #enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
             #print(pp.shape, y1, y2, x1, x2, ff.shape)
             #ff = xf.copy()
