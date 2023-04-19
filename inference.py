@@ -274,7 +274,7 @@ def main():
                 # 0,   1,   2,   3,   4,   5,   6,   7,   8,  9, 10,  11,  12,
             mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mouse_mask = np.zeros_like(restored_img)
-            tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2])
+            tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2])[0]
             print(type(tmp_mask), tmp_mask)
             #enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
             mouse_mask[y1:y2, x1:x2]= cv2.resize(tmp_mask, (x2 - x1, y2 - y1))[:, :, np.newaxis] / 255.
