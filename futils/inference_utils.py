@@ -8,6 +8,7 @@ from PIL import Image
 from scipy.spatial import ConvexHull
 from third_part import face_detection
 from third_part.face3d.models import networks
+import torch
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -220,6 +221,7 @@ def Laplacian_Pyramid_Blending_with_mask(A, B, m, num_levels = 6):
     return ls_
 
 def load_model(args, device):
+    torch.cuda.empty_cache()
     D_Net = load_DNet(args).to(device)
     model = load_network(args).to(device)
     return D_Net, model
@@ -245,6 +247,7 @@ def normalize_kp(kp_source, kp_driving, kp_driving_initial, adapt_movement_scale
     return kp_new
 
 def load_face3d_net(ckpt_path, device):
+    torch.cuda.empty_cache()
     net_recon = networks.define_net_recon(net_recon='resnet50', use_last_fc=False, init_path='').to(device)
     checkpoint = torch.load(ckpt_path, map_location=device)    
     net_recon.load_state_dict(checkpoint['net_recon'])
