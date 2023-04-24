@@ -135,9 +135,14 @@ class FaceEnhancement(object):
 
             # no ear, no neck, no hair&hat,  only face region
             mm = [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
-            tmp_mask = self.mask_postprocess(self.faceparser.process(ef)[0]/255., mm)
+            mask_sharp = self.faceparser.process(ef, mm)[0]/255.
+            tmp_mask = self.mask_postprocess(mask_sharp)
+
             tmp_mask = cv2.resize(tmp_mask, (self.in_size, self.in_size))
             tmp_mask = cv2.warpAffine(tmp_mask, tfm_inv, (width, height), flags=3)
+
+            mask_sharp = cv2.resize(mask_sharp, ef.shape[:2])
+            mask_sharp = cv2.warpAffine(mask_sharp, tfm_inv, (width, height), flags=3)
 
             if min(fh, fw)<100: # gaussian filter for small faces
                 ef = cv2.filter2D(ef, -1, self.kernel)
