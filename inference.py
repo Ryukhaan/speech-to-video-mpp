@@ -287,9 +287,9 @@ def main():
             #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
             pp, orig_face, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
             #print(pp.shape, y1, y2, x1, x2, ff.shape)
-            #ff = xf.copy()
+            ff = xf.copy()
             #print(ff.shape, pp.shape)
-            #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
+            ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
             cv2.imwrite("./results/{}.png".format(delta), pp)
             out.write(ff)
     out.release()
