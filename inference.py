@@ -283,10 +283,9 @@ def main():
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
-
             delta+=1
-            pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
-            #enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
+            #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
+            pp, orig_face, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
             #print(pp.shape, y1, y2, x1, x2, ff.shape)
             #ff = xf.copy()
             #print(ff.shape, pp.shape)
