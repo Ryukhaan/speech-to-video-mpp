@@ -157,7 +157,10 @@ class FaceEnhancement(object):
             full_mask[np.where(mask>0)] = tmp_mask[np.where(mask>0)]
             full_img[np.where(mask>0)] = tmp_img[np.where(mask>0)]
 
+        mask_sharp = cv2.GaussianBlur(mask_sharp, (0, 0), sigmaX=1, sigmaY=1, borderType=cv2.BORDER_DEFAULT)
         full_mask = full_mask[:, :, np.newaxis]
+        mask_sharp = mask_sharp[:, :, np.newaxis]
+
         #if self.use_sr and img_sr is not None:
         #    img = cv2.convertScaleAbs(img_sr*(1-full_mask) + full_img*full_mask)
         #else:
