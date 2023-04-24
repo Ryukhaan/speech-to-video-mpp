@@ -9,6 +9,9 @@ import numpy as np
 import os.path as osp
 import sys
 
+from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask
+
+
 def add_path(path):
     if path not in sys.path:
         sys.path.insert(0, path)
@@ -82,7 +85,7 @@ class FaceEnhancement(object):
         mask = cv2.GaussianBlur(mask, (101, 101), 11) #4
         return mask.astype(np.float32)
 
-    def process(self, img,  face_enhance=True, aligned=False, bbox=None, possion_blending=False):
+    def process(self, img, ori_img, face_enhance=True, bbox=None, possion_blending=False):
         orig_faces, enhanced_faces = [], []
         #if aligned:
         #    ef = self.facegan.process(img)
@@ -101,7 +104,7 @@ class FaceEnhancement(object):
         
         height, width = img.shape[:2]
         full_mask = np.zeros((height, width), dtype=np.float32)
-        full_img = np.zeros(img.shape, dtype=np.uint8)
+        full_img = np.zeros(ori_img.shape, dtype=np.uint8)
 
         for i, (faceb, facial5points) in enumerate(zip(facebs, landms)):
             if faceb[4]<self.threshold: continue

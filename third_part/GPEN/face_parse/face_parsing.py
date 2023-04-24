@@ -40,7 +40,7 @@ class FaceParse(object):
         im = cv2.resize(im, (self.size, self.size))
         imt = self.img2tensor(im)
         pred_mask, sr_img_tensor = self.faceparse(imt)
-        mask = self.tenor2mask(pred_mask)
+        mask = self.tenor2mask(pred_mask, mm)
 
         return mask
 
