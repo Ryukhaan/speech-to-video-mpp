@@ -208,7 +208,7 @@ def main():
 
     #enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
-    enhancer = FaceEnhancement(args, base_dir='checkpoints', in_size=512, out_size=1024, model='GPEN-BFR-1024', use_sr=False)
+    enhancer = FaceEnhancement(args, base_dir='checkpoints', in_size=1024, model='GPEN-BFR-1024', use_sr=False)
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
         img = imgs[idx]
@@ -279,7 +279,7 @@ def main():
             mouse_mask[y1:y2, x1:x2]= cv2.resize(tmp_mask, (x2 - x1, y2 - y1))[:, :, np.newaxis] / 255.
 
             height, width = ff.shape[:2]
-            restored_img, ff, full_mask = [cv2.resize(x, (512, 512)) for x in (restored_img, ff, np.float32(mouse_mask))]
+            restored_img, ff, full_mask = [cv2.resize(x, (1024, 1024)) for x in (restored_img, ff, np.float32(mouse_mask))]
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
