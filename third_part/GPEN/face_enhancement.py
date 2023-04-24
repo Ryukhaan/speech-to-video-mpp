@@ -60,8 +60,8 @@ class FaceEnhancement(object):
         # the mask for pasting restored faces back
         self.mask = np.zeros((512, 512), np.float32)
         cv2.rectangle(self.mask, (26, 26), (486, 486), (1, 1, 1), -1, cv2.LINE_AA)
-        self.mask = cv2.GaussianBlur(self.mask, (101, 101), 4)
-        self.mask = cv2.GaussianBlur(self.mask, (101, 101), 4)
+        self.mask = cv2.GaussianBlur(self.mask, (101, 101), 11) # 4
+        self.mask = cv2.GaussianBlur(self.mask, (101, 101), 11) # 4
 
         self.kernel = np.array((
                 [0.0625, 0.125, 0.0625],
@@ -78,21 +78,19 @@ class FaceEnhancement(object):
     def mask_postprocess(self, mask, thres=26):
         mask[:thres, :] = 0; mask[-thres:, :] = 0
         mask[:, :thres] = 0; mask[:, -thres:] = 0
-        mask = cv2.GaussianBlur(mask, (101, 101), 4)
-        mask = cv2.GaussianBlur(mask, (101, 101), 4)
+        mask = cv2.GaussianBlur(mask, (101, 101), 11) #4
+        mask = cv2.GaussianBlur(mask, (101, 101), 11) #4
         return mask.astype(np.float32)
 
-    def process(self, img, aligned=False):
+    def process(self, img,  face_enhance=True, aligned=False, bbox=None, possion_blending=False):
         orig_faces, enhanced_faces = [], []
-        if aligned:
-            ef = self.facegan.process(img)
-            orig_faces.append(img)
-            enhanced_faces.append(ef)
-
-            if self.use_sr:
-                ef = self.srmodel.process(ef)
-
-            return ef, orig_faces, enhanced_faces
+        #if aligned:
+        #    ef = self.facegan.process(img)
+        #    orig_faces.append(img)
+        #    enhanced_faces.append(ef)
+        #    if self.use_sr:
+        #        ef = self.srmodel.process(ef)
+        #    return ef, orig_faces, enhanced_faces
 
         if self.use_sr:
             img_sr = self.srmodel.process(img)
@@ -114,13 +112,27 @@ class FaceEnhancement(object):
             of, tfm_inv = warp_and_crop_face(img, facial5points, reference_pts=self.reference_5pts, crop_size=(self.in_size, self.in_size))
             
             # enhance the face
-            ef = self.facegan.process(of)
+            if face_enhance:
+                ef = self.facegan.process(of)
+            else:
+                ef = of
             
             orig_faces.append(of)
             enhanced_faces.append(ef)
-            
-            #tmp_mask = self.mask
-            tmp_mask = self.mask_postprocess(self.faceparser.process(ef)[0]/255.)
+
+            '''
+                        0: 'background' 1: 'skin'   2: 'nose'
+                        3: 'eye_g'  4: 'l_eye'  5: 'r_eye'
+                        6: 'l_brow' 7: 'r_brow' 8: 'l_ear'
+                        9: 'r_ear'  10: 'mouth' 11: 'u_lip'
+                        12: 'l_lip' 13: 'hair'  14: 'hat'
+                        15: 'ear_r' 16: 'neck_l'    17: 'neck'
+                        18: 'cloth'
+            '''
+
+            # no ear, no neck, no hair&hat,  only face region
+            mm = [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            tmp_mask = self.mask_postprocess(self.faceparser.process(ef)[0]/255., mm)
             tmp_mask = cv2.resize(tmp_mask, (self.in_size, self.in_size))
             tmp_mask = cv2.warpAffine(tmp_mask, tfm_inv, (width, height), flags=3)
 
@@ -138,11 +150,28 @@ class FaceEnhancement(object):
             full_img[np.where(mask>0)] = tmp_img[np.where(mask>0)]
 
         full_mask = full_mask[:, :, np.newaxis]
+        #if self.use_sr and img_sr is not None:
+        #    img = cv2.convertScaleAbs(img_sr*(1-full_mask) + full_img*full_mask)
+        #else:
+        #    img = cv2.convertScaleAbs(img*(1-full_mask) + full_img*full_mask)
         if self.use_sr and img_sr is not None:
             img = cv2.convertScaleAbs(img_sr*(1-full_mask) + full_img*full_mask)
-        else:
-            img = cv2.convertScaleAbs(img*(1-full_mask) + full_img*full_mask)
+        elif possion_blending is True:
+            if bbox is not None:
+                y1, y2, x1, x2 = bbox
+                mask_bbox = np.zeros_like(mask_sharp)
+                mask_bbox[y1:y2 - 5, x1:x2] = 1
+                full_img, ori_img, full_mask = [cv2.resize(x, (512, 512)) for x in
+                                            (full_img, ori_img, np.float32(mask_sharp * mask_bbox))]
+            else:
+                full_img, ori_img, full_mask = [cv2.resize(x, (512, 512)) for x in (full_img, ori_img, full_mask)]
 
+            img = Laplacian_Pyramid_Blending_with_mask(full_img, ori_img, full_mask, 6)
+            img = np.clip(img, 0, 255)
+            img = np.uint8(cv2.resize(img, (width, height)))
+        else:
+            img = cv2.convertScaleAbs(ori_img * (1 - full_mask) + full_img * full_mask)
+            img = cv2.convertScaleAbs(ori_img * (1 - mask_sharp) + img * mask_sharp)
         return img, orig_faces, enhanced_faces
         
         

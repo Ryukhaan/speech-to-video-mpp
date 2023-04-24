@@ -36,7 +36,7 @@ class FaceParse(object):
         self.faceparse.to(self.device)
         self.faceparse.eval()
 
-    def process(self, im):
+    def process(self, im, mm=[0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0]):
         im = cv2.resize(im, (self.size, self.size))
         imt = self.img2tensor(im)
         pred_mask, sr_img_tensor = self.faceparse(imt)
@@ -62,7 +62,8 @@ class FaceParse(object):
         img_tensor = torch.from_numpy(img.transpose(2, 0, 1)).unsqueeze(0).to(self.device)
         return img_tensor.float()
 
-    def tenor2mask(self, tensor):
+    def tenor2mask(self, tensor, masks):
+        # Change self.MASK_COLORMAP to masks
         if len(tensor.shape) < 4:
             tensor = tensor.unsqueeze(0)
         if tensor.shape[1] > 1:
@@ -73,7 +74,8 @@ class FaceParse(object):
         for t in tensor:
             #tmp_img = np.zeros(tensor.shape[1:] + (3,))
             tmp_img = np.zeros(tensor.shape[1:])
-            for idx, color in enumerate(self.MASK_COLORMAP):
+            # Change is in this loop
+            for idx, color in enumerate(masks):
                 tmp_img[t == idx] = color
             color_maps.append(tmp_img.astype(np.uint8))
         return color_maps
