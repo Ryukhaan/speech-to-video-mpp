@@ -290,7 +290,7 @@ def main():
             ff = xf.copy()
             #print(ff.shape, pp.shape)
             ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
-            cv2.imwrite("./results/{}.png".format(delta), pp)
+            #cv2.imwrite("./results/{}.png".format(delta), pp)
             out.write(ff)
     out.release()
     
