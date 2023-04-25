@@ -286,7 +286,7 @@ def main():
 
             delta+=1
             #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
-            pp, orig_face, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
+            pp, orig_face, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
             #print(pp.shape, y1, y2, x1, x2, ff.shape)
             ff = xf.copy()
             #print(ff.shape, pp.shape)
