@@ -76,7 +76,7 @@ class VGGPerceptualLoss(torch.nn.Module):
         return loss
 
 def loss_Lnet(y_pred, y_true):
-    y_true = torchvision.transforms.Resize((96,96))(y_true)
+    y_true = torchvision.transforms.Resize((96,96))(y_true).to(args.device)
     L1 = torch.nn.L1Loss()
     l1_val = L1(y_pred, y_true)
 
