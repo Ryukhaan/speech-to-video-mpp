@@ -37,10 +37,10 @@ class VGGPerceptualLoss(torch.nn.Module):
     def __init__(self, resize=True):
         super(VGGPerceptualLoss, self).__init__()
         blocks = []
-        blocks.append(torchvision.models.vgg16(pretrained=True).features[:4].eval())
-        blocks.append(torchvision.models.vgg16(pretrained=True).features[4:9].eval())
-        blocks.append(torchvision.models.vgg16(pretrained=True).features[9:16].eval())
-        blocks.append(torchvision.models.vgg16(pretrained=True).features[16:23].eval())
+        blocks.append(torchvision.models.vgg16(pretrained=True).features[:4].eval().to('cuda'))
+        blocks.append(torchvision.models.vgg16(pretrained=True).features[4:9].eval().to('cuda'))
+        blocks.append(torchvision.models.vgg16(pretrained=True).features[9:16].eval().to('cuda'))
+        blocks.append(torchvision.models.vgg16(pretrained=True).features[16:23].eval().to('cuda'))
         for bl in blocks:
             for p in bl.parameters():
                 p.requires_grad = False
@@ -327,7 +327,7 @@ def train():
 
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
-        img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
+        #img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
 
         incomplete, reference = torch.split(img_batch, 3, dim=1)
         #print(incomplete.shape, reference.shape)
