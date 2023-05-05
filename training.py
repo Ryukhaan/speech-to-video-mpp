@@ -300,7 +300,7 @@ def train():
             # pred, _, _ = enhancer.process(img, aligned=True)
             pred, _, _ = enhancer.process(img, img, face_enhance=True, possion_blending=False)
             imgs_enhanced.append(pred)
-        np.save('temp/' + base_name + '_stablized.npy', imgs_enhanced)
+        np.save('temp/' + base_name + '_enhanced5.npy', imgs_enhanced)
     else:
         imgs_enhanced = np.load('temp/' + base_name + '_enhanced5.npy')
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
