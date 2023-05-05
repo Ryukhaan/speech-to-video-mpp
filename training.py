@@ -76,7 +76,8 @@ class VGGPerceptualLoss(torch.nn.Module):
         return loss
 
 def loss_Lnet(y_pred, y_true):
-    y_true = torchvision.transforms.Resize((96,96))(y_true).to(args.device)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    y_true = torchvision.transforms.Resize((96,96))(y_true).to(device)
     L1 = torch.nn.L1Loss()
     l1_val = L1(y_pred, y_true)
 
@@ -292,11 +293,15 @@ def train():
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
     enhancer = FaceEnhancement(args, base_dir='checkpoints', in_size=1024, model='GPEN-BFR-1024', use_sr=False)
     imgs_enhanced = []
-    for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
-        img = imgs[idx]
-        # pred, _, _ = enhancer.process(img, aligned=True)
-        pred, _, _ = enhancer.process(img, img, face_enhance=True, possion_blending=False)
-        imgs_enhanced.append(pred)
+    if not os.path.isfile('temp/' + base_name + '_enhanced5.npy') or args.re_preprocess:
+        for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
+            img = imgs[idx]
+            # pred, _, _ = enhancer.process(img, aligned=True)
+            pred, _, _ = enhancer.process(img, img, face_enhance=True, possion_blending=False)
+            imgs_enhanced.append(pred)
+        np.save('temp/' + base_name + '_stablized.npy', imgs_enhanced)
+    else:
+        imgs_enhanced = np.load('temp/' + base_name + '_enhanced5.npy')
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
 
     frame_h, frame_w = full_frames[0].shape[:-1]
@@ -338,7 +343,7 @@ def train():
         loss_E.backward()
 
         optimizer_LNet.step()
-        optimizer_LNet.step()
+        optimizer_ENet.step()
 
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
