@@ -292,11 +292,15 @@ def train():
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
     enhancer = FaceEnhancement(args, base_dir='checkpoints', in_size=1024, model='GPEN-BFR-1024', use_sr=False)
     imgs_enhanced = []
-    for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
-        img = imgs[idx]
-        # pred, _, _ = enhancer.process(img, aligned=True)
-        pred, _, _ = enhancer.process(img, img, face_enhance=True, possion_blending=False)
-        imgs_enhanced.append(pred)
+    if not os.path.isfile('temp/' + base_name + '_enhanced5.npy') or args.re_preprocess:
+        for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
+            img = imgs[idx]
+            # pred, _, _ = enhancer.process(img, aligned=True)
+            pred, _, _ = enhancer.process(img, img, face_enhance=True, possion_blending=False)
+            imgs_enhanced.append(pred)
+        np.save('temp/' + base_name + '_stablized.npy', imgs_enhanced)
+    else:
+        imgs_enhanced = np.load('temp/' + base_name + '_enhanced5.npy')
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
 
     frame_h, frame_w = full_frames[0].shape[:-1]
