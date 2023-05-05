@@ -337,5 +337,69 @@ def train():
         optimizer_LNet.step()
         optimizer_LNet.step()
 
+def datagen(frames, mels, full_frames, frames_pil, cox):
+    img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
+    base_name = args.face.split('/')[-1]
+    refs = []
+    image_size = 256
+
+    # original frames
+    kp_extractor = KeypointExtractor()
+    fr_pil = [Image.fromarray(frame) for frame in frames]
+    lms = kp_extractor.extract_keypoint(fr_pil, 'temp/'+base_name+'x12_landmarks.txt')
+    frames_pil = [ (lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
+    crops, orig_images, quads  = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
+    inverse_transforms = [calc_alignment_coefficients(quad + 0.5, [[0, 0], [0, image_size], [image_size, image_size], [image_size, 0]]) for quad in quads]
+    del kp_extractor.detector
+
+    oy1,oy2,ox1,ox2 = cox
+    face_det_results = face_detect(full_frames, args, jaw_correction=True)
+
+    for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames, face_det_results):
+        imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
+            cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
+
+        ff = full_frame.copy()
+        ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
+        oface, coords = face_det
+        y1, y2, x1, x2 = coords
+        refs.append(ff[y1: y2, x1:x2])
+
+    for i, m in enumerate(mels):
+        idx = 0 if args.static else i % len(frames)
+        frame_to_save = frames[idx].copy()
+        face = refs[idx]
+        oface, coords = face_det_results[idx].copy()
+
+        face = cv2.resize(face, (args.img_size, args.img_size))
+        oface = cv2.resize(oface, (args.img_size, args.img_size))
+
+        img_batch.append(oface)
+        ref_batch.append(face)
+        mel_batch.append(m)
+        coords_batch.append(coords)
+        frame_batch.append(frame_to_save)
+        full_frame_batch.append(full_frames[idx].copy())
+
+        if len(img_batch) >= args.LNet_batch_size:
+            img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
+            img_masked = img_batch.copy()
+            img_original = img_batch.copy()
+            img_masked[:, args.img_size//2:] = 0
+            img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
+            mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
+
+            yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+            img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
+
+    if len(img_batch) > 0:
+        img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
+        img_masked = img_batch.copy()
+        img_original = img_batch.copy()
+        img_masked[:, args.img_size//2:] = 0
+        img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
+        mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
+        yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+
 if __name__ == "__main__":
     train()
