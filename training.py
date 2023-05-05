@@ -337,3 +337,6 @@ def train():
 
             optimizer_LNet.step()
             optimizer_LNet.step()
+
+if __name__ == "__main__":
+    train()
