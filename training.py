@@ -76,9 +76,7 @@ class VGGPerceptualLoss(torch.nn.Module):
         return loss
 
 def loss_Lnet(y_pred, y_true):
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    y_true = torchvision.transforms.Resize((96,96))(y_true).to(device)
-    y_pred = y_pred.to(device)
+    y_true = torchvision.transforms.Resize((96,96))(y_true)
     L1 = torch.nn.L1Loss()
     l1_val = L1(y_pred, y_true)
 
@@ -336,7 +334,8 @@ def train():
         pred, low_res = model(mel_batch, img_batch, reference)
         pred = torch.clamp(pred, 0, 1)
         #print(pred.shape, low_res.shape)
-
+        low_res.to(device)
+        reference.to(device)
         loss_L = loss_Lnet(low_res, reference)
         loss_L.backward()
 
