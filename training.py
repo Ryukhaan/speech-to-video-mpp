@@ -325,9 +325,10 @@ def train():
         img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
 
         incomplete, reference = torch.split(img_batch, 3, dim=1)
+        print(incomplete.shape, reference.shape)
         pred, low_res = model(mel_batch, img_batch, reference)
         pred = torch.clamp(pred, 0, 1)
-
+        print(pred.shape, low_res.shape)
         loss_L = loss_Lnet(reference, low_res)
         loss_L.backward()
 
