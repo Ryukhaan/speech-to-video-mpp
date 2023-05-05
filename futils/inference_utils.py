@@ -2,7 +2,7 @@ import numpy as np
 import cv2, argparse, torch
 import torchvision.transforms.functional as TF
 
-from models import load_network, load_DNet
+from models import load_network, load_DNet, load_training_networks
 from tqdm import tqdm
 from PIL import Image
 from scipy.spatial import ConvexHull
