@@ -78,6 +78,7 @@ class VGGPerceptualLoss(torch.nn.Module):
 def loss_Lnet(y_pred, y_true):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     y_true = torchvision.transforms.Resize((96,96))(y_true).to(device)
+    y_pred = y_pred.to(device)
     L1 = torch.nn.L1Loss()
     l1_val = L1(y_pred, y_true)
 
