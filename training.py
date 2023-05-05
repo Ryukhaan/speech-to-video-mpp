@@ -76,6 +76,7 @@ class VGGPerceptualLoss(torch.nn.Module):
         return loss
 
 def loss_Lnet(y_pred, y_true):
+    y_true = torchvision.transforms.Resize((96,96))(y_true)
     L1 = torch.nn.L1Loss()
     l1_val = L1(y_pred, y_true)
 
@@ -325,14 +326,15 @@ def train():
         img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
 
         incomplete, reference = torch.split(img_batch, 3, dim=1)
-        print(incomplete.shape, reference.shape)
+        #print(incomplete.shape, reference.shape)
         pred, low_res = model(mel_batch, img_batch, reference)
         pred = torch.clamp(pred, 0, 1)
-        print(pred.shape, low_res.shape)
-        loss_L = loss_Lnet(reference, low_res)
+        #print(pred.shape, low_res.shape)
+
+        loss_L = loss_Lnet(low_res, reference)
         loss_L.backward()
 
-        loss_E = loss_Enet(reference, pred)
+        loss_E = loss_Enet(pred, reference)
         loss_E.backward()
 
         optimizer_LNet.step()
