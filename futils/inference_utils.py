@@ -226,6 +226,11 @@ def load_model(args, device):
     model = load_network(args).to(device)
     return D_Net, model
 
+def load_train_model(args, device):
+    torch.cuda.empty_cache()
+    D_Net, L_Net, E_Net =  load_training_network(args).to(device)
+    return D_Net, L_Net, E_Net
+
 def normalize_kp(kp_source, kp_driving, kp_driving_initial, adapt_movement_scale=False,
                  use_relative_movement=False, use_relative_jacobian=False):
     if adapt_movement_scale:
