@@ -334,8 +334,8 @@ def train():
         pred, low_res = model(mel_batch, img_batch, reference)
         pred = torch.clamp(pred, 0, 1)
         #print(pred.shape, low_res.shape)
-        low_res.to(device)
-        reference.to(device)
+        low_res = low_res.to(device)
+        reference = reference.to(device)
         loss_L = loss_Lnet(low_res, reference)
         loss_L.backward()
 
