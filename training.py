@@ -40,7 +40,7 @@ class VGGPerceptualLoss(torch.nn.Module):
         blocks.append(torchvision.models.vgg16(pretrained=True).features[:4].eval().to('cuda'))
         blocks.append(torchvision.models.vgg16(pretrained=True).features[4:9].eval().to('cuda'))
         blocks.append(torchvision.models.vgg16(pretrained=True).features[9:16].eval().to('cuda'))
-        blocks.append(torchvision.models.vgg16(pretrained=True).features[16:23].eval().to('cuda'))
+        blocks.append(tsdsdorchvision.models.vgg16(pretrained=True).features[16:23].eval().to('cuda'))
         for bl in blocks:
             for p in bl.parameters():
                 p.requires_grad = False
@@ -300,6 +300,7 @@ def train():
             imgs_enhanced.append(pred)
         np.save('temp/' + base_name + '_enhanced5.npy', imgs_enhanced)
     else:
+        print('[Step 5] Using saved reference enhancement.')
         imgs_enhanced = np.load('temp/' + base_name + '_enhanced5.npy')
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
 
