@@ -40,7 +40,7 @@ class VGGPerceptualLoss(torch.nn.Module):
         blocks.append(torchvision.models.vgg16(pretrained=True).features[:4].eval().to('cuda'))
         blocks.append(torchvision.models.vgg16(pretrained=True).features[4:9].eval().to('cuda'))
         blocks.append(torchvision.models.vgg16(pretrained=True).features[9:16].eval().to('cuda'))
-        blocks.append(tsdsdorchvision.models.vgg16(pretrained=True).features[16:23].eval().to('cuda'))
+        blocks.append(torchvision.models.vgg16(pretrained=True).features[16:23].eval().to('cuda'))
         for bl in blocks:
             for p in bl.parameters():
                 p.requires_grad = False
