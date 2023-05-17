@@ -40,7 +40,7 @@ class VGGPerceptualLoss(torch.nn.Module):
         blocks.append(torchvision.models.vgg16(pretrained=True).features[:4].eval().to('cuda'))
         blocks.append(torchvision.models.vgg16(pretrained=True).features[4:9].eval().to('cuda'))
         blocks.append(torchvision.models.vgg16(pretrained=True).features[9:16].eval().to('cuda'))
-        blocks.append(tsdsdorchvision.models.vgg16(pretrained=True).features[16:23].eval().to('cuda'))
+        blocks.append(torchvision.models.vgg16(pretrained=True).features[16:23].eval().to('cuda'))
         for bl in blocks:
             for p in bl.parameters():
                 p.requires_grad = False
@@ -302,8 +302,13 @@ def train():
     else:
         print('[Step 5] Using saved reference enhancement.')
         imgs_enhanced = np.load('temp/' + base_name + '_enhanced5.npy')
-    gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
 
+    if not os.path.isfile('temp/' + base_name + '_enhanced5.npy') or args.re_preprocess:
+        gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
+        np.save('temp/' + base_name + '_gen.npy', gen)
+    else:
+        print('Using saved generator.')
+        gen = np.load('temp/' + base_name + '_gen.npy')
     frame_h, frame_w = full_frames[0].shape[:-1]
     out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
                           (frame_w, frame_h))
