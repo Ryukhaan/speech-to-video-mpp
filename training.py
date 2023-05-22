@@ -75,38 +75,47 @@ class VGGPerceptualLoss(torch.nn.Module):
                 loss += torch.nn.functional.l1_loss(gram_x, gram_y)
         return loss
 
-def loss_Lnet(y_pred, y_true):
-    y_true = torchvision.transforms.Resize((96,96))(y_true)
-    L1 = torch.nn.L1Loss()
-    l1_val = L1(y_pred, y_true)
+class LNetLoss(torch.nn.Module):
+    def __init__(self):
+        super(LNetLoss, self).__init__()
 
-    L_perceptual = VGGPerceptualLoss()
-    lp_val = L_perceptual(y_pred, y_true)
+    def forward(self, y_pred, y_true):
+        y_true = torchvision.transforms.Resize((96, 96))(y_true)
+        L1 = torch.nn.L1Loss()
+        l1_val = L1(y_pred, y_true)
 
-    #L_sync = 0.0
-    lsync_val = 0.0 #L_sync(y_pred, y_true)
+        L_perceptual = VGGPerceptualLoss()
+        lp_val = L_perceptual(y_pred, y_true)
 
-    lambda_1 = 1.
-    lambda_p = 1.
-    lambda_sync = 0.3
-    return lambda_1 * l1_val + lambda_p * lp_val + lambda_sync * lsync_val
+        # L_sync = 0.0
+        lsync_val = 0.0  # L_sync(y_pred, y_true)
 
-def loss_Enet(y_pred, y_true):
-    L1 = torch.nn.L1Loss()
-    l1_val = L1(y_pred, y_true)
+        lambda_1 = 1.
+        lambda_p = 1.
+        lambda_sync = 0.3
+        return lambda_1 * l1_val + lambda_p * lp_val + lambda_sync * lsync_val
 
-    L_perceptual = VGGPerceptualLoss()
-    lp_val = L_perceptual(y_pred, y_true)
+class ENetLoss(torch.nn.Module):
+    def __init__(self):
+        super(ENetLoss, self).__init__()
 
-    # TODO : implement advsersial loss and id arcface loss
-    ladv_val = 0.0
-    lid_val = 0.0
+    def forward(self, y_pred, y_true):
+        L1 = torch.nn.L1Loss()
+        l1_val = L1(y_pred, y_true)
 
-    lambda_1 = 0.2
-    lambda_p = 1.
-    lambda_adv = 100.
-    lambda_id = 0.4
-    return lambda_1 * l1_val + lambda_p * lp_val + lambda_adv * ladv_val + lambda_id * lid_val
+        L_perceptual = VGGPerceptualLoss()
+        lp_val = L_perceptual(y_pred, y_true)
+
+        # TODO : implement advsersial loss and id arcface loss
+        ladv_val = 0.0
+        lid_val = 0.0
+
+        lambda_1 = 0.2
+        lambda_p = 1.
+        lambda_adv = 100.
+        lambda_id = 0.4
+        return lambda_1 * l1_val + lambda_p * lp_val + lambda_adv * ladv_val + lambda_id * lid_val
+
 def train():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     gc.collect()
@@ -324,7 +333,8 @@ def train():
 
     optimizer_LNet = torch.optim.Adam(L_Net.parameters(), lr=0.001)
     optimizer_ENet = torch.optim.Adam(model.parameters(), lr=0.001)
-
+    lnet_criterion = LNetLoss()
+    enet_criterion = ENetLoss()
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
@@ -342,10 +352,10 @@ def train():
         #print(pred.shape, low_res.shape)
         low_res = low_res.to(device)
         reference = reference.to(device)
-        loss_L = loss_Lnet(low_res, reference)
+        loss_L = lnet_criterion(low_res, reference)
         loss_L.backward()
 
-        loss_E = loss_Enet(pred, reference)
+        loss_E = enet_criterion(pred, reference)
         loss_E.backward()
 
         optimizer_LNet.step()
