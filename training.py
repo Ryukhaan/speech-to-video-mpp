@@ -352,7 +352,7 @@ def train():
         print(incomplete.shape, reference.shape, pred.shape, low_res.shape)
         low_res = low_res.to(device)
         reference = reference.to(device)
-        loss_L = lnet_criterion(low_res, reference)
+        loss_L = lnet_criterion(pred, reference)
         loss_L.backward()
 
         loss_E = enet_criterion(pred, reference)
