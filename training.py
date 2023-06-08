@@ -315,7 +315,8 @@ def train():
 
     if not os.path.isfile('temp/' + base_name + '_gen.npy') or args.re_preprocess:
         gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
-        pickle.dumps(gen, open('temp/' + base_name + '_gen.npy'), 'wb')
+        l_gen = [(img_batch, mel_batch, frames, coords, img_original, f_frames) for (img_batch, mel_batch, frames, coords, img_original, f_frames in gen]
+        pickle.dumps(l_gen, open('temp/' + base_name + '_gen.npy'), 'wb')
         #np.save('temp/' + base_name + '_gen.npy', gen)
     else:
         print('Using saved generator.')
