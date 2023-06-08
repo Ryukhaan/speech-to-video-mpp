@@ -356,6 +356,7 @@ def train():
         pred, low_res = model(mel_batch, img_batch, reference)
         #pred = torch.clamp(pred, 0, 1).to(device)
         print(incomplete.shape, reference.shape, pred.shape, low_res.shape)
+        print(type(incomplete), type(reference), type(pred), type(low_res))
         #low_res = low_res.to(device)
         #reference = reference.to(device)
         loss_L = lnet_criterion(pred, reference)
