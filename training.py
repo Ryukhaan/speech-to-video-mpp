@@ -12,6 +12,7 @@ from scipy.io import loadmat
 import matplotlib.pyplot as plt
 from scipy.signal import correlate
 
+import pickle
 sys.path.append('third_part')
 # 3dmm extraction
 from third_part.face3d.util.preprocess import align_img
@@ -312,12 +313,14 @@ def train():
         print('[Step 5] Using saved reference enhancement.')
         imgs_enhanced = np.load('temp/' + base_name + '_enhanced5.npy')
 
-    #if not os.path.isfile('temp/' + base_name + '_gen.npy') or args.re_preprocess:
-    gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
-    #    np.save('temp/' + base_name + '_gen.npy', gen)
-    #else:
-    #    print('Using saved generator.')
-    #    gen = np.load('temp/' + base_name + '_gen.npy')
+    if not os.path.isfile('temp/' + base_name + '_gen.npy') or args.re_preprocess:
+        gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
+        pickle.dumps(gen, open('temp/' + base_name + '_gen.npy'), 'wb')
+        #np.save('temp/' + base_name + '_gen.npy', gen)
+    else:
+        print('Using saved generator.')
+        gen = pickle.load(open('temp/' + base_name + '_gen.npy'), 'rb')
+        #gen = np.load('temp/' + base_name + '_gen.npy')
     frame_h, frame_w = full_frames[0].shape[:-1]
     out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
                           (frame_w, frame_h))
