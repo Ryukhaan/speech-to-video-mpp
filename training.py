@@ -319,7 +319,7 @@ def train():
         #np.save('temp/' + base_name + '_gen.npy', gen)
     else:
         print('Using saved generator.')
-        gen = pickle.load(open('temp/' + base_name + '_gen.npy', 'rb')
+        gen = pickle.load(open('temp/' + base_name + '_gen.npy', 'rb'))
         #gen = np.load('temp/' + base_name + '_gen.npy')
     frame_h, frame_w = full_frames[0].shape[:-1]
     out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
