@@ -357,11 +357,11 @@ def train():
         print(type(incomplete), type(reference), type(pred), type(low_res))
         #low_res = low_res.to(device)
         #reference = reference.to(device)
-        loss_L = lnet_criterion(pred, reference)
-        loss_L.required_grad = True
+        loss_L = torch.nn.L1Loss()(pred, reference)
+        #loss_L.required_grad = True
         loss_L.backward()
 
-        loss_E = enet_criterion(pred, reference)
+        loss_E = torch.nn.L1Loss()(pred, reference)
         loss_E.required_grad = True
         loss_E.backward()
 
