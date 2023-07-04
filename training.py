@@ -382,8 +382,8 @@ def train():
         #loss_E.required_grad = True
         #loss_E.backward()
 
-        optimizer_LNet.step()
-        #optimizer_ENet.step()
+        #optimizer_LNet.step()
+        optimizer_ENet.step()
 
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
