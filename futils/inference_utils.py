@@ -227,7 +227,7 @@ def load_model(args, device):
     return D_Net, model
 
 def save_checkpoint(path, model):
-    torch.save(model, path)
+    torch.save(model.state_dict(), path)
 
 def load_train_model(args, device):
     torch.cuda.empty_cache()
