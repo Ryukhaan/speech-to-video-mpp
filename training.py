@@ -350,11 +350,7 @@ def train():
     optimizer_ENet = torch.optim.Adam(model.parameters(), lr=0.001)
     lnet_criterion = torch.nn.L1Loss() #LNetLoss()
     enet_criterion = torch.nn.L1Loss() #ENetLoss()
-    #summary(model, ((1, 80, 16, 6, 384, 384, 3, 384, 384)))
-    #print(model)
-    own_net = OwnNet()
-    own_net.to(device)
-    optimizer_ENet = torch.optim.Adam(own_net.parameters(), lr=0.001)
+
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
@@ -365,12 +361,14 @@ def train():
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
         #img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
         incomplete, reference = torch.split(img_batch, 3, dim=1)
-        #pred, low_res = model(mel_batch, img_batch, reference)
-        own_net.zero_grad()
-        t = own_net(reference)
-        t.requires_grad
-        reference.requires_grad
-        loss_L = lnet_criterion(t, reference)
+        pred, low_res = model(mel_batch, img_batch, reference)
+
+        #own_net.zero_grad()
+        #t = own_net(reference)
+        #t.requires_grad
+        #reference.requires_grad
+
+        loss_L = lnet_criterion(pred, reference)
         loss_L.requires_grad = True
         loss_L.backward()
 
@@ -385,8 +383,8 @@ def train():
         #loss_E.required_grad = True
         #loss_E.backward()
 
-        #optimizer_LNet.step()
-        optimizer_ENet.step()
+        optimizer_LNet.step()
+        #optimizer_ENet.step()
 
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
