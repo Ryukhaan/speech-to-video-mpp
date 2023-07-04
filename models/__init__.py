@@ -3,6 +3,7 @@ from models.DNet import DNet
 from models.LNet import LNet
 from models.ENet import ENet
 
+from torchsummary import summary
 
 def _load(checkpoint_path):
     checkpoint = torch.load(checkpoint_path)
@@ -36,6 +37,7 @@ def load_training_networks(args):
     checkpoint =  torch.load(args.DNet_path, map_location=lambda storage, loc: storage)
     D_Net.load_state_dict(checkpoint['net_G_ema'], strict=False)
     L_net = LNet()
+    summary(L_net, (3, 384, 384))
     L_net = load_checkpoint(args.LNet_path, L_net)
     E_net = ENet(lnet=L_net)
     model = load_checkpoint(args.ENet_path, E_net)
