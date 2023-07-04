@@ -34,6 +34,17 @@ warnings.filterwarnings("ignore")
 
 args = options()
 
+class OwnNet(torch.nn.Module):
+
+    def __init__(self):
+        super(OwnNet, self).__init__()
+        # 1 input image channel, 6 output channels, 5x5 square convolution
+        # kernel
+        self.conv1 = torch.nn.Conv2d(3, 3, 5)
+    def forward(self, x):
+        # Max pooling over a (2, 2) window
+        return self.conv1(x)
+
 class VGGPerceptualLoss(torch.nn.Module):
     def __init__(self, resize=True):
         super(VGGPerceptualLoss, self).__init__()
@@ -341,6 +352,8 @@ def train():
     enet_criterion = torch.nn.L1Loss() #ENetLoss()
     #summary(model, ((1, 80, 16, 6, 384, 384, 3, 384, 384)))
     #print(model)
+    own_net = OwnNet()
+    optimizer_ENet = torch.optim.Adam(own_net.parameters(), lr=0.001)
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
@@ -353,19 +366,22 @@ def train():
         incomplete, reference = torch.split(img_batch, 3, dim=1)
         print(mel_batch.shape, img_batch.shape, reference.shape)
         pred, low_res = model(mel_batch, img_batch, reference)
-        #pred = torch.clamp(pred, 0, 1).to(device)
-
-        #low_res = low_res.to(device)
-        #reference = reference.to(device)
-        loss_L = torch.nn.L1Loss()(pred, reference)
-        #loss_L.required_grad = True
+        t = own_net(reference)
+        loss_L = torch.nn.L1Loss()(t, reference)
         loss_L.backward()
 
-        loss_E = torch.nn.L1Loss()(pred, reference)
-        loss_E.required_grad = True
-        loss_E.backward()
+        #pred = torch.clamp(pred, 0, 1).to(device)
+        #low_res = low_res.to(device)
+        #reference = reference.to(device)
+        #loss_L = torch.nn.L1Loss()(pred, reference)
+        #loss_L.required_grad = True
+        #loss_L.backward()
 
-        optimizer_LNet.step()
+        #loss_E = torch.nn.L1Loss()(pred, reference)
+        #loss_E.required_grad = True
+        #loss_E.backward()
+
+        #optimizer_LNet.step()
         optimizer_ENet.step()
 
 def datagen(frames, mels, full_frames, frames_pil, cox):
