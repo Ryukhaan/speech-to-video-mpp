@@ -28,7 +28,8 @@ from futils import audio
 from futils.ffhq_preprocess import Croper
 from futils.alignment_stit import crop_faces, calc_alignment_coefficients, paste_image
 from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, options, split_coeff, \
-                                  trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict
+                                  trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, \
+                                    save_checkpoint
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -388,6 +389,7 @@ def train():
         optimizer_LNet.step()
         #optimizer_ENet.step()
     save_checkpoint(args.LNet_path + "_test.pth", L_Net)
+
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
     base_name = args.face.split('/')[-1]
