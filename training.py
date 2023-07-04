@@ -340,7 +340,7 @@ def train():
     optimizer_ENet = torch.optim.Adam(model.parameters(), lr=0.001)
     lnet_criterion = torch.nn.L1Loss() #LNetLoss()
     enet_criterion = torch.nn.L1Loss() #ENetLoss()
-    summary(model, ((1, 80, 16), (6, 384, 384), (3, 384, 384)))
+    summary(model, ((1, 80, 16, 6, 384, 384, 3, 384, 384)))
     #print(model)
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
