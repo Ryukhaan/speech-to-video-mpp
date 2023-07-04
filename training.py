@@ -353,6 +353,7 @@ def train():
     #summary(model, ((1, 80, 16, 6, 384, 384, 3, 384, 384)))
     #print(model)
     own_net = OwnNet()
+    own_net.to(device)
     optimizer_ENet = torch.optim.Adam(own_net.parameters(), lr=0.001)
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
