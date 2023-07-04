@@ -12,14 +12,17 @@ def _load(checkpoint_path):
 def load_checkpoint(path, model):
     print("Load checkpoint from: {}".format(path))
     checkpoint = _load(path)
-    s = checkpoint["state_dict"] if 'arcface' not in path else checkpoint
-    new_s = {}
-    for k, v in s.items():
-        if 'low_res' in k:
-            continue
-        else:
-            new_s[k.replace('module.', '')] = v
-    model.load_state_dict(new_s, strict=False)
+    try:
+        s = checkpoint["state_dict"] if 'arcface' not in path else checkpoint
+        new_s = {}
+        for k, v in s.items():
+            if 'low_res' in k:
+                continue
+            else:
+                new_s[k.replace('module.', '')] = v
+        model.load_state_dict(new_s, strict=False)
+    except TypeError:
+        model.load_state_dict(torch.load(path))
     return model
 
 def load_network(args):
