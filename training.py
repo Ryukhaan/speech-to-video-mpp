@@ -340,7 +340,7 @@ def train():
     optimizer_ENet = torch.optim.Adam(model.parameters(), lr=0.001)
     lnet_criterion = torch.nn.L1Loss() #LNetLoss()
     enet_criterion = torch.nn.L1Loss() #ENetLoss()
-    summary(model, (1, 256,256))
+    #summary(model, [1, 256,256])
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
@@ -350,7 +350,7 @@ def train():
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
         #img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
-
+        print(mel_batch.shape, img_batch.shape, reference.shape)
         incomplete, reference = torch.split(img_batch, 3, dim=1)
 
         pred, low_res = model(mel_batch, img_batch, reference)
