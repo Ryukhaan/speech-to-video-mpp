@@ -366,6 +366,7 @@ def train():
         #img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
         incomplete, reference = torch.split(img_batch, 3, dim=1)
         #pred, low_res = model(mel_batch, img_batch, reference)
+        own_net.zero_grad()
         t = own_net(reference)
         loss_L = torch.nn.L1Loss()(t, reference)
         loss_L.backward()
