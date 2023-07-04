@@ -387,7 +387,7 @@ def train():
 
         optimizer_LNet.step()
         #optimizer_ENet.step()
-
+    save_checkpoint(args.LNet_path + "_test.pth", L_Net)
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
     base_name = args.face.split('/')[-1]

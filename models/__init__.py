@@ -22,6 +22,11 @@ def load_checkpoint(path, model):
     model.load_state_dict(new_s, strict=False)
     return model
 
+def _save(model, checkpoint_path):
+    torch.save(model, checkpoint_path)
+def save_checkpoint(path, model):
+    torch.save(model, path)
+
 def load_network(args):
     torch.cuda.empty_cache()
     L_net = LNet()
