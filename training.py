@@ -40,7 +40,7 @@ class OwnNet(torch.nn.Module):
         super(OwnNet, self).__init__()
         # 1 input image channel, 6 output channels, 5x5 square convolution
         # kernel
-        self.conv1 = torch.nn.Conv2d(3, 3, 5)
+        self.conv1 = torch.nn.Conv2d(3, 3, 5, padding=1)
     def forward(self, x):
         # Max pooling over a (2, 2) window
         return self.conv1(x)
