@@ -341,7 +341,7 @@ def train():
     lnet_criterion = torch.nn.L1Loss() #LNetLoss()
     enet_criterion = torch.nn.L1Loss() #ENetLoss()
     #summary(model, [(1, 80, 16), (6, 384, 384), (3, 384, 384)])
-    print(model.summary())
+    print(model)
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
