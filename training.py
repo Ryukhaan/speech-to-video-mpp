@@ -352,6 +352,7 @@ def train():
     enet_criterion = torch.nn.L1Loss() #ENetLoss()
     #summary(model, ((1, 80, 16, 6, 384, 384, 3, 384, 384)))
     #print(model)
+
     own_net = OwnNet()
     own_net.to(device)
     optimizer_ENet = torch.optim.Adam(own_net.parameters(), lr=0.001)
@@ -359,7 +360,7 @@ def train():
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
 
-        optimizer_LNet.zero_grad()
+        optimizer_ENet.zero_grad()
 
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
@@ -370,7 +371,7 @@ def train():
         #pred, low_res = model(mel_batch, img_batch, reference)
         own_net.zero_grad()
         t = own_net(reference)
-        loss_L = torch.nn.L1Loss()(t, reference)
+        loss_L = lnet_criterion(t, reference)
         loss_L.backward()
 
         #pred = torch.clamp(pred, 0, 1).to(device)
