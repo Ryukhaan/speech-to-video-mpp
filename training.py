@@ -40,7 +40,7 @@ class OwnNet(torch.nn.Module):
         super(OwnNet, self).__init__()
         # 1 input image channel, 6 output channels, 5x5 square convolution
         # kernel
-        self.conv1 = torch.nn.Conv2d(3, 3, 5, padding=1)
+        self.conv1 = torch.nn.Conv2d(3, 3, 3, padding=1)
     def forward(self, x):
         # Max pooling over a (2, 2) window
         return self.conv1(x)
@@ -365,8 +365,7 @@ def train():
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
         #img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
         incomplete, reference = torch.split(img_batch, 3, dim=1)
-        print(mel_batch.shape, img_batch.shape, reference.shape)
-        pred, low_res = model(mel_batch, img_batch, reference)
+        #pred, low_res = model(mel_batch, img_batch, reference)
         t = own_net(reference)
         loss_L = torch.nn.L1Loss()(t, reference)
         loss_L.backward()
