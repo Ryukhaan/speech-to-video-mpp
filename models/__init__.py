@@ -24,6 +24,7 @@ def load_checkpoint(path, model):
 
 def _save(model, checkpoint_path):
     torch.save(model, checkpoint_path)
+
 def save_checkpoint(path, model):
     torch.save(model, path)
 
