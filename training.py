@@ -348,7 +348,7 @@ def train():
 
     optimizer_LNet = torch.optim.Adam(L_Net.parameters(), lr=0.001)
     optimizer_ENet = torch.optim.Adam(model.parameters(), lr=0.001)
-    lnet_criterion = torch.nn.L1Loss(requires_grad=True) #LNetLoss()
+    lnet_criterion = torch.nn.L1Loss() #LNetLoss()
     enet_criterion = torch.nn.L1Loss() #ENetLoss()
     #summary(model, ((1, 80, 16, 6, 384, 384, 3, 384, 384)))
     #print(model)
@@ -373,6 +373,7 @@ def train():
         t.requires_grad
         reference.requires_grad
         loss_L = lnet_criterion(t, reference)
+        loss_L.requires_grad = True
         loss_L.backward()
 
         #pred = torch.clamp(pred, 0, 1).to(device)
