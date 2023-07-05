@@ -339,13 +339,11 @@ def train():
     optimizer_LNet = torch.optim.Adam(L_Net.parameters(), lr=0.001)
     lnet_criterion = LNetLoss() #torch.nn.L1Loss()
 
-
-
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
 
-        optimizer_ENet.zero_grad()
+        optimizer_LNet.zero_grad()
 
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
