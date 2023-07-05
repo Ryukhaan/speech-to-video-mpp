@@ -21,7 +21,7 @@ def load_checkpoint(path, model):
             else:
                 new_s[k.replace('module.', '')] = v
         model.load_state_dict(new_s, strict=False)
-    except TypeError:
+    except:
         model = torch.load(path)
     return model
 
