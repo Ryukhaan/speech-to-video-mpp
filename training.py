@@ -34,17 +34,6 @@ warnings.filterwarnings("ignore")
 
 args = options()
 
-class OwnNet(torch.nn.Module):
-
-    def __init__(self):
-        super(OwnNet, self).__init__()
-        # 1 input image channel, 6 output channels, 5x5 square convolution
-        # kernel
-        self.conv1 = torch.nn.Conv2d(3, 3, 3, padding=1)
-    def forward(self, x):
-        # Max pooling over a (2, 2) window
-        return self.conv1(x)
-
 class VGGPerceptualLoss(torch.nn.Module):
     def __init__(self, resize=True):
         super(VGGPerceptualLoss, self).__init__()
@@ -92,6 +81,7 @@ class LNetLoss(torch.nn.Module):
         super(LNetLoss, self).__init__()
 
     def forward(self, y_pred, y_true):
+
         y_true = torchvision.transforms.Resize((96, 96))(y_true)
         L1 = torch.nn.L1Loss()
         l1_val = L1(y_pred, y_true)
@@ -347,9 +337,9 @@ def train():
     kp_extractor = KeypointExtractor()
 
     optimizer_LNet = torch.optim.Adam(L_Net.parameters(), lr=0.001)
-    optimizer_ENet = torch.optim.Adam(model.parameters(), lr=0.001)
-    lnet_criterion = torch.nn.L1Loss() #LNetLoss()
-    enet_criterion = torch.nn.L1Loss() #ENetLoss()
+    lnet_criterion = LNetLoss() #torch.nn.L1Loss()
+
+
 
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
