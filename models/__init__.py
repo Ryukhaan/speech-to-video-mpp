@@ -22,7 +22,8 @@ def load_checkpoint(path, model):
                 new_s[k.replace('module.', '')] = v
         model.load_state_dict(new_s, strict=False)
     except:
-        model = torch.load(path)
+        model.load_state_dict(torch.load(path))
+        #model = torch.load(path)
     return model
 
 def load_network(args):
