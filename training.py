@@ -82,7 +82,7 @@ class LNetLoss(torch.nn.Module):
 
     def forward(self, y_pred, y_true):
 
-        y_true = torchvision.transforms.Resize((96, 96))(y_true)
+        y_pred = torchvision.transforms.Resize((384, 384))(y_pred)
         L1 = torch.nn.L1Loss()
         l1_val = L1(y_pred, y_true)
 
