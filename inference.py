@@ -2,7 +2,8 @@ import glob
 
 import gc
 import torch
-from dtaidistance import dtw
+#from dtaidistance import dtw
+from fastdtw import fastdtw
 
 import numpy as np
 import cv2, os, sys, subprocess, platform, torch
@@ -403,7 +404,8 @@ def find_best_audio():
             #
             #    tmp_src_mel = np.pad(src_mel, ((0,0),(0,dst_length-src_length)))
             #    current_sim = np.mean(np.linalg.norm(tmp_src_mel - dst_mel, axis=1))
-            current_sim = dtw.distance_fast(src_wav, dst_wav, use_pruning=True)
+            current_sim, _ = fastdtw(src_wav, dst_wav)
+            #current_sim = dtw.distance_fast(src_wav, dst_wav, use_pruning=True)
             if current_sim < sim:
                 best_vid = file
                 sim = current_sim
