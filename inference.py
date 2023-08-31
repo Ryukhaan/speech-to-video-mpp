@@ -386,8 +386,8 @@ def find_best_audio():
         audio_database = glob.glob('/'.join(args.audio.split('/')[:-1]) + '/*.wav')
         #audio_database = glob.glob(os.getcwd() + "/../../data/audio/antoine/*.wav")
 
-        src_wav = audio.load_wav(args.audio, 16000)
-        src_mel = audio.melspectrogram(src_wav)
+        src_wav = np.double(audio.load_wav(args.audio, 16000))
+        #src_mel = audio.melspectrogram(src_wav)
         _, src_length = src_mel.shape
         sim = np.inf
         best_vid = ""
@@ -395,7 +395,7 @@ def find_best_audio():
         axs = axs.flatten()
         for file in tqdm(audio_database, desc='[Step 0 bis] Finding best audio:'):
             if file == args.audio: continue
-            dst_wav = audio.load_wav(file, 16000)
+            dst_wav = np.double(audio.load_wav(file, 16000))
 
             #dst_mel = audio.melspectrogram(dst_wav)
             #_, dst_length = dst_mel.shape
