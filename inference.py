@@ -2,6 +2,7 @@ import glob
 
 import gc
 import torch
+from dtaidistance import dtw
 
 import numpy as np
 import cv2, os, sys, subprocess, platform, torch
@@ -211,8 +212,8 @@ def main():
                                in_size=512, channel_multiplier=2, narrow=1,
                                model='GPEN-BFR-512', use_sr=False)
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
-                               in_size=1024, channel_multiplier=2, narrow=1,
-                               model='GPEN-BFR-1024', use_sr=True)
+                               in_size=512, channel_multiplier=2, narrow=1,
+                               model='GPEN-BFR-512', use_sr=False)
 
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
@@ -278,8 +279,8 @@ def main():
             cropped_faces, restored_faces, restored_img = restorer.enhance(
                 ff, has_aligned=False, only_center_face=True, paste_back=True)
                 # 0,   1,   2,   3,   4,   5,   6,   7,   8,  9, 10,  11,  12,
-            mm =  [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
-            #mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            #mm =  [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mouse_mask = np.zeros_like(restored_img)
             tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
             #enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
@@ -395,15 +396,17 @@ def find_best_audio():
         for file in tqdm(audio_database, desc='[Step 0 bis] Finding best audio:'):
             if file == args.audio: continue
             dst_wav = audio.load_wav(file, 16000)
-            dst_mel = audio.melspectrogram(dst_wav)
-            _, dst_length = dst_mel.shape
-            if dst_length >= src_length:
 
-                tmp_src_mel = np.pad(src_mel, ((0,0),(0,dst_length-src_length)))
-                current_sim = np.mean(np.linalg.norm(tmp_src_mel - dst_mel, axis=1))
-                if current_sim < sim:
-                    best_vid = file
-                    sim = current_sim
+            #dst_mel = audio.melspectrogram(dst_wav)
+            #_, dst_length = dst_mel.shape
+            #if dst_length >= src_length:
+            #
+            #    tmp_src_mel = np.pad(src_mel, ((0,0),(0,dst_length-src_length)))
+            #    current_sim = np.mean(np.linalg.norm(tmp_src_mel - dst_mel, axis=1))
+            current_sim = dtw.distance_fast(src_wav, dst_wav, use_pruning=True)
+            if current_sim < sim:
+                best_vid = file
+                sim = current_sim
         best_vid = "../../data/video/antoine/" + best_vid.split('/')[-1][:-3] + 'mp4'
         args.face = best_vid
         np.save('temp/' + base_name + '_best_audio.npy', best_vid)
