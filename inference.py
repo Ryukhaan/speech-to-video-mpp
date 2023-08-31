@@ -210,7 +210,7 @@ def main():
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
                                in_size=1024, channel_multiplier=2, narrow=1,
-                               model='GPEN-BFR-2048', use_sr=False)
+                               model='GPEN-BFR-2048', use_sr=True)
 
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
