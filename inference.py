@@ -210,7 +210,7 @@ def main():
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
                                in_size=1024, channel_multiplier=2, narrow=1,
-                               model='GPEN-BFR-1024', use_sr=False)
+                               model='GPEN-BFR-2048', use_sr=True)
 
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
@@ -290,14 +290,14 @@ def main():
             delta+=1
 
             #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
-            #pp, orig_face, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
-            #ff = xf.copy()
-            #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
+            pp, orig_face, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
+            ff = xf.copy()
+            ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
             #cv2.imwrite("./results/{}.png".format(delta), pp)
-            #out.write(ff)
+            out.write(ff)
 
-            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
-            out.write(pp)
+            #pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
+            #out.write(pp)
     out.release()
     
     if not os.path.isdir(os.path.dirname(args.outfile)):
