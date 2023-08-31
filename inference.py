@@ -212,7 +212,7 @@ def main():
                                in_size=512, channel_multiplier=2, narrow=1,
                                model='GPEN-BFR-512', use_sr=False)
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
-                               in_size=512, channel_multiplier=4, narrow=2, out_size=2048,
+                               in_size=512, channel_multiplier=2, narrow=1, out_size=2048,
                                model='GPEN-BFR-2048', use_sr=False)
 
     imgs_enhanced = []
