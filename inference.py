@@ -87,7 +87,6 @@ def main():
         lm = np.loadtxt('temp/'+base_name+'_landmarks.txt').astype(np.float32)
         lm = lm.reshape([len(full_frames), -1, 2])
 
-    print(not os.path.isfile('temp/'+base_name+'_coeffs.npy'), args.exp_img is not None, args.re_preprocess)
     if not os.path.isfile('temp/'+base_name+'_coeffs.npy') or args.exp_img is not None or args.re_preprocess:
         torch.cuda.empty_cache()
         net_recon = load_face3d_net(args.face3d_net_path, device)
@@ -225,7 +224,8 @@ def main():
 
     frame_h, frame_w = full_frames[0].shape[:-1]
     out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_w, frame_h))
-    
+    del ref_enhancer
+
     if args.up_face != 'original':
         instance = GANimationModel()
         instance.initialize()
@@ -278,15 +278,15 @@ def main():
             cropped_faces, restored_faces, restored_img = restorer.enhance(
                 ff, has_aligned=False, only_center_face=True, paste_back=True)
                 # 0,   1,   2,   3,   4,   5,   6,   7,   8,  9, 10,  11,  12,
-            #mm =  [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
-            mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            mm =  [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            #mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mouse_mask = np.zeros_like(restored_img)
             tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
             #enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
             mouse_mask[y1:y2, x1:x2]= cv2.resize(tmp_mask, (x2 - x1, y2 - y1))[:, :, np.newaxis] / 255.
 
             height, width = ff.shape[:2]
-            restored_img, ff, full_mask = [cv2.resize(x, (512, 512)) for x in (restored_img, ff, np.float32(mouse_mask))]
+            restored_img, ff, full_mask = [cv2.resize(x, (2048, 2048)) for x in (restored_img, ff, np.float32(mouse_mask))]
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
