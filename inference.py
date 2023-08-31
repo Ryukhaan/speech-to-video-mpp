@@ -208,15 +208,18 @@ def main():
 
     #enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
+    ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
+                               in_size=512, channel_multiplier=2, narrow=1,
+                               model='GPEN-BFR-512', use_sr=False)
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
-                               in_size=256, channel_multiplier=2, narrow=1, out_size=2048,
-                               model='GPEN-BFR-2048.pth', use_sr=False)
+                               in_size=1024, channel_multiplier=2, narrow=1, out_size=2048,
+                               model='GPEN-BFR-2048', use_sr=False)
 
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
         img = imgs[idx]
         #pred, _, _ = enhancer.process(img, aligned=True)
-        pred, _, _ = enhancer.process(img, img, face_enhance=True, possion_blending=False)
+        pred, _, _ = ref_enhancer.process(img, img, face_enhance=True, possion_blending=False)
         imgs_enhanced.append(pred)
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1,oy2,ox1,ox2))
 
