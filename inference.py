@@ -214,7 +214,7 @@ def main():
                                model='GPEN-BFR-512', use_sr=False)
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
                                in_size=256, channel_multiplier=2, narrow=1,
-                               model='GPEN-BFR-2048', use_sr=True)
+                               model='GPEN-BFR-512', use_sr=True)
 
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
