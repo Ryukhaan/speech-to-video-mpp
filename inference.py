@@ -208,7 +208,9 @@ def main():
 
     #enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
-    enhancer = FaceEnhancement(args, base_dir='checkpoints', in_size=1024, model='GPEN-BFR-1024', use_sr=False)
+    enhancer = FaceEnhancement(args, base_dir='checkpoints',
+                               in_size=1024, channel_multiplier=4, narrow=2,
+                               model='GPEN-BFR-1024', use_sr=False)
 
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
@@ -273,8 +275,8 @@ def main():
             cropped_faces, restored_faces, restored_img = restorer.enhance(
                 ff, has_aligned=False, only_center_face=True, paste_back=True)
                 # 0,   1,   2,   3,   4,   5,   6,   7,   8,  9, 10,  11,  12,
-            mm =  [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
-            #mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            #mm =  [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mouse_mask = np.zeros_like(restored_img)
             tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
             #enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
@@ -286,14 +288,16 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
             delta+=1
+
             #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
-            pp, orig_face, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
-            #print(pp.shape, y1, y2, x1, x2, ff.shape)
-            ff = xf.copy()
-            #print(ff.shape, pp.shape)
-            ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
-            cv2.imwrite("./results/{}.png".format(delta), pp)
-            out.write(ff)
+            #pp, orig_face, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
+            #ff = xf.copy()
+            #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
+            #cv2.imwrite("./results/{}.png".format(delta), pp)
+            #out.write(ff)
+
+            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
+            out.write(pp)
     out.release()
     
     if not os.path.isdir(os.path.dirname(args.outfile)):
