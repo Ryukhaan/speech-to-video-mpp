@@ -388,11 +388,11 @@ def find_best_audio():
 
         src_wav = np.double(audio.load_wav(args.audio, 16000))
         #src_mel = audio.melspectrogram(src_wav)
-        _, src_length = src_mel.shape
+        #_, src_length = src_mel.shape
         sim = np.inf
         best_vid = ""
-        fig, axs = plt.subplots(2, 2)
-        axs = axs.flatten()
+        #fig, axs = plt.subplots(2, 2)
+        #axs = axs.flatten()
         for file in tqdm(audio_database, desc='[Step 0 bis] Finding best audio:'):
             if file == args.audio: continue
             dst_wav = np.double(audio.load_wav(file, 16000))
