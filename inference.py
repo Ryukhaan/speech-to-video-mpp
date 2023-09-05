@@ -214,7 +214,7 @@ def main():
                                model='GPEN-BFR-512', use_sr=False)
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
                                in_size=512, channel_multiplier=2, narrow=1,
-                               model='GPEN-BFR-512', use_sr=True)
+                               model='GPEN-BFR-1024', use_sr=True)
 
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
@@ -226,7 +226,7 @@ def main():
 
     frame_h, frame_w = full_frames[0].shape[:-1]
     out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_w, frame_h))
-    del ref_enhancer
+
 
     if args.up_face != 'original':
         instance = GANimationModel()
@@ -267,6 +267,7 @@ def main():
         
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
 
+        del ref_enhancer
         torch.cuda.empty_cache()
         delta = 0
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
