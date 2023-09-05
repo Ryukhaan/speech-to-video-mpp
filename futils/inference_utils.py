@@ -46,7 +46,7 @@ def options():
     parser.add_argument('--tmp_dir', type=str, default='temp', help='Folder to save tmp results')
     parser.add_argument('--re_preprocess', action='store_true')
 
-    parser.add_argument('--cropped_image', default=True, action='store_true', help='Cropped the mouth to paste on the original video')
+    parser.add_argument('--cropped_image', default=False, action='store_true', help='Cropped the mouth to paste on the original video')
     args = parser.parse_args()
     return args
 
