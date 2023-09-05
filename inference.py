@@ -224,6 +224,9 @@ def main():
         imgs_enhanced.append(pred)
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1,oy2,ox1,ox2))
 
+    del ref_enhancer
+    torch.cuda.empty_cache()
+
     frame_h, frame_w = full_frames[0].shape[:-1]
     out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_w, frame_h))
 
@@ -267,7 +270,6 @@ def main():
         
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
 
-        del ref_enhancer
         torch.cuda.empty_cache()
         delta = 0
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
