@@ -297,16 +297,16 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
             delta+=1
-
-            #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
-            pp, orig_face, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
-            ff = xf.copy()
-            ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
-            #cv2.imwrite("./results/{}.png".format(delta), pp)
-            out.write(ff)
-
-            #pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
-            #out.write(pp)
+            if args.cropped_image:
+                #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
+                pp, orig_face, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
+                ff = xf.copy()
+                ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
+                #cv2.imwrite("./results/{}.png".format(delta), pp)
+                out.write(ff)
+            else:
+                pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
+                out.write(pp)
     out.release()
     
     if not os.path.isdir(os.path.dirname(args.outfile)):
