@@ -34,6 +34,46 @@ warnings.filterwarnings("ignore")
 
 args = options()
 
+class ArcFaceLoss(torch.nn.Module):
+    def __init__(self, device):
+        super(ArcFaceLoss, self).__init__()
+        self.face3d_net_path = 'checkpoints/face3d_pretrain_epoch_20.pth'
+        self.device = device
+        self.lm3d = 'checkpoints/BFM'
+        self.l2_loss = torch.nn.L2Loss()
+    def forward(self, y_pred, y_true):
+        torch.cuda.empty_cache()
+        net_recon = load_face3d_net(self.face3d_net_path, self.device)
+        lm3d_std = load_lm3d(self.lm3d)
+
+        W, H = input.size
+        lm_idx = lm[idx].reshape([-1, 2])
+        if np.mean(lm_idx) == -1:
+            lm_idx = (lm3d_std[:, :2]+1) / 2.
+            lm_idx = np.concatenate([lm_idx[:, :1] * W, lm_idx[:, 1:2] * H], 1)
+        else:
+            lm_idx[:, -1] = H - 1 - lm_idx[:, -1]
+
+        # Y Predicted
+        trans_params, im_idx, lm_idx, _ = align_img(y_pred, lm_idx, lm3d_std)
+        trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
+        im_idx_tensor = torch.tensor(np.array(im_idx)/255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
+        with torch.no_grad():
+            coeffs = split_coeff(net_recon(im_idx_tensor))
+        pred_coeff = {key:coeffs[key].cpu().numpy() for key in coeffs}
+        pred_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'],\
+                                         pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
+        # Y Targets
+        trans_params, im_idx, lm_idx, _ = align_img(y_true, lm_idx, lm3d_std)
+        trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
+        im_idx_tensor = torch.tensor(np.array(im_idx) / 255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
+        with torch.no_grad():
+            coeffs = split_coeff(net_recon(im_idx_tensor))
+        true_coeff = {key: coeffs[key].cpu().numpy() for key in coeffs}
+        true_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'], \
+                                     pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
+        return self.l2_loss(pred_coeff, true_coeff)
+
 class VGGPerceptualLoss(torch.nn.Module):
     def __init__(self, resize=True):
         super(VGGPerceptualLoss, self).__init__()
@@ -112,15 +152,14 @@ class ENetLoss(torch.nn.Module):
         lp_val = L_perceptual(y_pred, y_true)
 
         # Acrface loss (L2 function) for Identity
-        l_id = ()
+        l_id = ArcFaceLoss()
         lid_val = l_id(y_pred, y_true)
 
         # Adversial network AV-hubert ?
-        l_adv = ()
-        ladv_val = l_adv(y_pred, y_true)
+        #l_adv = ()
+        #ladv_val = l_adv(y_pred, y_true)
+        ladv_val = 0.
         # TODO : implement advsersial loss and id arcface loss
-        ladv_val = 0.0
-        lid_val = 0.0
 
         lambda_1 = 0.2
         lambda_p = 1.
@@ -346,9 +385,10 @@ def train():
                         channel_multiplier=2, bg_upsampler=None)
     kp_extractor = KeypointExtractor()
 
-    optimizer_LNet = torch.optim.Adam(L_Net.parameters(), lr=0.001)
-    lnet_criterion = LNetLoss() #torch.nn.L1Loss()
-
+    #optimizer_LNet = torch.optim.Adam(L_Net.parameters(), lr=0.001)
+    optimizer_LNet = torch.optim.Adam(model.parameters(), lr=0.001)
+    #lnet_criterion = LNetLoss()
+    enet_criterion = ENetLoss()
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
@@ -368,9 +408,9 @@ def train():
         #t.requires_grad
         #reference.requires_grad
 
-        loss_L = lnet_criterion(pred, reference)
-        loss_L.requires_grad = True
-        loss_L.backward()
+        #loss_L = lnet_criterion(pred, reference)
+        #loss_L.requires_grad = True
+        #loss_L.backward()
 
         #pred = torch.clamp(pred, 0, 1).to(device)
         #low_res = low_res.to(device)
@@ -379,12 +419,12 @@ def train():
         #loss_L.required_grad = True
         #loss_L.backward()
 
-        #loss_E = torch.nn.L1Loss()(pred, reference)
-        #loss_E.required_grad = True
-        #loss_E.backward()
+        loss_E = enet_criterion(pred, reference)
+        loss_E.required_grad = True
+        loss_E.backward()
 
-        optimizer_LNet.step()
-        #optimizer_ENet.step()
+        #optimizer_LNet.step()
+        optimizer_ENet.step()
     save_checkpoint(args.LNet_path + "_test.pth", L_Net)
 
 def datagen(frames, mels, full_frames, frames_pil, cox):
