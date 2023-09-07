@@ -51,7 +51,10 @@ class FaceEnhancement(object):
         tile_size = 0
         self.facedetector = RetinaFaceDetection(base_dir, device)
         self.facegan = FaceGAN(base_dir, in_size, out_size, model, channel_multiplier, narrow, None, device=device)
-        self.srmodel =  RealESRNet(base_dir, sr_model, sr_scale, tile_size, device=device)
+        if sr_scale == 2:
+            self.srmodel = RealESRNet(base_dir, sr_model, sr_scale, tile_size, device=device, num_feat=64)
+        else:
+            self.srmodel =  RealESRNet(base_dir, sr_model, sr_scale, tile_size, device=device)
         self.faceparser = FaceParse(base_dir, device=device)
         self.use_sr = use_sr
         self.in_size = in_size
