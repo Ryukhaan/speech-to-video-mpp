@@ -439,4 +439,4 @@ def find_best_audio():
 
 if __name__ == '__main__':
     find_best_audio()
-    #main()
+    main()
