@@ -291,7 +291,7 @@ def main():
             mouse_mask[y1:y2, x1:x2]= cv2.resize(tmp_mask, (x2 - x1, y2 - y1))[:, :, np.newaxis] / 255.
 
             height, width = ff.shape[:2]
-            restored_img, ff, full_mask = [cv2.resize(x, (2048, 2048)) for x in (restored_img, ff, np.float32(mouse_mask))]
+            restored_img, ff, full_mask = [cv2.resize(x, (256, 256)) for x in (restored_img, ff, np.float32(mouse_mask))]
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
@@ -345,7 +345,15 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         refs.append(ff[y1: y2, x1:x2])
 
     for i, m in enumerate(mels):
-        idx = 0 if args.static else i % len(frames) # HERE !!
+        #idx = 0 if args.static else i % len(frames) # HERE !!
+        if args.static:
+            idx = 0
+        else:
+            if i >= len(frames):
+                idx = len(frames) - 1
+            else:
+                idx = i
+        #idx = 0 if args.static else i if
         frame_to_save = frames[idx].copy()
         face = refs[idx]
         oface, coords = face_det_results[idx].copy()
