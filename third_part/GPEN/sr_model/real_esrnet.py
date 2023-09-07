@@ -16,6 +16,7 @@ class RealESRNet(object):
         self.device = device
         self.load_srmodel(base_dir, model)
         self.num_feat = num_feat
+        print(self.num_feat)
 
     def load_srmodel(self, base_dir, model):
         self.srmodel = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=self.num_feat, num_block=23, num_grow_ch=32, scale=self.scale)
