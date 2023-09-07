@@ -381,7 +381,7 @@ def train():
         instance.initialize()
         instance.setup()
 
-    restorer = GFPGANer(model_path='checkpoints/GFPGANv1.3.pth', upscale=1, arch='clean', \
+    restorer = GFPGANer(model_path='checkpoints/GFPGANv1.4.pth', upscale=3, arch='clean', \
                         channel_multiplier=2, bg_upsampler=None)
     kp_extractor = KeypointExtractor()
 
