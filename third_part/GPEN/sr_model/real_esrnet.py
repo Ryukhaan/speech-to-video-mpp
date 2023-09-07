@@ -6,16 +6,19 @@ from rrdbnet_arch import RRDBNet
 from torch.nn import functional as F
 
 class RealESRNet(object):
-    def __init__(self, base_dir='./', model=None, scale=2, tile_size=0, tile_pad=10, device='cuda'):
+    def __init__(self, base_dir='./', model=None, scale=2, tile_size=0, tile_pad=10,
+                 num_feat=32,
+                 device='cuda'):
         self.base_dir = base_dir
         self.scale = scale
         self.tile_size = tile_size
         self.tile_pad = tile_pad
         self.device = device
         self.load_srmodel(base_dir, model)
+        self.num_feat = num_feat
 
     def load_srmodel(self, base_dir, model):
-        self.srmodel = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=32, num_block=23, num_grow_ch=32, scale=self.scale)
+        self.srmodel = RRDBNet(num_in_ch=3, num_out_ch=3, num_feat=self.num_feat, num_block=23, num_grow_ch=32, scale=self.scale)
         if model is None:
             loadnet = torch.load(os.path.join(self.base_dir, 'weights', 'realesrnet_x%d.pth'%self.scale))
         else:
