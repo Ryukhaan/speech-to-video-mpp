@@ -383,37 +383,54 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 
 
 def find_best_audio():
+
+    # Get basename
     base_name = args.face.split('/')[-1]
+    # Get model name
+    model_name = args.face.split('/')[-2]
+    print(model_name)
+
+    # Create temp directory
     os.makedirs(os.path.join('temp', args.tmp_dir), exist_ok=True)
+    # Make it again if args is passed or the best audio is not already found
     if not os.path.isfile('temp/'+base_name+'_best_audio.npy') or args.re_preprocess:
-        # TODO
-        # Make choice of data according to actor
+        # TODO : Try database by gender instead the same actor
+
+        # Get audio database of the same actor
         audio_database = glob.glob('/'.join(args.audio.split('/')[:-1]) + '/*.wav')
         #audio_database = glob.glob(os.getcwd() + "/../../data/audio/antoine/*.wav")
 
+        # Open the source wav file
         src_wav = np.double(audio.load_wav(args.audio, 16000))
+
+        # Old version with L1-distance of mel spectogram
         #src_mel = audio.melspectrogram(src_wav)
         #_, src_length = src_mel.shape
-        sim = np.inf
-        best_vid = ""
-        #fig, axs = plt.subplots(2, 2)
-        #axs = axs.flatten()
+
+        best_distance = np.inf
+        best_audio = ""
+
+        # Process distances of all audio in database
         for file in tqdm(audio_database, desc='[Step 0 bis] Finding best audio:'):
             if file == args.audio: continue
             dst_wav = np.double(audio.load_wav(file, 16000))
 
+            # Old version with L1-distance and mel spectogram
             #dst_mel = audio.melspectrogram(dst_wav)
             #_, dst_length = dst_mel.shape
             #if dst_length >= src_length:
             #
             #    tmp_src_mel = np.pad(src_mel, ((0,0),(0,dst_length-src_length)))
             #    current_sim = np.mean(np.linalg.norm(tmp_src_mel - dst_mel, axis=1))
-            current_sim, _ = fastdtw(src_wav, dst_wav)
-            #current_sim = dtw.distance_fast(src_wav, dst_wav, use_pruning=True)
-            if current_sim < sim:
-                best_vid = file
-                sim = current_sim
-        best_vid = "../../data/video/antoine/" + best_vid.split('/')[-1][:-3] + 'mp4'
+
+            current_distance, _ = fastdtw(src_wav, dst_wav)
+
+            if current_distance < best_distance:
+                best_audio = file
+                best_distance = current_distance
+
+        # Get the video corresponding to the best audio found
+        best_vid = os.path.join("../../data/video/", model_name, best_audio.split('/')[-1][:-3] + 'mp4')
         args.face = best_vid
         np.save('temp/' + base_name + '_best_audio.npy', best_vid)
     else:
@@ -422,4 +439,4 @@ def find_best_audio():
 
 if __name__ == '__main__':
     find_best_audio()
-    main()
+    #main()
