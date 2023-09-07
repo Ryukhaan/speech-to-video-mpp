@@ -350,7 +350,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
             idx = 0
         else:
             if i >= len(frames):
-                idx = len(frames) - (i - len(frames))
+                idx = len(frames) - (i - len(frames)) - 1
             else:
                 idx = i
         #idx = 0 if args.static else i if
