@@ -102,12 +102,22 @@ class ENetLoss(torch.nn.Module):
         super(ENetLoss, self).__init__()
 
     def forward(self, y_pred, y_true):
+
+        # L1-Loss
         L1 = torch.nn.L1Loss()
         l1_val = L1(y_pred, y_true)
 
+        # Loss Perceptual with VGG pretrained
         L_perceptual = VGGPerceptualLoss()
         lp_val = L_perceptual(y_pred, y_true)
 
+        # Acrface loss (L2 function) for Identity
+        l_id = ()
+        lid_val = l_id(y_pred, y_true)
+
+        # Adversial network AV-hubert ?
+        l_adv = ()
+        ladv_val = l_adv(y_pred, y_true)
         # TODO : implement advsersial loss and id arcface loss
         ladv_val = 0.0
         lid_val = 0.0
