@@ -69,7 +69,7 @@ def main():
     # face detection & cropping, cropping the first frame as the style of FFHQ
     croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
     full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in full_frames]
-    full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512)
+    full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
 
     clx, cly, crx, cry = crop
     lx, ly, rx, ry = quad
@@ -230,7 +230,6 @@ def main():
     frame_h, frame_w = full_frames[0].shape[:-1]
     out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_w, frame_h))
 
-
     if args.up_face != 'original':
         instance = GANimationModel()
         instance.initialize()
@@ -292,7 +291,7 @@ def main():
             mouse_mask[y1:y2, x1:x2]= cv2.resize(tmp_mask, (x2 - x1, y2 - y1))[:, :, np.newaxis] / 255.
 
             height, width = ff.shape[:2]
-            restored_img, ff, full_mask = [cv2.resize(x, (512, 512)) for x in (restored_img, ff, np.float32(mouse_mask))]
+            restored_img, ff, full_mask = [cv2.resize(x, (2048, 2048)) for x in (restored_img, ff, np.float32(mouse_mask))]
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
@@ -346,7 +345,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         refs.append(ff[y1: y2, x1:x2])
 
     for i, m in enumerate(mels):
-        idx = 0 if args.static else i % len(frames)
+        idx = 0 if args.static else i % len(frames) # HERE !!
         frame_to_save = frames[idx].copy()
         face = refs[idx]
         oface, coords = face_det_results[idx].copy()
