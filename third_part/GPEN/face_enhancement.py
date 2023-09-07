@@ -46,9 +46,8 @@ from .sr_model.real_esrnet import RealESRNet
 from .align_faces import warp_and_crop_face, get_reference_facial_points
 
 class FaceEnhancement(object):
-    def __init__(self, args, base_dir='./', in_size=1024, out_size=None, model=None, use_sr=True, device='cuda',
+    def __init__(self, args, base_dir='./', in_size=1024, out_size=None, model=None, use_sr=True, device='cuda', sr_scale=4,
                  sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1):
-        sr_scale = 2
         tile_size = 0
         self.facedetector = RetinaFaceDetection(base_dir, device)
         self.facegan = FaceGAN(base_dir, in_size, out_size, model, channel_multiplier, narrow, None, device=device)
