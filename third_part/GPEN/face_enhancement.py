@@ -102,14 +102,12 @@ class FaceEnhancement(object):
         if self.use_sr:
             img_sr = self.srmodel.process(img)
             if img_sr is not None:
-                img = cv2.resize(img, img_sr.shape[:2][::-1])
+                #img = cv2.resize(img, img_sr.shape[:2][::-1])
+                img = cv2.resize(img, ori_img.shape[:2])
 
         facebs, landms = self.facedetector.detect(img)
         
         height, width = img.shape[:2]
-        if self.use_sr:
-            height = height // 2
-            width = width // 2
         #width, height = ori_img.shape[:2]
         full_mask = np.zeros((height, width), dtype=np.float32)
         full_img = np.zeros(ori_img.shape, dtype=np.uint8)
