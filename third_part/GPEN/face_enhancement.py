@@ -102,13 +102,13 @@ class FaceEnhancement(object):
         if self.use_sr:
             img_sr = self.srmodel.process(img)
             if img_sr is not None:
-                #img = cv2.resize(img, img_sr.shape[:2][::-1])
-                img = cv2.resize(img, ori_img.shape[:2])
+                img = cv2.resize(img, img_sr.shape[:2][::-1])
+
 
         facebs, landms = self.facedetector.detect(img)
-        
+        img = cv2.resize(img, ori_img.shape[:2])
+
         height, width = img.shape[:2]
-        #width, height = ori_img.shape[:2]
         full_mask = np.zeros((height, width), dtype=np.float32)
         full_img = np.zeros(ori_img.shape, dtype=np.uint8)
 
@@ -142,7 +142,6 @@ class FaceEnhancement(object):
             # no ear, no neck, no hair&hat,  only face region
             mm = [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mask_sharp = self.faceparser.process(ef, mm)[0]/255.
-            #mask_sharp = cv2.resize(mask_sharp, (1080, 1920))
             tmp_mask = self.mask_postprocess(mask_sharp)
 
             tmp_mask = cv2.resize(tmp_mask, (self.in_size, self.in_size))
