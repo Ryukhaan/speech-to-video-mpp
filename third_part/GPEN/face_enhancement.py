@@ -173,7 +173,7 @@ class FaceEnhancement(object):
         #else:
         #    img = cv2.convertScaleAbs(img*(1-full_mask) + full_img*full_mask)
         if self.use_sr and img_sr is not None:
-            if self.sr_scale == 2: print(img_sr.shape, full_mask.shape)
+            print(img_sr.shape, full_mask.shape)
             img = cv2.convertScaleAbs(img_sr*(1-full_mask) + full_img*full_mask)
         elif possion_blending is True:
             if bbox is not None:
