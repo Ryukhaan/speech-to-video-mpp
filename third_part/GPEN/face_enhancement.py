@@ -49,9 +49,10 @@ class FaceEnhancement(object):
     def __init__(self, args, base_dir='./', in_size=1024, out_size=None, model=None, use_sr=True, device='cuda', sr_scale=4,
                  sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1):
         tile_size = 0
+        self.sr_scale = sr_scale
         self.facedetector = RetinaFaceDetection(base_dir, device)
         self.facegan = FaceGAN(base_dir, in_size, out_size, model, channel_multiplier, narrow, None, device=device)
-        if sr_scale == 2:
+        if self.sr_scale == 2:
             self.srmodel = RealESRNet(base_dir, sr_model, sr_scale, tile_size, device=device, num_feat=64)
         else:
             self.srmodel =  RealESRNet(base_dir, sr_model, sr_scale, tile_size, device=device)
@@ -138,6 +139,8 @@ class FaceEnhancement(object):
             # no ear, no neck, no hair&hat,  only face region
             mm = [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mask_sharp = self.faceparser.process(ef, mm)[0]/255.
+            if self.sr_scale == 2:
+                mask_sharp = cv2.resize(mask_sharp, img.shape[:2])
             tmp_mask = self.mask_postprocess(mask_sharp)
 
             tmp_mask = cv2.resize(tmp_mask, (self.in_size, self.in_size))
@@ -156,7 +159,7 @@ class FaceEnhancement(object):
             tmp_img = cv2.warpAffine(ef, tfm_inv, (width, height), flags=3)
 
             mask = tmp_mask - full_mask
-            print(tmp_img.shape, full_mask.shape, full_img.shape)
+
             full_mask[np.where(mask>0)] = tmp_mask[np.where(mask>0)]
             full_img[np.where(mask>0)] = tmp_img[np.where(mask>0)]
 
