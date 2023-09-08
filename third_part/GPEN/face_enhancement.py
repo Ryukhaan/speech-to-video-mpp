@@ -108,6 +108,7 @@ class FaceEnhancement(object):
         height, width = img.shape[:2]
         if self.sr_scale == 2:
             height, width = ori_img.shape[:2]
+            img_sr = cv2.resize(img_sr, img.shape[:2])
         full_mask = np.zeros((height, width), dtype=np.float32)
         full_img = np.zeros(ori_img.shape, dtype=np.uint8)
 
@@ -141,8 +142,6 @@ class FaceEnhancement(object):
             # no ear, no neck, no hair&hat,  only face region
             mm = [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mask_sharp = self.faceparser.process(ef, mm)[0]/255.
-            if self.sr_scale == 2:
-                mask_sharp = cv2.resize(mask_sharp, ori_img.shape[:2])
             tmp_mask = self.mask_postprocess(mask_sharp)
 
             tmp_mask = cv2.resize(tmp_mask, (self.in_size, self.in_size))
