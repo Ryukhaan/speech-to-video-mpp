@@ -299,7 +299,9 @@ def main():
             delta+=1
             if args.cropped_image:
                 #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
-                pp, orig_face, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
+                tmp_xf = cv2.resize(xf, (0,0), fx=2, fy=2)
+                pp, orig_face, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
+                pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
                 ff = xf.copy()
                 ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
                 #cv2.imwrite("./results/{}.png".format(delta), pp)

@@ -55,7 +55,7 @@ class FaceEnhancement(object):
         #if self.sr_scale == 2:
         #    self.srmodel = RealESRNet(base_dir, sr_model, sr_scale, tile_size, device=device, num_feat=64)
         #else:
-        self.srmodel =  RealESRNet(base_dir, sr_model, sr_scale, tile_size, device=device)
+        self.srmodel =  RealESRNet(base_dir, sr_model, sr_scale=sr_scale, tile_size=tile_size, device=device)
         self.faceparser = FaceParse(base_dir, device=device)
         self.use_sr = use_sr
         self.in_size = in_size
@@ -160,8 +160,6 @@ class FaceEnhancement(object):
             tmp_img = cv2.warpAffine(ef, tfm_inv, (width, height), flags=3)
 
             mask = tmp_mask - full_mask
-            if possion_blending is True:
-                print(mask.shape, tmp_mask.shape, width, height)
             full_mask[np.where(mask>0)] = tmp_mask[np.where(mask>0)]
             full_img[np.where(mask>0)] = tmp_img[np.where(mask>0)]
 

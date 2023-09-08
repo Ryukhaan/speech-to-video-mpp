@@ -130,8 +130,8 @@ class RealESRNet(object):
             output = output.data.squeeze().float().cpu().clamp_(0, 1).numpy()
             output = np.transpose(output[[2, 1, 0], :, :], (1, 2, 0))
             output = (output * 255.0).round().astype(np.uint8)
-            if self.model is None:
-                output = output[::2, ::2, ...]
+            #if self.model is None:
+            #    output = output[::2, ::2, ...]
             return output
         except Exception as e:
             print('sr failed:', e)
