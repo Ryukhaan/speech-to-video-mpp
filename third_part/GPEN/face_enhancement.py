@@ -106,7 +106,7 @@ class FaceEnhancement(object):
 
 
         facebs, landms = self.facedetector.detect(img)
-        img = cv2.resize(img, ori_img.shape[:2])
+        #img = cv2.resize(img, ori_img.shape[:2])
 
         height, width = img.shape[:2]
         full_mask = np.zeros((height, width), dtype=np.float32)
