@@ -156,6 +156,7 @@ class FaceEnhancement(object):
             tmp_img = cv2.warpAffine(ef, tfm_inv, (width, height), flags=3)
 
             mask = tmp_mask - full_mask
+            print(tmp_img.shape, full_mask.shape, full_img.shape)
             full_mask[np.where(mask>0)] = tmp_mask[np.where(mask>0)]
             full_img[np.where(mask>0)] = tmp_img[np.where(mask>0)]
 
