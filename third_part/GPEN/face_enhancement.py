@@ -141,6 +141,7 @@ class FaceEnhancement(object):
             # no ear, no neck, no hair&hat,  only face region
             mm = [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mask_sharp = self.faceparser.process(ef, mm)[0]/255.
+            mask_sharp = cv2.resize(mask_sharp, (1080, 1920))
             tmp_mask = self.mask_postprocess(mask_sharp)
 
             tmp_mask = cv2.resize(tmp_mask, (self.in_size, self.in_size))
