@@ -101,8 +101,8 @@ class FaceEnhancement(object):
 
         if self.use_sr:
             img_sr = self.srmodel.process(img)
-            print(img_sr.shape)
             if img_sr is not None:
+                print(img_sr.shape)
                 img = cv2.resize(img, img_sr.shape[:2][::-1])
 
         facebs, landms = self.facedetector.detect(img)
