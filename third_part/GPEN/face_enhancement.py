@@ -107,7 +107,7 @@ class FaceEnhancement(object):
         
         height, width = img.shape[:2]
         if self.sr_scale == 2:
-            height, width = ori_img.shape[:2]
+            width, height = ori_img.shape[:2]
             img_sr = cv2.resize(img_sr, ori_img.shape[:2])
         full_mask = np.zeros((height, width), dtype=np.float32)
         full_img = np.zeros(ori_img.shape, dtype=np.uint8)
