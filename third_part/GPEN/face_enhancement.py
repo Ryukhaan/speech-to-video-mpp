@@ -158,7 +158,8 @@ class FaceEnhancement(object):
             tmp_img = cv2.warpAffine(ef, tfm_inv, (width, height), flags=3)
 
             mask = tmp_mask - full_mask
-
+            if possion_blending is True:
+                print(mask.shape, tmp_mask.shape, width, height)
             full_mask[np.where(mask>0)] = tmp_mask[np.where(mask>0)]
             full_img[np.where(mask>0)] = tmp_img[np.where(mask>0)]
 
