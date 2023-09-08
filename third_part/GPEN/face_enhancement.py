@@ -90,6 +90,7 @@ class FaceEnhancement(object):
 
     def process(self, img, ori_img, face_enhance=True, bbox=None, possion_blending=False):
         orig_faces, enhanced_faces = [], []
+
         #if aligned:
         #    ef = self.facegan.process(img)
         #    orig_faces.append(img)
@@ -106,9 +107,6 @@ class FaceEnhancement(object):
         facebs, landms = self.facedetector.detect(img)
         
         height, width = img.shape[:2]
-        #if self.sr_scale == 2:
-        #    width, height = ori_img.shape[:2]
-        #    img_sr = cv2.resize(img_sr, ori_img.shape[:2])
         full_mask = np.zeros((height, width), dtype=np.float32)
         full_img = np.zeros(ori_img.shape, dtype=np.uint8)
 
@@ -172,26 +170,25 @@ class FaceEnhancement(object):
         #    img = cv2.convertScaleAbs(img_sr*(1-full_mask) + full_img*full_mask)
         #else:
         #    img = cv2.convertScaleAbs(img*(1-full_mask) + full_img*full_mask)
-        if self.use_sr:
-            print(img_sr.shape, full_mask.shape)
-        if self.use_sr and img_sr is not None:
-            img = cv2.convertScaleAbs(img_sr*(1-full_mask) + full_img*full_mask)
-        elif possion_blending is True:
-            if bbox is not None:
-                y1, y2, x1, x2 = bbox
-                mask_bbox = np.zeros_like(mask_sharp)
-                mask_bbox[y1:y2 - 5, x1:x2] = 1
-                full_img, ori_img, full_mask = [cv2.resize(x, (512, 512)) for x in
-                                            (full_img, ori_img, np.float32(mask_sharp * mask_bbox))]
-            else:
-                full_img, ori_img, full_mask = [cv2.resize(x, (512, 512)) for x in (full_img, ori_img, full_mask)]
 
-            img = Laplacian_Pyramid_Blending_with_mask(full_img, ori_img, full_mask, 6)
-            img = np.clip(img, 0, 255)
-            img = np.uint8(cv2.resize(img, (width, height)))
+        if self.use_sr and img_sr is not None:
+           img = cv2.convertScaleAbs(img_sr*(1-full_mask) + full_img*full_mask)
+        elif possion_blending is True:
+           if bbox is not None:
+               y1, y2, x1, x2 = bbox
+               mask_bbox = np.zeros_like(mask_sharp)
+               mask_bbox[y1:y2 - 5, x1:x2] = 1
+               full_img, ori_img, full_mask = [cv2.resize(x, (512, 512)) for x in
+                                           (full_img, ori_img, np.float32(mask_sharp * mask_bbox))]
+           else:
+               full_img, ori_img, full_mask = [cv2.resize(x, (512, 512)) for x in (full_img, ori_img, full_mask)]
+
+           img = Laplacian_Pyramid_Blending_with_mask(full_img, ori_img, full_mask, 6)
+           img = np.clip(img, 0, 255)
+           img = np.uint8(cv2.resize(img, (width, height)))
         else:
-            img = cv2.convertScaleAbs(ori_img * (1 - full_mask) + full_img * full_mask)
-            img = cv2.convertScaleAbs(ori_img * (1 - mask_sharp) + img * mask_sharp)
+           img = cv2.convertScaleAbs(ori_img * (1 - full_mask) + full_img * full_mask)
+           img = cv2.convertScaleAbs(ori_img * (1 - mask_sharp) + img * mask_sharp)
         return img, orig_faces, enhanced_faces
         
         
