@@ -108,7 +108,7 @@ class FaceEnhancement(object):
         height, width = img.shape[:2]
         if self.sr_scale == 2:
             height, width = ori_img.shape[:2]
-            img_sr = cv2.resize(img_sr, img.shape[:2])
+            img_sr = cv2.resize(img_sr, ori_img.shape[:2])
         full_mask = np.zeros((height, width), dtype=np.float32)
         full_img = np.zeros(ori_img.shape, dtype=np.uint8)
 
@@ -160,7 +160,7 @@ class FaceEnhancement(object):
             tmp_img = cv2.warpAffine(ef, tfm_inv, (width, height), flags=3)
 
             mask = tmp_mask - full_mask
-            if self.sr_scale == 2: print(mask_sharp.shape, mask.shape, tmp_mask.shape)
+
             full_mask[np.where(mask>0)] = tmp_mask[np.where(mask>0)]
             full_img[np.where(mask>0)] = tmp_img[np.where(mask>0)]
 
@@ -173,6 +173,7 @@ class FaceEnhancement(object):
         #else:
         #    img = cv2.convertScaleAbs(img*(1-full_mask) + full_img*full_mask)
         if self.use_sr and img_sr is not None:
+            if self.sr_scale == 2: print(img_sr.shape, full_mask.shape)
             img = cv2.convertScaleAbs(img_sr*(1-full_mask) + full_img*full_mask)
         elif possion_blending is True:
             if bbox is not None:
