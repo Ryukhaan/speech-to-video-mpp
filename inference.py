@@ -352,10 +352,10 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         if args.static:
             idx = 0
         else:
-            if i >= len(frames):
-                idx = len(frames) - (i - len(frames)) - 1
-            else:
-                idx = i
+            #if i >= len(frames):
+            #    idx = len(frames) - (i - len(frames)) - 1
+            #else:
+                idx = i % len(frames)
         #idx = 0 if args.static else i if
         frame_to_save = frames[idx].copy()
         face = refs[idx]
