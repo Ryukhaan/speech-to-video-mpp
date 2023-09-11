@@ -138,8 +138,9 @@ class LNetLoss(torch.nn.Module):
         return lambda_1 * l1_val + lambda_p * lp_val + lambda_sync * lsync_val
 
 class ENetLoss(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, device):
         super(ENetLoss, self).__init__()
+        self.device = device
 
     def forward(self, y_pred, y_true):
 
@@ -152,7 +153,7 @@ class ENetLoss(torch.nn.Module):
         lp_val = L_perceptual(y_pred, y_true)
 
         # Acrface loss (L2 function) for Identity
-        l_id = ArcFaceLoss()
+        l_id = ArcFaceLoss(self.device)
         lid_val = l_id(y_pred, y_true)
 
         # Adversial network AV-hubert ?
