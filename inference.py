@@ -307,7 +307,8 @@ def main():
                 #cv2.imwrite("./results/{}.png".format(delta), pp)
                 out.write(ff)
             else:
-                pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
+                tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
+                pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
                 out.write(pp)
     out.release()
     
