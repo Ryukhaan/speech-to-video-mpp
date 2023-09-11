@@ -40,7 +40,8 @@ class ArcFaceLoss(torch.nn.Module):
         self.face3d_net_path = 'checkpoints/face3d_pretrain_epoch_20.pth'
         self.device = device
         self.lm3d = 'checkpoints/BFM'
-        self.l2_loss = torch.nn.L2Loss()
+        self.l2_loss = torch.nn.MSELoss()
+
     def forward(self, y_pred, y_true):
         torch.cuda.empty_cache()
         net_recon = load_face3d_net(self.face3d_net_path, self.device)
