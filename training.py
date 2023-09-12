@@ -344,9 +344,10 @@ def train():
     audio_encodec_model.set_target_bandwidth(24.0)
     wav, sr = torchaudio.load(args.audio)
     print(sr)
-    chunk_length_ms = 1  # pydub calculates in millisec
-    for idx, _ in enumerate(tqdm(range(sr, wav.shape[1], chunk_length_ms * sr), total=int(wav.shape[1] / sr))):
-        chunk = wav[:, idx*sr:(idx+1)*sr]
+    step_size =
+    idx_multiplier, mel_chunks = 0.2 * sr, []
+    for i, _ in enumerate(tqdm(range(0, wav.shape[1], idx_multiplier), total=int(wav.shape[1] / idx_multiplier))):
+        chunk = wav[:, i:i + idx_multiplier]
         chunk = convert_audio(chunk,
                               sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
         chunk = chunk.unsqueeze(0)
@@ -354,9 +355,11 @@ def train():
         with torch.no_grad():
             encoded_frames = audio_encodec_model.encode(chunk)
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
-    #exit()
-    print(codes.shape)
+        mel_chunks.append(codes)
+
+    print("[Step 4 bis] Load audio; Length of mel chunks: {}".format(mel_chunks.shape))
     exit()
+
     wav = audio.load_wav(args.audio, 16000)
     mel = audio.melspectrogram(wav)
     if np.isnan(mel.reshape(-1)).sum() > 0:
