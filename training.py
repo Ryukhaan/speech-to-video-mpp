@@ -345,7 +345,7 @@ def train():
     wav, sr = torchaudio.load(args.audio)
     print(type(wav), wav.shape, sr)
     chunk_length_ms = 1  # pydub calculates in millisec
-    for i in tqdm(range(1, wav.shape[1], chunk_length_ms * sr)):
+    for i in tqdm(range(sr, wav.shape[1], chunk_length_ms * sr)):
         chunk = convert_audio(wav[:, i * sr:(i+1) * sr],
                               sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
         chunk = chunk.unsqueeze(0)
