@@ -356,7 +356,7 @@ def train():
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
         mel_chunks.append(codes)
 
-    print("[Step 4 bis] Load audio; Length of mel chunks: {}".format(mel_chunks.shape))
+    print("[Step 4 bis] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     exit()
 
     wav = audio.load_wav(args.audio, 16000)
