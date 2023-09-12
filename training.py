@@ -354,6 +354,7 @@ def train():
             encoded_frames = audio_encodec_model.encode(chunk)
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
     #exit()
+    print(codes.shape)
 
     wav = audio.load_wav(args.audio, 16000)
     mel = audio.melspectrogram(wav)
