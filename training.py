@@ -12,6 +12,11 @@ from scipy.io import loadmat
 import matplotlib.pyplot as plt
 from scipy.signal import correlate
 
+# Audio framework and Encodec
+from encodec import EncodecModel
+from encodec.utils import convert_audio
+import torchaudio
+
 import pickle
 sys.path.append('third_part')
 # 3dmm extraction
@@ -330,6 +335,18 @@ def train():
                                                                          'temp/{}/temp.wav'.format(args.tmp_dir))
         subprocess.call(command, shell=True)
         args.audio = 'temp/{}/temp.wav'.format(args.tmp_dir)
+    audio_encodec_model = EncodecModel.encodec_model_24khz()
+    audio_encodec_model.set_target_bandwidth(6.0)
+    wav, sr = torchaudio.load(args.audio)
+    wav = convert_audio(wav, sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
+    wav = wav.unsqueeze(0)
+    # Extract discrete codes from EnCodec
+    with torch.no_grad():
+        encoded_frames = model.encode(wav)
+    codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
+    print(codes)
+    exit()
+
     wav = audio.load_wav(args.audio, 16000)
     mel = audio.melspectrogram(wav)
     if np.isnan(mel.reshape(-1)).sum() > 0:
