@@ -344,10 +344,11 @@ def train():
     audio_encodec_model.set_target_bandwidth(24.0)
     wav, sr = torchaudio.load(args.audio)
     print(sr)
-    idx_multiplier, mel_chunks = int(0.2 * sr), []
+    t = 5
+    idx_multiplier, mel_chunks = int(1. / fps * sr), []
     #for i, _ in enumerate(tqdm(range(0, wav.shape[1], idx_multiplier), total=int(wav.shape[1] / idx_multiplier))):
     for i, _ in enumerate(tqdm(range(len(full_frames)-5))):
-        chunk = wav[:, i*idx_multiplier:(i+1)*idx_multiplier]
+        chunk = wav[:, i*idx_multiplier:(i+t)*idx_multiplier]
         chunk = convert_audio(chunk,
                               sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
         chunk = chunk.unsqueeze(0)
