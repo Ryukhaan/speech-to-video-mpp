@@ -339,13 +339,19 @@ def train():
     audio_encodec_model = EncodecModel.encodec_model_24khz()
     audio_encodec_model.set_target_bandwidth(6.0)
     wav, sr = torchaudio.load(args.audio)
+
+    n = int(tf.size(wav) / 24000)
+    tmp_audio = wav[:(n * 24000)]
+    x = tf.reshape(tensor=tmp_audio, shape=(n, 24000))  # Reshape along batch dim
+    print(x, wav)
+
     wav = convert_audio(wav, sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
     wav = wav.unsqueeze(0)
     # Extract discrete codes from EnCodec
     with torch.no_grad():
         encoded_frames = audio_encodec_model.encode(wav)
     codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
-    print(codes)
+    print(codes, codes.shape)
     exit()
 
     wav = audio.load_wav(args.audio, 16000)
