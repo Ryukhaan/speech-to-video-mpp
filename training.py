@@ -346,7 +346,7 @@ def train():
     print(sr)
     idx_multiplier, mel_chunks = int(0.2 * sr), []
     #for i, _ in enumerate(tqdm(range(0, wav.shape[1], idx_multiplier), total=int(wav.shape[1] / idx_multiplier))):
-    for i in range(len(full_frames)):
+    for i in range(len(full_frames-5)):
         chunk = wav[:, i*idx_multiplier:(i+1)*idx_multiplier]
         print(chunk.shape)
         chunk = convert_audio(chunk,
