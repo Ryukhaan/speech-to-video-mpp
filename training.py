@@ -343,6 +343,7 @@ def train():
     audio_encodec_model = EncodecModel.encodec_model_24khz()
     audio_encodec_model.set_target_bandwidth(24.0)
     wav, sr = torchaudio.load(args.audio)
+    print(sr)
     chunk_length_ms = 1  # pydub calculates in millisec
     for idx, _ in enumerate(tqdm(range(sr, wav.shape[1], chunk_length_ms * sr), total=int(wav.shape[1] / sr))):
         chunk = wav[:, idx*sr:(idx+1)*sr]
