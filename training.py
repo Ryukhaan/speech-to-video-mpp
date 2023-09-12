@@ -346,9 +346,7 @@ def train():
     print(type(wav), wav.shape, sr, wav[:, 3*sr:4*sr])
     chunk_length_ms = 1  # pydub calculates in millisec
     for idx, _ in enumerate(tqdm(range(sr, wav.shape[1], chunk_length_ms * sr), total=int(wav.shape[1] / sr))):
-
         chunk = wav[:, idx*sr:(idx+1)*sr]
-        print(chunk.size)
         chunk = convert_audio(chunk,
                               sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
         chunk = chunk.unsqueeze(0)
@@ -356,7 +354,6 @@ def train():
         with torch.no_grad():
             encoded_frames = audio_encodec_model.encode(chunk)
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
-        print(codes.shape)
     exit()
 
     wav = audio.load_wav(args.audio, 16000)
