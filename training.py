@@ -348,7 +348,7 @@ def train():
     chunk_length_ms = 1000  # pydub calculates in millisec
     chunks = make_chunks(myaudio, chunk_length_ms)  # Make chunks of one sec
     for chunk in chunks:
-        wav = convert_audio(chunk, sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
+        wav = convert_audio(chunk.get_array_of_samples(), sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
         wav = wav.unsqueeze(0)
         # Extract discrete codes from EnCodec
         with torch.no_grad():
