@@ -343,12 +343,12 @@ def train():
     audio_encodec_model = EncodecModel.encodec_model_24khz()
     audio_encodec_model.set_target_bandwidth(6.0)
     wav, sr = torchaudio.load(args.audio)
-
-    myaudio = AudioSegment.from_file(args.audio, "wav")
+    print(type(wav), wav.shape)
+    #myaudio = AudioSegment.from_file(args.audio, "wav")
     chunk_length_ms = 1000  # pydub calculates in millisec
-    chunks = make_chunks(myaudio, chunk_length_ms)  # Make chunks of one sec
-    for chunk in chunks:
-        wav = convert_audio(np.array(chunk.get_array_of_samples()), sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
+    #chunks = make_chunks(myaudio, chunk_length_ms)  # Make chunks of one sec
+    for i in range(0, len(wav), 1 * sr):
+        wav = convert_audio(wav[i * sr: (i+1)*sr, :], sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
         wav = wav.unsqueeze(0)
         # Extract discrete codes from EnCodec
         with torch.no_grad():
