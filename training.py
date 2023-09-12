@@ -348,6 +348,7 @@ def train():
     #for i, _ in enumerate(tqdm(range(0, wav.shape[1], idx_multiplier), total=int(wav.shape[1] / idx_multiplier))):
     for i in range(len(full_frames)):
         chunk = wav[:, i*idx_multiplier:(i+1)*idx_multiplier]
+        print(chunk.shape)
         chunk = convert_audio(chunk,
                               sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
         chunk = chunk.unsqueeze(0)
