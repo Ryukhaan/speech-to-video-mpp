@@ -347,7 +347,7 @@ def train():
     t = 5
     idx_multiplier, mel_chunks = int(1. / fps * sr), []
     #for i, _ in enumerate(tqdm(range(0, wav.shape[1], idx_multiplier), total=int(wav.shape[1] / idx_multiplier))):
-    for i, _ in enumerate(tqdm(range(len(full_frames)-5))):
+    for i, _ in enumerate(tqdm(range(len(full_frames)-t))):
         chunk = wav[:, i*idx_multiplier:(i+t)*idx_multiplier]
         chunk = convert_audio(chunk,
                               sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
@@ -357,7 +357,7 @@ def train():
             encoded_frames = audio_encodec_model.encode(chunk)
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
         mel_chunks.append(codes)
-    print(mel_chunks[-1].shape)
+    print(mel_chunks[0], mel_chunks[1], mel_chunks[-1].shape)
     print("[Step 4 bis] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     exit()
 
