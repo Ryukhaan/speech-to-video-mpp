@@ -31,6 +31,6 @@ if __name__ == "__main__":
             audio = video.audio
             # Export the Audio
             if args.outdir:
-                audio.write_audiofile(args.outdir + file.split('/')[-1][:-3] + "wav", verbose=False)
+                audio.write_audiofile(args.outdir + file.split('/')[-1][:-3] + "wav", verbose=False, logger=None)
             else:
-                audio.write_audiofile(file[:-3] + "wav", verbose=False)
+                audio.write_audiofile(file[:-3] + "wav", verbose=False, logger=None)
