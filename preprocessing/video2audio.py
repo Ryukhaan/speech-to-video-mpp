@@ -24,7 +24,7 @@ if __name__ == "__main__":
         files = glob.glob(args.dataset + "*.mp4", recursive=True)
         pbar = tqdm(files)
         for file in pbar:
-            pbar.set_description("Processing %s" % file)
+            pbar.set_description("Processing %s" % file.split('/')[-1])
             # Load the Video
             video = moviepy.editor.VideoFileClip(file)
             # Extract the Audio
