@@ -2,9 +2,12 @@ import argparse
 import moviepy.editor
 import os
 import glob
+import tqdm
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("dataset", help="Directory to the dataset")
+    parser.add_argument("--outdir", default=None, type=str, help="Directory to save audio")
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -19,12 +22,13 @@ if __name__ == "__main__":
         audio.write_audiofile(args.dataset[:-3] + "wav")
     else:
         files = glob.glob(args.dataset + "*.mp4", recursive=True)
-        for file in files:
-            print(file)
+        for file in tqdm(files):
             # Load the Video
             video = moviepy.editor.VideoFileClip(file)
             # Extract the Audio
             audio = video.audio
             # Export the Audio
-            audio.write_audiofile(file[:-3] + "wav")
-            exit()
+            if args.outdir:
+                audio.write_audiofile(args.outdir + file.split('/')[-1][:-3] + "wav")
+            else:
+                audio.write_audiofile(file[:-3] + "wav")
