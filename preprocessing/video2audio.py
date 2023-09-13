@@ -2,7 +2,7 @@ import argparse
 import moviepy.editor
 import os
 import glob
-import tqdm
+from tqdm import tqdm
 
 def get_args():
     parser = argparse.ArgumentParser()
