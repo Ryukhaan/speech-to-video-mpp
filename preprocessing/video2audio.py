@@ -22,13 +22,15 @@ if __name__ == "__main__":
         audio.write_audiofile(args.dataset[:-3] + "wav")
     else:
         files = glob.glob(args.dataset + "*.mp4", recursive=True)
-        for file in tqdm(files):
+        pbar = tqdm(files)
+        for file in pbar:
+            pbar.set_description("Processing %s" % file)
             # Load the Video
             video = moviepy.editor.VideoFileClip(file)
             # Extract the Audio
             audio = video.audio
             # Export the Audio
             if args.outdir:
-                audio.write_audiofile(args.outdir + file.split('/')[-1][:-3] + "wav")
+                audio.write_audiofile(args.outdir + file.split('/')[-1][:-3] + "wav", verbose=False)
             else:
-                audio.write_audiofile(file[:-3] + "wav")
+                audio.write_audiofile(file[:-3] + "wav", verbose=False)
