@@ -20,7 +20,7 @@ if __name__ == "__main__":
     else:
         files = glob.glob(args.dataset + "*.mp4", recursive=True)
         for file in files:
-            print(file))
+            print(file)
             # Load the Video
             video = moviepy.editor.VideoFileClip(file)
             # Extract the Audio
