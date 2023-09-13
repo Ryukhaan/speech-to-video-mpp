@@ -12,11 +12,11 @@ if __name__ == "__main__":
     # Check if dataset is a file or a directory
     if os.path.isfile(args.dataset):
         # Load the Video
-        video = moviepy.editor.VideoFileClip("Video.mp4")
+        video = moviepy.editor.VideoFileClip(args.dataset)
         # Extract the Audio
         audio = video.audio
         # Export the Audio
-        audio.write_audiofile("A
+        audio.write_audiofile(args.dataset[:-3] + "wav")
     else:
         files = glob.glob(args.dataset + "*.mp4", recursive=True)
         for file in files:
