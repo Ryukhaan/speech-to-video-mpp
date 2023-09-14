@@ -51,12 +51,14 @@ class ArcFaceLoss(torch.nn.Module):
         self.lm3d = 'checkpoints/BFM'
         self.l2_loss = torch.nn.MSELoss()
 
-    def forward(self, y_pred, y_true):
+    def forward(self, lm, idx, y_pred, y_true):
+
         torch.cuda.empty_cache()
         net_recon = load_face3d_net(self.face3d_net_path, self.device)
         lm3d_std = load_lm3d(self.lm3d)
         print(y_pred.shape)
         _, C, W, H = y_pred.shape
+
         lm_idx = lm[idx].reshape([-1, 2])
         if np.mean(lm_idx) == -1:
             lm_idx = (lm3d_std[:, :2]+1) / 2.
@@ -450,7 +452,7 @@ def train():
         #loss_L.required_grad = True
         #loss_L.backward()
 
-        loss_E = enet_criterion(pred, reference)
+        loss_E = enet_criterion(lm, i, pred, reference)
         loss_E.required_grad = True
         loss_E.backward()
 
