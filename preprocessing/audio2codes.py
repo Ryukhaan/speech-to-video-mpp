@@ -9,6 +9,7 @@ import torch
 import torchaudio
 import cv2
 import numpy as np
+from tqdm import tqdm
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -29,14 +30,17 @@ def read_video(video):
             break
         number_of_frames += 1
     return number_of_frames, fps
-def padding(audio, t, fps):
 
-def encode_audio(filename, model, t, number_of_frames):
+def encode_audio(filename, model, t):
+    # Load audio
     wav, sr = torchaudio.load(filename)
+    # Load video to get FPS and total number of frames
     number_of_frames, fps = read_video(filename[:-3] + 'mp4')
-    idx_multiplier, codes_chunks = int(1. / fps * sr), []
+    # Pad wav to get NoF codec
     p2d = (float(t) / fps, float(t) / fps, 0, 0)
     wav = torch.nn.functional.pad(wav, p2d, "constant", 0)
+    idx_multiplier, codes_chunks = int(1. / fps * sr), []
+    # Iterate through frames
     for i, _ in enumerate(tqdm(range(len(number_of_frames)))):
         chunk = wav[:, i * idx_multiplier:(i + t) * idx_multiplier]
         chunk = convert_audio(chunk, sr, model.sample_rate, model.channels)
@@ -46,8 +50,8 @@ def encode_audio(filename, model, t, number_of_frames):
             encoded_frames = model.encode(chunk)
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
         codes_chunks.append(codes)
-
-    np.save(base_name + '_codes.npy', np.array(codes_chunks))
+    assert len(codes_chunks) == number_of_frames
+    np.save(filename[:-4] + '_codes.npy', np.array(codes_chunks))
 
 if __name__ == "__main__":
     args = get_args()
@@ -63,13 +67,7 @@ if __name__ == "__main__":
     # Check if dataset is a file or a directory
     if os.path.isfile(args.dataset):
         # Load audio
-        wav, sr = torchaudio.load(args.dataset)
-        video_stream = cv2.VideoCapture(args.dataset + name[:-3] + 'mp4')
-        fps = video_stream.get(cv2.CAP_PROP_FPS)
-        # Extract the Audio
-        audio = video.audio
-        # Export the Audio
-        audio.write_audiofile(args.dataset[:-3] + "wav")
+        encode_audio(args.dataset, audio_encodec_model, args.t)
     else:
         files = glob.glob(args.dataset + "*.mp4", recursive=True)
         pbar = tqdm(files)
