@@ -428,9 +428,9 @@ def train():
     #lnet_criterion = LNetLoss()
     enet_criterion = ENetLoss(device=device)
     #torch.set_grad_enabled(True)
-    bar = tqdm(gen, desc='[Step 6] Lip Synthesis:',
-                 total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))
     for epoch in range(10):
+        bar = tqdm(gen, desc='[Step 6] Lip Synthesis:',
+                   total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))
         for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(bar):
 
             optimizer_ENet.zero_grad()
