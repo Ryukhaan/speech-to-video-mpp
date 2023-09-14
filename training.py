@@ -424,14 +424,15 @@ def train():
     kp_extractor = KeypointExtractor()
 
     #optimizer_LNet = torch.optim.Adam(L_Net.parameters(), lr=0.001)
-    optimizer_LNet = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer_ENet = torch.optim.Adam(model.parameters(), lr=0.001)
     #lnet_criterion = LNetLoss()
     enet_criterion = ENetLoss(device=device)
+    torch.set_grad_enabled(True)
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
 
-        optimizer_LNet.zero_grad()
+        optimizer_ENet.zero_grad()
 
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
@@ -456,7 +457,7 @@ def train():
         #loss_L.backward()
 
         loss_E = enet_criterion(lm, i, pred, reference)
-        loss_E.required_grad = True
+        loss_E.requires_grad = True
         loss_E.backward()
 
         #optimizer_LNet.step()
