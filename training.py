@@ -427,6 +427,7 @@ def train():
     optimizer_ENet = torch.optim.Adam(model.parameters(), lr=3e-5)
     #lnet_criterion = LNetLoss()
     enet_criterion = ENetLoss(device=device)
+    model.set_training_style()
     #torch.set_grad_enabled(True)
     for epoch in range(10):
         bar = tqdm(gen, desc='[Step 6] Lip Synthesis:',

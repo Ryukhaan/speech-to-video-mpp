@@ -137,3 +137,7 @@ class ENet(nn.Module):
         else:
             outputs = _outputs
         return outputs, low_res_img
+
+    def set_training_style(self):
+        for param in self.conv_body_down.parameters():
+            param.requires_grad = False
