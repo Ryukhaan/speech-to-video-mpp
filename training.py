@@ -67,7 +67,7 @@ class ArcFaceLoss(torch.nn.Module):
             lm_idx[:, -1] = H - 1 - lm_idx[:, -1]
 
         # Y Predicted
-        trans_params, im_idx, lm_idx, _ = align_img(y_pred, lm_idx, lm3d_std)
+        trans_params, im_idx, lm_idx, _ = align_img(y_pred[0], lm_idx, lm3d_std)
         trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
         im_idx_tensor = torch.tensor(np.array(im_idx)/255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
         with torch.no_grad():
@@ -76,7 +76,7 @@ class ArcFaceLoss(torch.nn.Module):
         pred_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'],\
                                          pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
         # Y Targets
-        trans_params, im_idx, lm_idx, _ = align_img(y_true, lm_idx, lm3d_std)
+        trans_params, im_idx, lm_idx, _ = align_img(y_true[0], lm_idx, lm3d_std)
         trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
         im_idx_tensor = torch.tensor(np.array(im_idx) / 255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
         with torch.no_grad():
