@@ -339,27 +339,27 @@ def train():
                                                                          'temp/{}/temp.wav'.format(args.tmp_dir))
         subprocess.call(command, shell=True)
         args.audio = 'temp/{}/temp.wav'.format(args.tmp_dir)
-    # Encodec audio
-    audio_encodec_model = EncodecModel.encodec_model_24khz()
-    audio_encodec_model.set_target_bandwidth(24.0)
-    wav, sr = torchaudio.load(args.audio)
-    print(sr)
-    t = 5
-    idx_multiplier, mel_chunks = int(1. / fps * sr), []
-    #for i, _ in enumerate(tqdm(range(0, wav.shape[1], idx_multiplier), total=int(wav.shape[1] / idx_multiplier))):
-    for i, _ in enumerate(tqdm(range(len(full_frames)-t))):
-        chunk = wav[:, i*idx_multiplier:(i+t)*idx_multiplier]
-        chunk = convert_audio(chunk,
-                              sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
-        chunk = chunk.unsqueeze(0)
-        # Extract discrete codes from EnCodec
-        with torch.no_grad():
-            encoded_frames = audio_encodec_model.encode(chunk)
-        codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
-        mel_chunks.append(codes)
-    print(mel_chunks[0], mel_chunks[4*t], mel_chunks[-1].shape)
-    print("[Step 4 bis] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
-    exit()
+    # # Encodec audio
+    # audio_encodec_model = EncodecModel.encodec_model_24khz()
+    # audio_encodec_model.set_target_bandwidth(24.0)
+    # wav, sr = torchaudio.load(args.audio)
+    # print(sr)
+    # t = 5
+    # idx_multiplier, mel_chunks = int(1. / fps * sr), []
+    # #for i, _ in enumerate(tqdm(range(0, wav.shape[1], idx_multiplier), total=int(wav.shape[1] / idx_multiplier))):
+    # for i, _ in enumerate(tqdm(range(len(full_frames)-t))):
+    #     chunk = wav[:, i*idx_multiplier:(i+t)*idx_multiplier]
+    #     chunk = convert_audio(chunk,
+    #                           sr, audio_encodec_model.sample_rate, audio_encodec_model.channels)
+    #     chunk = chunk.unsqueeze(0)
+    #     # Extract discrete codes from EnCodec
+    #     with torch.no_grad():
+    #         encoded_frames = audio_encodec_model.encode(chunk)
+    #     codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
+    #     mel_chunks.append(codes)
+    # print(mel_chunks[0], mel_chunks[4*t], mel_chunks[-1].shape)
+    # print("[Step 4 bis] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
+    # exit()
 
     wav = audio.load_wav(args.audio, 16000)
     mel = audio.melspectrogram(wav)
