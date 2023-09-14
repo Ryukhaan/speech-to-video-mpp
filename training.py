@@ -56,7 +56,7 @@ class ArcFaceLoss(torch.nn.Module):
         net_recon = load_face3d_net(self.face3d_net_path, self.device)
         lm3d_std = load_lm3d(self.lm3d)
         print(y_pred.shape)
-        _, W, H = y_pred.shape
+        _, C, W, H = y_pred.shape
         lm_idx = lm[idx].reshape([-1, 2])
         if np.mean(lm_idx) == -1:
             lm_idx = (lm3d_std[:, :2]+1) / 2.
