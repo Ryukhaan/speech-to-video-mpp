@@ -428,9 +428,9 @@ def train():
     #lnet_criterion = LNetLoss()
     enet_criterion = ENetLoss(device=device)
     #torch.set_grad_enabled(True)
-    for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
-            tqdm(gen, desc='[Step 6] Lip Synthesis:',
-                 total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
+    bar = tqdm(gen, desc='[Step 6] Lip Synthesis:',
+                 total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))
+    for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(bar):
 
         optimizer_ENet.zero_grad()
 
@@ -459,7 +459,7 @@ def train():
         loss_E = enet_criterion(lm, i, pred, reference)
         loss_E.requires_grad = True
         loss_E.backward()
-
+        bar.set_description("{}".format(loss_E))
         #optimizer_LNet.step()
         optimizer_ENet.step()
     save_checkpoint(args.ENet_path + "_test.pth", model)
