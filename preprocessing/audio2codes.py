@@ -42,6 +42,7 @@ def encode_audio(filename, model, t):
     idx_multiplier, codes_chunks = int(1. / fps * sr), []
     # Iterate through frames
     for i, _ in enumerate(tqdm(range(len(number_of_frames)))):
+        # Get 5 previous frames
         chunk = wav[:, i * idx_multiplier:(i + t) * idx_multiplier]
         chunk = convert_audio(chunk, sr, model.sample_rate, model.channels)
         chunk = chunk.unsqueeze(0)
@@ -51,10 +52,12 @@ def encode_audio(filename, model, t):
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
         codes_chunks.append(codes)
     assert len(codes_chunks) == number_of_frames
+    # Save codec into an npy file
     np.save(filename[:-4] + '_codes.npy', np.array(codes_chunks))
 
 if __name__ == "__main__":
     args = get_args()
+
     # Device Cuda or CPU and then set cache empty
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     gc.collect()
@@ -74,24 +77,7 @@ if __name__ == "__main__":
         for audio in pbar:
             pbar.set_description("Processing %s" % file.split('/')[-1])
             name = audio.split('/')[-1]
-            # Load audio
-
-            # Load video
-            t = 5
-
-            # Extract the Audio
-            audio = video.audio
-            # Export the Audio
             if args.outdir:
-                audio.write_audiofile(args.outdir + file.split('/')[-1][:-3] + "wav", verbose=False, logger=None)
+                encode_audio(args.outdir + audio.split('/')[-1])
             else:
-                audio.write_audiofile(file[:-3] + "wav", verbose=False, logger=None)
-
-
-    print(sr)
-
-    # for i, _ in enumerate(tqdm(range(0, wav.shape[1], idx_multiplier), total=int(wav.shape[1] / idx_multiplier))):
-
-    print(mel_chunks[0], mel_chunks[4 * t], mel_chunks[-1].shape)
-    print("[Step 4 bis] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
-    exit()
+                encode_audio(audio, audio_encodec_model, args.t)
