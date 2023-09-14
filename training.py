@@ -424,44 +424,45 @@ def train():
     kp_extractor = KeypointExtractor()
 
     #optimizer_LNet = torch.optim.Adam(L_Net.parameters(), lr=0.001)
-    optimizer_ENet = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer_ENet = torch.optim.Adam(model.parameters(), lr=3e-5)
     #lnet_criterion = LNetLoss()
     enet_criterion = ENetLoss(device=device)
     #torch.set_grad_enabled(True)
     bar = tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))
-    for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(bar):
+    for epoch in range(10):
+        for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(bar):
 
-        optimizer_ENet.zero_grad()
+            optimizer_ENet.zero_grad()
 
-        img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
-        mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
-        #img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
-        incomplete, reference = torch.split(img_batch, 3, dim=1)
-        pred, low_res = model(mel_batch, img_batch, reference)
+            img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
+            mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
+            #img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
+            incomplete, reference = torch.split(img_batch, 3, dim=1)
+            pred, low_res = model(mel_batch, img_batch, reference)
 
-        #own_net.zero_grad()
-        #t = own_net(reference)
-        #t.requires_grad
-        #reference.requires_grad
+            #own_net.zero_grad()
+            #t = own_net(reference)
+            #t.requires_grad
+            #reference.requires_grad
 
-        #loss_L = lnet_criterion(pred, reference)
-        #loss_L.requires_grad = True
-        #loss_L.backward()
+            #loss_L = lnet_criterion(pred, reference)
+            #loss_L.requires_grad = True
+            #loss_L.backward()
 
-        #pred = torch.clamp(pred, 0, 1).to(device)
-        #low_res = low_res.to(device)
-        #reference = reference.to(device)
-        #loss_L = torch.nn.L1Loss()(pred, reference)
-        #loss_L.required_grad = True
-        #loss_L.backward()
+            #pred = torch.clamp(pred, 0, 1).to(device)
+            #low_res = low_res.to(device)
+            #reference = reference.to(device)
+            #loss_L = torch.nn.L1Loss()(pred, reference)
+            #loss_L.required_grad = True
+            #loss_L.backward()
 
-        loss_E = enet_criterion(lm, i, pred, reference)
-        loss_E.requires_grad = True
-        loss_E.backward()
-        bar.set_description("{}".format(loss_E))
-        #optimizer_LNet.step()
-        optimizer_ENet.step()
+            loss_E = enet_criterion(lm, i, pred, reference)
+            loss_E.requires_grad = True
+            loss_E.backward()
+            bar.set_description("{}".format(loss_E))
+            #optimizer_LNet.step()
+            optimizer_ENet.step()
     save_checkpoint(args.ENet_path + "_test.pth", model)
 
 def datagen(frames, mels, full_frames, frames_pil, cox):
