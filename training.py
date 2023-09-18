@@ -464,7 +464,7 @@ def train():
             bar.set_description("{}".format(loss_E))
             #optimizer_LNet.step()
             optimizer_ENet.step()
-    save_checkpoint(args.ENet_path + "_test.pth", model)
+        save_checkpoint(args.ENet_path + "_test{}.pth".format(epoch), model)
 
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
