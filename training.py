@@ -307,6 +307,7 @@ def train():
     # load DNet, model(LNet and ENet)
     torch.cuda.empty_cache()
     D_Net, L_Net, model =  load_train_model(args, device)
+    model.set_training_style()
     summary(model)
     exit()
     # Video Image Stabilized
@@ -429,7 +430,6 @@ def train():
     optimizer_ENet = torch.optim.Adam(model.parameters(), lr=3e-5)
     #lnet_criterion = LNetLoss()
     enet_criterion = ENetLoss(device=device)
-    model.set_training_style()
 
     #torch.set_grad_enabled(True)
     for epoch in range(10):
