@@ -177,8 +177,8 @@ class ENetLoss(torch.nn.Module):
         ladv_val = 0.
         # TODO : implement advsersial loss and id arcface loss
 
-        lambda_1 = 0.2
-        lambda_p = 1.
+        lambda_1 = 1.
+        lambda_p = 0.5
         lambda_adv = 100.
         lambda_id = 0.4
         return lambda_1 * l1_val + lambda_p * lp_val + lambda_adv * ladv_val + lambda_id * lid_val
