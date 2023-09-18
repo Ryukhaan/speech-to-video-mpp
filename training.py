@@ -3,6 +3,7 @@ import glob
 import gc
 import torch
 import torchvision
+from torchsummary import summary
 
 import numpy as np
 import cv2, os, sys, subprocess, platform, torch
@@ -306,7 +307,8 @@ def train():
     # load DNet, model(LNet and ENet)
     torch.cuda.empty_cache()
     D_Net, L_Net, model =  load_train_model(args, device)
-
+    summary(model)
+    exit()
     # Video Image Stabilized
     out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(args.tmp_dir),
                           cv2.VideoWriter_fourcc(*'mp4v'), fps, (256, 256))
@@ -428,6 +430,7 @@ def train():
     #lnet_criterion = LNetLoss()
     enet_criterion = ENetLoss(device=device)
     model.set_training_style()
+
     #torch.set_grad_enabled(True)
     for epoch in range(10):
         bar = tqdm(gen, desc='[Step 6] Lip Synthesis:',
