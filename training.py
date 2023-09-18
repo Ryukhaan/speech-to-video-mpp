@@ -427,7 +427,7 @@ def train():
     kp_extractor = KeypointExtractor()
 
     #optimizer_LNet = torch.optim.Adam(L_Net.parameters(), lr=0.001)
-    optimizer_ENet = torch.optim.Adam(model.parameters(), lr=3e-5)
+    optimizer_ENet = torch.optim.Adam(model.parameters(), lr=1e-3)
     #lnet_criterion = LNetLoss()
     enet_criterion = ENetLoss(device=device)
 
