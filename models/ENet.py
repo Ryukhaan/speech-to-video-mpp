@@ -136,8 +136,14 @@ class ENet(nn.Module):
             low_res_img = torch.stack(low_res_img, dim=2)
         else:
             outputs = _outputs
-        return outputs, low_res_img
+        return outputs,
 
     def set_training_style(self):
+        for param in self.conv_body_first.parameters():
+            param.requires_grad = False
         for param in self.conv_body_down.parameters():
+            param.requires_grad = False
+        for param in self.final_linear.parameters():
+            param.requires_grad = False
+        for param in self.final_conv.parameters():
             param.requires_grad = False
