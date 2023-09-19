@@ -48,13 +48,36 @@ pip install -r requirements.txt
 
 ### Pre-processing datas
 ```
-conda -n Montreal
+conda -n mfa-env
 conda install -c conda-forge montreal-forced-aligner
 mfa model download acoustic french_mfa
 mfa model download dictionary french_mfa
 ```
 
-Use another acoustic and dictionnary if needed : [acoustic models][https://mfa-models.readthedocs.io/en/latest/acoustic/index.html] and  [dictionaries][https://mfa-models.readthedocs.io/en/latest/dictionary/index.html]
+Use another acoustic and dictionnary if needed : [acoustic models](https://mfa-models.readthedocs.io/en/latest/acoustic/index.html) and  [dictionaries](https://mfa-models.readthedocs.io/en/latest/dictionary/index.html)
+
+#### Converting video to audio (wav format)
+```
+python3 preprocessing/video2audio.py [CORPUS_DIRECTORY]
+```
+
+#### Extract encodec from audio
+```
+python3 preprocessing/audio2codes.py [CORPUS_DIRECTORY]
+```
+
+#### Align text to audio
+```
+conda activate mfa-env
+mfa align CORPUS_DIRECTORY DICTIONARY_NAME ACOUSTIC_MODEL_NAME OUTPUT_DIRECTORY
+conda deactivate
+```
+
+#### Convert phonemes to one-hot vector
+(Really needed ?)
+```
+python3 preprocessing/phoneme2vector.py
+```
 
 #### Pretrained Models
 Please download our [pre-trained models](https://drive.google.com/drive/folders/18rhjMpxK8LVVxf7PI6XwOidt8Vouv_H0?usp=share_link) and put them in `./checkpoints`.
