@@ -13,7 +13,7 @@
     <sup>1</sup> Université de Lyon 2 &emsp; <sup>2</sup> Mon Petit Placement
 </div>
 <br>
-<i><strong><a href='https://sa2022.siggraph.org/' target='_blank'>SIGGRAPH Asia 2022 Conferenence Track</a></strong></i>
+<i><strong><a href='https://sa2022.siggraph.org/' target='_blank'>Conference/Journal Name</a></strong></i>
 <br>
 <br>
 <img src="./docs/static/images/teaser.png?raw=true" width="768px">
@@ -29,9 +29,8 @@
 </div>
 
 ## Results in the Wild （contains audio）
-https://user-images.githubusercontent.com/4397546/224310754-665eb2dd-aadc-47dc-b1f9-2029a937b20a.mp4
 
-
+Link to video
 
 
 ## Environment
