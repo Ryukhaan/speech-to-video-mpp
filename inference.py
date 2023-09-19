@@ -307,9 +307,13 @@ def main():
                 ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
                 #cv2.imwrite("./results/{}.png".format(delta), pp)
                 out.write(ff)
+                cv2.imwrite("temp/images/{}.png".format(i), pp)
+                if i == 10:
+                    exit()
             else:
                 tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
                 pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
+
                 out.write(pp)
     out.release()
     
