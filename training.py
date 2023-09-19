@@ -171,7 +171,7 @@ class ENetLoss(torch.nn.Module):
 
         # Acrface loss (L2 function) for Identity
         l_id = ArcFaceLoss(self.device)
-        lid_val = l_id(lm, idx, y_pred, y_true)
+        lid_val = l_id(y_pred, y_true)
         #lid_val = 0.
 
         # Adversial network AV-hubert ?
