@@ -42,7 +42,7 @@ def encode_audio(filename, model, t):
     wav = torch.nn.functional.pad(wav, p2d, "constant", 0)
     idx_multiplier, codes_chunks = int(1. / fps * sr), []
     # Iterate through frames
-    for i, _ in enumerate(tqdm(range(len(number_of_frames)))):
+    for i, _ in enumerate(tqdm(range(number_of_frames))):
         # Get 5 previous frames
         chunk = wav[:, i * idx_multiplier - nr: i * idx_multiplier + nr]
         chunk = convert_audio(chunk, sr, model.sample_rate, model.channels)
