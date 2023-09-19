@@ -159,7 +159,7 @@ class ENetLoss(torch.nn.Module):
         super(ENetLoss, self).__init__()
         self.device = device
 
-    def forward(self, y_pred, y_true):
+    def forward(self, semantic, y_pred, y_true):
 
         # L1-Loss
         L1 = torch.nn.L1Loss()
@@ -171,7 +171,7 @@ class ENetLoss(torch.nn.Module):
 
         # Acrface loss (L2 function) for Identity
         l_id = ArcFaceLoss(self.device)
-        lid_val = l_id(y_pred, y_true)
+        lid_val = l_id(y_pred, semantic)
         #lid_val = 0.
 
         # Adversial network AV-hubert ?
@@ -462,7 +462,7 @@ def train():
             #loss_L.required_grad = True
             #loss_L.backward()
             print(type(pred), type(semantic_npy), type(semantic_npy[i]))
-            loss_E = enet_criterion(pred, semantic_npy[i])
+            loss_E = enet_criterion(semantic_npy[i], pred, reference)
             loss_E.requires_grad = True
             loss_E.backward()
             bar.set_description("{}".format(loss_E))
