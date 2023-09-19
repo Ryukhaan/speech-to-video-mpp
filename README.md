@@ -5,8 +5,8 @@
   <a href='https://arxiv.org/abs/2211.14758'><img src='https://img.shields.io/badge/ArXiv-2211.14758-red'></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='https://vinthony.github.io/video-retalking/'><img src='https://img.shields.io/badge/Project-Page-Green'></a>
 
 <div>
-    <a target='_blank'>Kun Cheng <sup>*,1,2</sup> </a>&emsp;
-    <a href='https://vinthony.github.io/' target='_blank'>Xiaodong Cun <sup>*,2</a>&emsp;
+    <a target='_blank'>Rémi Decelle <sup>*,1,2</sup> </a>&emsp;
+    <a href='https://vinthony.github.io/' target='_blank'>Serge Miguet <sup>*,2</a>&emsp;
     <a href='https://yzhang2016.github.io/yongnorriszhang.github.io/' target='_blank'>Yong Zhang <sup>2</sup></a>&emsp;
     <a href='https://menghanxia.github.io/' target='_blank'>Menghan Xia <sup>2</sup></a>&emsp;
     <a href='https://feiiyin.github.io/' target='_blank'>Fei Yin <sup>2,3</sup></a>&emsp;<br/>
@@ -17,7 +17,7 @@
 </div>
 <br>
 <div>
-    <sup>1</sup> Xidian University &emsp; <sup>2</sup> Tencent AI Lab &emsp; <sup>3</sup> Tsinghua University
+    <sup>1</sup> Université de Lyon 2 &emsp; <sup>2</sup> Mon Petit Placement
 </div>
 <br>
 <i><strong><a href='https://sa2022.siggraph.org/' target='_blank'>SIGGRAPH Asia 2022 Conferenence Track</a></strong></i>
