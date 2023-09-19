@@ -42,7 +42,7 @@ def encode_audio(filename, model, t):
     wav = torch.nn.functional.pad(wav, p2d, "constant", 0)
     idx_multiplier, codes_chunks = int(1. / fps * sr), []
     # Iterate through frames
-    for i, _ in enumerate(tqdm(range(number_of_frames))):
+    for i, _ in enumerate(tqdm(range(number_of_frames), position=1, leave=False)):
         # Get 5 previous frames
         chunk = wav[:, i * idx_multiplier: i * idx_multiplier + 2*nr]
         chunk = convert_audio(chunk, sr, model.sample_rate, model.channels)
@@ -52,6 +52,7 @@ def encode_audio(filename, model, t):
             encoded_frames = model.encode(chunk)
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
         codes_chunks.append(codes)
+        print(codes_chunks.shape)
     assert len(codes_chunks) == number_of_frames
     # Save codec into an npy file
     np.save(filename[:-4] + '_codes.npy', np.array(codes_chunks))
@@ -74,7 +75,7 @@ if __name__ == "__main__":
         encode_audio(args.dataset, audio_encodec_model, args.t)
     else:
         files = glob.glob(args.dataset + "*.mp4", recursive=True)
-        pbar = tqdm(files)
+        pbar = tqdm(files, position=0)
         for audio in pbar:
             pbar.set_description("Processing %s" % audio.split('/')[-1])
             name = audio.split('/')[-1]
