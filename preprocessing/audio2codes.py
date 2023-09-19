@@ -1,7 +1,7 @@
 import os
 import glob
 import gc
-
+import argparse
 from encodec import EncodecModel
 from encodec.utils import convert_audio
 
@@ -37,13 +37,14 @@ def encode_audio(filename, model, t):
     # Load video to get FPS and total number of frames
     number_of_frames, fps = read_video(filename[:-3] + 'mp4')
     # Pad wav to get NoF codec
-    p2d = (float(t) / fps, float(t) / fps, 0, 0)
+    nr = int(0.1 * sr)
+    p2d = (nr, nr, 0, 0)
     wav = torch.nn.functional.pad(wav, p2d, "constant", 0)
     idx_multiplier, codes_chunks = int(1. / fps * sr), []
     # Iterate through frames
     for i, _ in enumerate(tqdm(range(len(number_of_frames)))):
         # Get 5 previous frames
-        chunk = wav[:, i * idx_multiplier:(i + t) * idx_multiplier]
+        chunk = wav[:, i * idx_multiplier - nr: i * idx_multiplier + nr]
         chunk = convert_audio(chunk, sr, model.sample_rate, model.channels)
         chunk = chunk.unsqueeze(0)
         # Extract discrete codes from EnCodec
