@@ -461,7 +461,7 @@ def train():
             #loss_L = torch.nn.L1Loss()(pred, reference)
             #loss_L.required_grad = True
             #loss_L.backward()
-
+            print(type(pred), type(semantic_npy), type(semantic_npy[i]))
             loss_E = enet_criterion(pred, semantic_npy[i])
             loss_E.requires_grad = True
             loss_E.backward()
