@@ -462,7 +462,7 @@ def train():
             #loss_L.required_grad = True
             #loss_L.backward()
 
-            loss_E = enet_criterion(pred, video_coeffs[i])
+            loss_E = enet_criterion(pred, semantic_npy[i])
             loss_E.requires_grad = True
             loss_E.backward()
             bar.set_description("{}".format(loss_E))
