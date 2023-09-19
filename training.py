@@ -52,7 +52,7 @@ class ArcFaceLoss(torch.nn.Module):
         self.lm3d = 'checkpoints/BFM'
         self.l2_loss = torch.nn.MSELoss()
 
-    def forward(self, lm, idx, y_pred, y_true):
+    def forward(self, y_pred, y_true):
 
         torch.cuda.empty_cache()
         net_recon = load_face3d_net(self.face3d_net_path, self.device)
@@ -79,17 +79,17 @@ class ArcFaceLoss(torch.nn.Module):
         pred_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'],\
                                          pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
         # Y Targets
-        d_ytrue = y_true.cpu().detach().numpy()
-        d_ytrue = cv2.fromarray(d_ytrue)
-        trans_params, im_idx, lm_idx, _ = align_img(d_ytrue[0], lm_idx, lm3d_std)
-        trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
-        im_idx_tensor = torch.tensor(np.array(im_idx) / 255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
-        with torch.no_grad():
-            coeffs = split_coeff(net_recon(im_idx_tensor))
-        true_coeff = {key: coeffs[key].cpu().numpy() for key in coeffs}
-        true_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'], \
-                                     pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
-        return self.l2_loss(pred_coeff, true_coeff)
+        #d_ytrue = y_true.cpu().detach().numpy()
+        #d_ytrue = cv2.fromarray(d_ytrue)
+        #trans_params, im_idx, lm_idx, _ = align_img(d_ytrue[0], lm_idx, lm3d_std)
+        #trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
+        #im_idx_tensor = torch.tensor(np.array(im_idx) / 255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
+        #with torch.no_grad():
+        #    coeffs = split_coeff(net_recon(im_idx_tensor))
+        #true_coeff = {key: coeffs[key].cpu().numpy() for key in coeffs}
+        #true_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'], \
+        #                             pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
+        return self.l2_loss(pred_coeff, y_true)
 
 class VGGPerceptualLoss(torch.nn.Module):
     def __init__(self, resize=True):
@@ -462,7 +462,7 @@ def train():
             #loss_L.required_grad = True
             #loss_L.backward()
 
-            loss_E = enet_criterion(lm, i, pred, reference)
+            loss_E = enet_criterion(pred, video_coeffs[i])
             loss_E.requires_grad = True
             loss_E.backward()
             bar.set_description("{}".format(loss_E))
