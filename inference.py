@@ -308,7 +308,7 @@ def main():
                 #cv2.imwrite("./results/{}.png".format(delta), pp)
                 out.write(ff)
                 print( os.getcwd() + "./temp/images/{}.png".format(i) )
-                cv2.imwrite(os.getcwd() + "./temp/images/{}.png".format(i), pp)
+                cv2.imwrite(os.getcwd() + "/./temp/images/{}.png".format(i), pp)
                 if i == 10:
                     exit()
             else:
