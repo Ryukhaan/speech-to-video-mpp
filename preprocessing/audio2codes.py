@@ -52,7 +52,7 @@ def encode_audio(filename, model, t):
             encoded_frames = model.encode(chunk)
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
         codes_chunks.append(codes)
-        print(codes_chunks.shape)
+        print(codes_chunks[0].shape)
     assert len(codes_chunks) == number_of_frames
     # Save codec into an npy file
     np.save(filename[:-4] + '_codes.npy', np.array(codes_chunks))
