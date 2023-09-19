@@ -307,7 +307,7 @@ def main():
                 ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
                 #cv2.imwrite("./results/{}.png".format(delta), pp)
                 out.write(ff)
-                cv2.imwrite("./temp/images/{}.png".format(i), pp)
+                cv2.imwrite(os.getcwd() + "./temp/images/{}.png".format(i), pp)
                 if i == 10:
                     exit()
             else:
