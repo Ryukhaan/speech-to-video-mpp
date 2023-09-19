@@ -149,5 +149,5 @@ class ENet(nn.Module):
             param.requires_grad = False
         for param in self.to_rgbs.parameters():
             param.requires_grad = False
-        for param in self.style_convs.parameters():
-            param.requires_grad = False
+        #for param in self.style_convs.parameters():
+        #    param.requires_grad = False
