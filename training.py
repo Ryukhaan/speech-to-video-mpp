@@ -308,7 +308,7 @@ def train():
     torch.cuda.empty_cache()
     D_Net, L_Net, model =  load_train_model(args, device)
     model.set_training_style()
-
+    summary(model)
     # Video Image Stabilized
     out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(args.tmp_dir),
                           cv2.VideoWriter_fourcc(*'mp4v'), fps, (256, 256))
