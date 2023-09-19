@@ -69,6 +69,7 @@ class ArcFaceLoss(torch.nn.Module):
 
         # Y Predicted
         d_ypred = y_pred.cpu().detach().numpy()
+        d_ypred = cv2.fromarray(d_ypred)
         trans_params, im_idx, lm_idx, _ = align_img(d_ypred[0], lm_idx, lm3d_std)
         trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
         im_idx_tensor = torch.tensor(np.array(im_idx)/255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
@@ -79,6 +80,7 @@ class ArcFaceLoss(torch.nn.Module):
                                          pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
         # Y Targets
         d_ytrue = y_true.cpu().detach().numpy()
+        d_ytrue = cv2.fromarray(d_ytrue)
         trans_params, im_idx, lm_idx, _ = align_img(d_ytrue[0], lm_idx, lm3d_std)
         trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
         im_idx_tensor = torch.tensor(np.array(im_idx) / 255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
@@ -142,12 +144,12 @@ class LNetLoss(torch.nn.Module):
         l1_val = L1(y_pred, y_true)
 
         L_perceptual = VGGPerceptualLoss()
-        lp_val = L_perceptual(y_pred, y_true)
+        lp_val = 0.0 #L_perceptual(y_pred, y_true)
 
         # L_sync = 0.0
         lsync_val = 0.0  # L_sync(y_pred, y_true)
 
-        lambda_1 = 1.
+        lambda_1 = .5
         lambda_p = 1.
         lambda_sync = 0.3
         return lambda_1 * l1_val + lambda_p * lp_val + lambda_sync * lsync_val
@@ -165,12 +167,12 @@ class ENetLoss(torch.nn.Module):
 
         # Loss Perceptual with VGG pretrained
         L_perceptual = VGGPerceptualLoss()
-        lp_val = L_perceptual(y_pred, y_true)
+        lp_val = 0. #L_perceptual(y_pred, y_true)
 
         # Acrface loss (L2 function) for Identity
-        #l_id = ArcFaceLoss(self.device)
-        #lid_val = l_id(lm, idx, y_pred, y_true)
-        lid_val = 0.
+        l_id = ArcFaceLoss(self.device)
+        lid_val = l_id(lm, idx, y_pred, y_true)
+        #lid_val = 0.
 
         # Adversial network AV-hubert ?
         #l_adv = ()
@@ -178,8 +180,8 @@ class ENetLoss(torch.nn.Module):
         ladv_val = 0.
         # TODO : implement advsersial loss and id arcface loss
 
-        lambda_1 = 1.
-        lambda_p = 0.5
+        lambda_1 = 0.5
+        lambda_p = 1.
         lambda_adv = 100.
         lambda_id = 0.4
         return lambda_1 * l1_val + lambda_p * lp_val + lambda_adv * ladv_val + lambda_id * lid_val
