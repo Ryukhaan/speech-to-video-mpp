@@ -44,7 +44,7 @@ def encode_audio(filename, model, t):
     # Iterate through frames
     for i, _ in enumerate(tqdm(range(number_of_frames))):
         # Get 5 previous frames
-        chunk = wav[:, i * idx_multiplier - nr: i * idx_multiplier + nr]
+        chunk = wav[:, i * idx_multiplier: i * idx_multiplier + 2*nr]
         print(chunk.shape)
         chunk = convert_audio(chunk, sr, model.sample_rate, model.channels)
         chunk = chunk.unsqueeze(0)
