@@ -16,15 +16,12 @@
 <i><strong><a href='https://sa2022.siggraph.org/' target='_blank'>Conference/Journal Name</a></strong></i>
 <br>
 <br>
-<img src="./docs/static/images/teaser.png?raw=true" width="768px">
+Link to img
 
 <div align="justify"> We present something</div>
 <br>
 
-<p>
-<img alt='pipeline' src="./docs/static/images/pipeline.png?raw=true" width="768px"><br>
-<em align='center'>Pipeline</em>
-</p>
+Link to img
 
 </div>
 
