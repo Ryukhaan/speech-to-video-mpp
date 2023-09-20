@@ -13,7 +13,10 @@ def remove_header(text):
     return ''.join(text.split(':')[1:])
 
 def remove_footer(text):
-    return ''.join(text.splitlines()[0])
+    try:
+        return ''.join(text.splitlines()[0])
+    except IndexError:
+        raise Exception('list index out of range')
 
 if __name__ == "__main__":
     args = get_args()
@@ -39,8 +42,12 @@ if __name__ == "__main__":
                 with open(args.outdir + file.split('/')[-1], 'w') as f:
                     f.write(text)
             else:
-                text = ''
-                with open(file, 'r', encoding='utf-8') as f:
-                    text = remove_footer(remove_header(f.read()))
-                with open(file, 'w') as f:
-                    f.write(text)
+                try:
+                    text = ''
+                    with open(file, 'r', encoding='utf-8') as f:
+                        text = remove_footer(remove_header(f.read()))
+                    with open(file, 'w') as f:
+                        f.write(text)
+                except:
+                    print(file)
+                    exit(0)
