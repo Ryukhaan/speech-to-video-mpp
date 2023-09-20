@@ -74,9 +74,10 @@ if __name__ == "__main__":
         # Load audio
         encode_audio(args.dataset, audio_encodec_model, args.t)
     else:
-        files = glob.glob(args.dataset + "*.mp4", recursive=True)
+        files = glob.glob(args.dataset + "**/*.mp4", recursive=True)
         pbar = tqdm(files, position=0)
         for audio in pbar:
+            if os.path.isdir(audio): continue
             pbar.set_description("Processing %s" % audio.split('/')[-1])
             name = audio.split('/')[-1]
             if args.outdir:
