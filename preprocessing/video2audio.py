@@ -24,9 +24,10 @@ if __name__ == "__main__":
     if os.path.isfile(args.dataset):
         read_and_write(args.dataset)
     else:
-        files = glob.glob(args.dataset + "*.mp4", recursive=True)
+        files = glob.glob(args.dataset + "**/*.mp4", recursive=True)
         pbar = tqdm(files)
         for file in pbar:
+            if os.path.isdir(file): continue
             pbar.set_description("Processing %s" % file.split('/')[-1])
             if args.outdir:
                 read_and_write(args.outdir + file.split('/')[-1])
