@@ -16,6 +16,7 @@ def remove_footer(text):
     try:
         return ''.join(text.splitlines()[0])
     except IndexError:
+        print(text)
         raise Exception('list index out of range')
 
 if __name__ == "__main__":
@@ -48,6 +49,6 @@ if __name__ == "__main__":
                         text = remove_footer(remove_header(f.read()))
                     with open(file, 'w') as f:
                         f.write(text)
-                except:
+                except Exception as inst:
                     print(file)
                     exit(0)
