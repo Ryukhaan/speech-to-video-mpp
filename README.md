@@ -5,40 +5,29 @@
   <a href='https://arxiv.org/abs/2211.14758'><img src='https://img.shields.io/badge/ArXiv-2211.14758-red'></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='https://vinthony.github.io/video-retalking/'><img src='https://img.shields.io/badge/Project-Page-Green'></a>
 
 <div>
-    <a target='_blank'>Kun Cheng <sup>*,1,2</sup> </a>&emsp;
-    <a href='https://vinthony.github.io/' target='_blank'>Xiaodong Cun <sup>*,2</a>&emsp;
-    <a href='https://yzhang2016.github.io/yongnorriszhang.github.io/' target='_blank'>Yong Zhang <sup>2</sup></a>&emsp;
-    <a href='https://menghanxia.github.io/' target='_blank'>Menghan Xia <sup>2</sup></a>&emsp;
-    <a href='https://feiiyin.github.io/' target='_blank'>Fei Yin <sup>2,3</sup></a>&emsp;<br/>
-    <a target='_blank'>Mingrui Zhu <sup>1</sup></a>&emsp;
-    <a href='https://xuanwangvc.github.io/' target='_blank'>Xuan Wang <sup>2</sup></a>&emsp;
-    <a href='https://juewang725.github.io/' target='_blank'>Jue Wang <sup>2</sup></a>&emsp;
-    <a href='https://web.xidian.edu.cn/nnwang/en/index.html' target='_blank'>Nannan Wang <sup>1</sup></a>
+    <a target='_blank'>Rémi Decelle <sup>*,1,2</sup> </a>&emsp;
+    <a href='https://vinthony.github.io/' target='_blank'>Serge Miguet <sup>*,2</a>&emsp;
 </div>
 <br>
 <div>
-    <sup>1</sup> Xidian University &emsp; <sup>2</sup> Tencent AI Lab &emsp; <sup>3</sup> Tsinghua University
+    <sup>1</sup> Université de Lyon 2 &emsp; <sup>2</sup> Mon Petit Placement
 </div>
 <br>
-<i><strong><a href='https://sa2022.siggraph.org/' target='_blank'>SIGGRAPH Asia 2022 Conferenence Track</a></strong></i>
+<i><strong><a href='https://sa2022.siggraph.org/' target='_blank'>Conference/Journal Name</a></strong></i>
 <br>
 <br>
-<img src="./docs/static/images/teaser.png?raw=true" width="768px">
+Link to img
 
-<div align="justify"> We present VideoReTalking, a new system to edit the faces of a real-world talking head video according to input audio, producing a high-quality and lip-syncing output video even with a different emotion. Our system disentangles this objective into three sequential tasks: (1) face video generation with a canonical expression; (2) audio-driven lip-sync; and (3) face enhancement for improving photo-realism. Given a talking-head video, we first modify the expression of each frame according to the same expression template using the expression editing network, resulting in a video with the canonical expression. This video, together with the given audio, is then fed into the lip-sync network to generate a lip-syncing video. Finally, we improve the photo-realism of the synthesized faces through an identity-aware face enhancement network and post-processing. We use learning-based approaches for all three steps and all our modules can be tackled in a sequential pipeline without any user intervention.</div>
+<div align="justify"> We present something</div>
 <br>
 
-<p>
-<img alt='pipeline' src="./docs/static/images/pipeline.png?raw=true" width="768px"><br>
-<em align='center'>Pipeline</em>
-</p>
+Link to img
 
 </div>
 
 ## Results in the Wild （contains audio）
-https://user-images.githubusercontent.com/4397546/224310754-665eb2dd-aadc-47dc-b1f9-2029a937b20a.mp4
 
-
+Link to video
 
 
 ## Environment
@@ -52,6 +41,39 @@ pip install -r requirements.txt
 ```
 
 ## Quick Inference
+
+### Pre-processing datas
+```
+conda -n mfa-env
+conda install -c conda-forge montreal-forced-aligner
+mfa model download acoustic french_mfa
+mfa model download dictionary french_mfa
+```
+
+Use another acoustic and dictionnary if needed : [acoustic models](https://mfa-models.readthedocs.io/en/latest/acoustic/index.html) and  [dictionaries](https://mfa-models.readthedocs.io/en/latest/dictionary/index.html)
+
+#### Converting video to audio (wav format)
+```
+python3 preprocessing/video2audio.py [CORPUS_DIRECTORY]
+```
+
+#### Extract encodec from audio
+```
+python3 preprocessing/audio2codes.py [CORPUS_DIRECTORY]
+```
+
+#### Align text to audio
+```
+conda activate mfa-env
+mfa align CORPUS_DIRECTORY DICTIONARY_NAME ACOUSTIC_MODEL_NAME OUTPUT_DIRECTORY
+conda deactivate
+```
+
+#### Convert phonemes to one-hot vector
+(Really needed ?)
+```
+python3 preprocessing/phoneme2vector.py
+```
 
 #### Pretrained Models
 Please download our [pre-trained models](https://drive.google.com/drive/folders/18rhjMpxK8LVVxf7PI6XwOidt8Vouv_H0?usp=share_link) and put them in `./checkpoints`.
