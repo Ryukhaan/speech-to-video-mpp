@@ -10,9 +10,10 @@ def get_args():
     return parser.parse_args()
 
 def remove_header(text):
-    return text.split(':')[:-1]
+    return ''.join(text.split(':')[:-1])
+
 def remove_footer(text):
-    return text.splitlines()[0]
+    return ''.join(text.splitlines()[0])
 
 if __name__ == "__main__":
     args = get_args()
