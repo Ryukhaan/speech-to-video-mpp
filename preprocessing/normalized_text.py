@@ -17,27 +17,30 @@ def remove_footer(text):
 
 if __name__ == "__main__":
     args = get_args()
-    assert args.outdir[-1] == '/', print('Output directory should have / at the end')
+    if args.outdir:
+        assert args.outdir[-1] == '/', print('Output directory should have / at the end')
     # Check if dataset is a file or a directory
     if os.path.isfile(args.dataset):
         text = ''
-        with open(args.dataset, 'r') as file:
+        with open(args.dataset, 'r', encoding='utf-8') as file:
             text = remove_footer(remove_header(file.read()))
         with open(args.dataset, 'w') as file:
             file.write(text)
     else:
-        files = glob.glob(args.dataset + "**/*.mp4", recursive=True)
+        files = glob.glob(args.dataset + "**/*.txt", recursive=True)
         pbar = tqdm(files)
         for file in pbar:
             if os.path.isdir(file): continue
             pbar.set_description("Processing %s" % file.split('/')[-1])
             if args.outdir:
-                with open(file, 'r') as f:
+                text = ''
+                with open(file, 'r', encoding='utf-8') as f:
                     text = remove_footer(remove_header(f.read()))
                 with open(args.outdir + file.split('/')[-1], 'w') as f:
                     f.write(text)
             else:
-                with open(file, 'r') as f:
+                text = ''
+                with open(file, 'r', encoding='utf-8') as f:
                     text = remove_footer(remove_header(f.read()))
                 with open(file, 'w') as f:
                     f.write(text)
