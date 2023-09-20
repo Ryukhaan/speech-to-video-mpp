@@ -81,6 +81,6 @@ if __name__ == "__main__":
             pbar.set_description("Processing %s" % audio.split('/')[-1])
             name = audio.split('/')[-1]
             if args.outdir:
-                encode_audio(args.outdir + audio.split('/')[-1])
+                encode_audio(args.outdir + audio.split('/')[-1], audio_encodec_model, args.t)
             else:
                 encode_audio(audio, audio_encodec_model, args.t)
