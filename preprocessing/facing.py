@@ -124,12 +124,12 @@ class Preprocessor():
                 video_coeffs.append(pred_coeff)
             self.semantic_npy = np.array(video_coeffs)[: ,0]
             np.save('temp/ ' + self.base_name +'_coeffs.npy', self.semantic_npy)
+            del net_recon
         else:
             print('[Step 2] Using saved coeffs.')
             self.semantic_npy = np.load('temp/ ' + self.base_name +'_coeffs.npy').astype(np.float32)
     def hack_3dmm_expression(self):
         net_recon = load_face3d_net(self.args.face3d_net_path, device)
-        lm3d_std = load_lm3d('checkpoints/BFM')
         # generate the 3dmm coeff from a single image
         if self.args.exp_img is not None \
                 and ('.png' in self.args.exp_img or '.jpg' in self.args.exp_img):
@@ -190,4 +190,4 @@ class Preprocessor():
         else:
             print('[Step 3] Using saved stablized video.')
             self.imgs = np.load('temp/' + self.base_name + '_stablized.npy')
-        del D_Net
+        del D_Net, model
