@@ -34,153 +34,166 @@ warnings.filterwarnings("ignore")
 
 args = options()
 
+import preprocessing.3dmm as preprocessing
+
 def main():    
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     gc.collect()
     torch.cuda.empty_cache()
     print('[Info] Using {} for inference.'.format(device))
+    preprocessor = preprocessing.Preprocessor(args)
+    preprocessor.reading_video()
+    preprocessor.landmarks_estimate()
+    preprocessor.face_3dmm_extraction()
+    preprocessor.hack_3dmm_expression()
 
-    base_name = args.face.split('/')[-1]
-    # Image or Video ?
-    if os.path.isfile(args.face) and args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
-        args.static = True
-    if not os.path.isfile(args.face):
-        raise ValueError('--face argument must be a valid path to video/image file')
-    elif args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
-        full_frames = [cv2.imread(args.face)]
-        fps = args.fps
-    else:
-        video_stream = cv2.VideoCapture(args.face)
-        fps = video_stream.get(cv2.CAP_PROP_FPS)
-
-        full_frames = []
-        while True:
-            still_reading, frame = video_stream.read()
-            if not still_reading:
-                video_stream.release()
-                break
-            y1, y2, x1, x2 = args.crop
-            if x2 == -1: x2 = frame.shape[1]
-            if y2 == -1: y2 = frame.shape[0]
-            frame = frame[y1:y2, x1:x2]
-            full_frames.append(frame)
-
-    print ("[Step 0] Number of frames available for inference: "+str(len(full_frames)))
-    # face detection & cropping, cropping the first frame as the style of FFHQ
-    croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
-    full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in full_frames]
-    full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
-
-    clx, cly, crx, cry = crop
-    lx, ly, rx, ry = quad
-    lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
-    oy1, oy2, ox1, ox2 = cly+ly, min(cly+ry, full_frames[0].shape[0]), clx+lx, min(clx+rx, full_frames[0].shape[1])
-    # original_size = (ox2 - ox1, oy2 - oy1)
-    frames_pil = [Image.fromarray(cv2.resize(frame,(256,256))) for frame in full_frames_RGB]
-
-    # get the landmark according to the detected face.
-    if not os.path.isfile('temp/'+base_name+'_landmarks.txt') or args.re_preprocess:
-        torch.cuda.empty_cache()
-        print('[Step 1] Landmarks Extraction in Video.')
-        kp_extractor = KeypointExtractor()
-        lm = kp_extractor.extract_keypoint(frames_pil, './temp/'+base_name+'_landmarks.txt')
-    else:
-        print('[Step 1] Using saved landmarks.')
-        lm = np.loadtxt('temp/'+base_name+'_landmarks.txt').astype(np.float32)
-        lm = lm.reshape([len(full_frames), -1, 2])
-
-    if not os.path.isfile('temp/'+base_name+'_coeffs.npy') or args.exp_img is not None or args.re_preprocess:
-        torch.cuda.empty_cache()
-        net_recon = load_face3d_net(args.face3d_net_path, device)
-        lm3d_std = load_lm3d('checkpoints/BFM')
-
-        video_coeffs = []
-        for idx in tqdm(range(len(frames_pil)), desc="[Step 2] 3DMM Extraction In Video:"):
-            frame = frames_pil[idx]
-            W, H = frame.size
-            lm_idx = lm[idx].reshape([-1, 2])
-            if np.mean(lm_idx) == -1:
-                lm_idx = (lm3d_std[:, :2]+1) / 2.
-                lm_idx = np.concatenate([lm_idx[:, :1] * W, lm_idx[:, 1:2] * H], 1)
-            else:
-                lm_idx[:, -1] = H - 1 - lm_idx[:, -1]
-
-            trans_params, im_idx, lm_idx, _ = align_img(frame, lm_idx, lm3d_std)
-            trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
-            im_idx_tensor = torch.tensor(np.array(im_idx)/255., dtype=torch.float32).permute(2, 0, 1).to(device).unsqueeze(0) 
-            with torch.no_grad():
-                coeffs = split_coeff(net_recon(im_idx_tensor))
-
-            pred_coeff = {key:coeffs[key].cpu().numpy() for key in coeffs}
-            pred_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'],\
-                                         pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
-            video_coeffs.append(pred_coeff)
-        semantic_npy = np.array(video_coeffs)[:,0]
-        np.save('temp/'+base_name+'_coeffs.npy', semantic_npy)
-    else:
-        print('[Step 2] Using saved coeffs.')
-        semantic_npy = np.load('temp/'+base_name+'_coeffs.npy').astype(np.float32)
-
-    # generate the 3dmm coeff from a single image
-    if args.exp_img is not None and ('.png' in args.exp_img or '.jpg' in args.exp_img):
-        print('extract the exp from',args.exp_img)
-        exp_pil = Image.open(args.exp_img).convert('RGB')
-        lm3d_std = load_lm3d('third_part/face3d/BFM')
-        
-        W, H = exp_pil.size
-        kp_extractor = KeypointExtractor()
-        lm_exp = kp_extractor.extract_keypoint([exp_pil], 'temp/'+base_name+'_temp.txt')[0]
-        if np.mean(lm_exp) == -1:
-            lm_exp = (lm3d_std[:, :2] + 1) / 2.
-            lm_exp = np.concatenate(
-                [lm_exp[:, :1] * W, lm_exp[:, 1:2] * H], 1)
-        else:
-            lm_exp[:, -1] = H - 1 - lm_exp[:, -1]
-
-        trans_params, im_exp, lm_exp, _ = align_img(exp_pil, lm_exp, lm3d_std)
-        trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
-        im_exp_tensor = torch.tensor(np.array(im_exp)/255., dtype=torch.float32).permute(2, 0, 1).to(device).unsqueeze(0)
-        with torch.no_grad():
-            expression = split_coeff(net_recon(im_exp_tensor))['exp'][0]
-        del net_recon
-    elif args.exp_img == 'smile':
-        expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_mouth'])[0]
-    else:
-        print('using expression center')
-        expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
-
-    # load DNet, model(LNet and ENet)
-    torch.cuda.empty_cache()
-    D_Net, model = load_model(args, device)
-
-    # Video Image Stabilized
-    out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(args.tmp_dir),
-                          cv2.VideoWriter_fourcc(*'mp4v'), fps, (256, 256))
-    if not os.path.isfile('temp/'+base_name+'_stablized.npy') or args.re_preprocess:
-        imgs = []
-        for idx in tqdm(range(len(frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
-            if args.one_shot:
-                source_img = trans_image(frames_pil[0]).unsqueeze(0).to(device)
-                semantic_source_numpy = semantic_npy[0:1]
-            else:
-                source_img = trans_image(frames_pil[idx]).unsqueeze(0).to(device)
-                semantic_source_numpy = semantic_npy[idx:idx+1]
-            ratio = find_crop_norm_ratio(semantic_source_numpy, semantic_npy)
-            coeff = transform_semantic(semantic_npy, idx, ratio).unsqueeze(0).to(device)
-        
-            # hacking the new expression
-            coeff[:, :64, :] = expression[None, :64, None].to(device)
-            with torch.no_grad():
-                output = D_Net(source_img, coeff)
-            img_stablized = np.uint8((output['fake_image'].squeeze(0).permute(1,2,0).cpu().clamp_(-1, 1).numpy() + 1 )/2. * 255)
-            imgs.append(cv2.cvtColor(img_stablized,cv2.COLOR_RGB2BGR))
-
-            out.write(cv2.cvtColor(img_stablized,cv2.COLOR_RGB2BGR))
-        np.save('temp/'+base_name+'_stablized.npy',imgs)
-        del D_Net
-    else:
-        print('[Step 3] Using saved stablized video.')
-        imgs = np.load('temp/'+base_name+'_stablized.npy')
+    frames_pil = preprocessor.frames_pil
+    full_frames = preprocessor.full_frames
+    fps = preprocessor.fps
+    imgs = preprocessor.imgs
+    lm = preprocessor.lm
+    oy1, oy2, ox1, ox2 = preprocessor.coordinates
+    # base_name = args.face.split('/')[-1]
+    # # Image or Video ?
+    # if os.path.isfile(args.face) and args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
+    #     args.static = True
+    # if not os.path.isfile(args.face):
+    #     raise ValueError('--face argument must be a valid path to video/image file')
+    # elif args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
+    #     full_frames = [cv2.imread(args.face)]
+    #     fps = args.fps
+    # else:
+    #     video_stream = cv2.VideoCapture(args.face)
+    #     fps = video_stream.get(cv2.CAP_PROP_FPS)
+    #
+    #     full_frames = []
+    #     while True:
+    #         still_reading, frame = video_stream.read()
+    #         if not still_reading:
+    #             video_stream.release()
+    #             break
+    #         y1, y2, x1, x2 = args.crop
+    #         if x2 == -1: x2 = frame.shape[1]
+    #         if y2 == -1: y2 = frame.shape[0]
+    #         frame = frame[y1:y2, x1:x2]
+    #         full_frames.append(frame)
+    #
+    # print ("[Step 0] Number of frames available for inference: "+str(len(full_frames)))
+    # # face detection & cropping, cropping the first frame as the style of FFHQ
+    # croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+    # full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in full_frames]
+    # full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+    #
+    # clx, cly, crx, cry = crop
+    # lx, ly, rx, ry = quad
+    # lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
+    # oy1, oy2, ox1, ox2 = cly+ly, min(cly+ry, full_frames[0].shape[0]), clx+lx, min(clx+rx, full_frames[0].shape[1])
+    # # original_size = (ox2 - ox1, oy2 - oy1)
+    # frames_pil = [Image.fromarray(cv2.resize(frame,(256,256))) for frame in full_frames_RGB]
+    #
+    # # get the landmark according to the detected face.
+    # if not os.path.isfile('temp/'+base_name+'_landmarks.txt') or args.re_preprocess:
+    #     torch.cuda.empty_cache()
+    #     print('[Step 1] Landmarks Extraction in Video.')
+    #     kp_extractor = KeypointExtractor()
+    #     lm = kp_extractor.extract_keypoint(frames_pil, './temp/'+base_name+'_landmarks.txt')
+    # else:
+    #     print('[Step 1] Using saved landmarks.')
+    #     lm = np.loadtxt('temp/'+base_name+'_landmarks.txt').astype(np.float32)
+    #     lm = lm.reshape([len(full_frames), -1, 2])
+    #
+    # if not os.path.isfile('temp/'+base_name+'_coeffs.npy') or args.exp_img is not None or args.re_preprocess:
+    #     torch.cuda.empty_cache()
+    #     net_recon = load_face3d_net(args.face3d_net_path, device)
+    #     lm3d_std = load_lm3d('checkpoints/BFM')
+    #
+    #     video_coeffs = []
+    #     for idx in tqdm(range(len(frames_pil)), desc="[Step 2] 3DMM Extraction In Video:"):
+    #         frame = frames_pil[idx]
+    #         W, H = frame.size
+    #         lm_idx = lm[idx].reshape([-1, 2])
+    #         if np.mean(lm_idx) == -1:
+    #             lm_idx = (lm3d_std[:, :2]+1) / 2.
+    #             lm_idx = np.concatenate([lm_idx[:, :1] * W, lm_idx[:, 1:2] * H], 1)
+    #         else:
+    #             lm_idx[:, -1] = H - 1 - lm_idx[:, -1]
+    #
+    #         trans_params, im_idx, lm_idx, _ = align_img(frame, lm_idx, lm3d_std)
+    #         trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
+    #         im_idx_tensor = torch.tensor(np.array(im_idx)/255., dtype=torch.float32).permute(2, 0, 1).to(device).unsqueeze(0)
+    #         with torch.no_grad():
+    #             coeffs = split_coeff(net_recon(im_idx_tensor))
+    #
+    #         pred_coeff = {key:coeffs[key].cpu().numpy() for key in coeffs}
+    #         pred_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'],\
+    #                                      pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
+    #         video_coeffs.append(pred_coeff)
+    #     semantic_npy = np.array(video_coeffs)[:,0]
+    #     np.save('temp/'+base_name+'_coeffs.npy', semantic_npy)
+    # else:
+    #     print('[Step 2] Using saved coeffs.')
+    #     semantic_npy = np.load('temp/'+base_name+'_coeffs.npy').astype(np.float32)
+    #
+    # # generate the 3dmm coeff from a single image
+    # if args.exp_img is not None and ('.png' in args.exp_img or '.jpg' in args.exp_img):
+    #     print('extract the exp from',args.exp_img)
+    #     exp_pil = Image.open(args.exp_img).convert('RGB')
+    #     lm3d_std = load_lm3d('third_part/face3d/BFM')
+    #
+    #     W, H = exp_pil.size
+    #     kp_extractor = KeypointExtractor()
+    #     lm_exp = kp_extractor.extract_keypoint([exp_pil], 'temp/'+base_name+'_temp.txt')[0]
+    #     if np.mean(lm_exp) == -1:
+    #         lm_exp = (lm3d_std[:, :2] + 1) / 2.
+    #         lm_exp = np.concatenate(
+    #             [lm_exp[:, :1] * W, lm_exp[:, 1:2] * H], 1)
+    #     else:
+    #         lm_exp[:, -1] = H - 1 - lm_exp[:, -1]
+    #
+    #     trans_params, im_exp, lm_exp, _ = align_img(exp_pil, lm_exp, lm3d_std)
+    #     trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
+    #     im_exp_tensor = torch.tensor(np.array(im_exp)/255., dtype=torch.float32).permute(2, 0, 1).to(device).unsqueeze(0)
+    #     with torch.no_grad():
+    #         expression = split_coeff(net_recon(im_exp_tensor))['exp'][0]
+    #     del net_recon
+    # elif args.exp_img == 'smile':
+    #     expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_mouth'])[0]
+    # else:
+    #     print('using expression center')
+    #     expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
+    #
+    # # load DNet, model(LNet and ENet)
+    # torch.cuda.empty_cache()
+    # D_Net, model = load_model(args, device)
+    #
+    # # Video Image Stabilized
+    # out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(args.tmp_dir),
+    #                       cv2.VideoWriter_fourcc(*'mp4v'), fps, (256, 256))
+    # if not os.path.isfile('temp/'+base_name+'_stablized.npy') or args.re_preprocess:
+    #     imgs = []
+    #     for idx in tqdm(range(len(frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
+    #         if args.one_shot:
+    #             source_img = trans_image(frames_pil[0]).unsqueeze(0).to(device)
+    #             semantic_source_numpy = semantic_npy[0:1]
+    #         else:
+    #             source_img = trans_image(frames_pil[idx]).unsqueeze(0).to(device)
+    #             semantic_source_numpy = semantic_npy[idx:idx+1]
+    #         ratio = find_crop_norm_ratio(semantic_source_numpy, semantic_npy)
+    #         coeff = transform_semantic(semantic_npy, idx, ratio).unsqueeze(0).to(device)
+    #
+    #         # hacking the new expression
+    #         coeff[:, :64, :] = expression[None, :64, None].to(device)
+    #         with torch.no_grad():
+    #             output = D_Net(source_img, coeff)
+    #         img_stablized = np.uint8((output['fake_image'].squeeze(0).permute(1,2,0).cpu().clamp_(-1, 1).numpy() + 1 )/2. * 255)
+    #         imgs.append(cv2.cvtColor(img_stablized,cv2.COLOR_RGB2BGR))
+    #
+    #         out.write(cv2.cvtColor(img_stablized,cv2.COLOR_RGB2BGR))
+    #     np.save('temp/'+base_name+'_stablized.npy',imgs)
+    #     del D_Net
+    # else:
+    #     print('[Step 3] Using saved stablized video.')
+    #     imgs = np.load('temp/'+base_name+'_stablized.npy')
 
     #return 0
 

@@ -32,10 +32,10 @@ gc.collect()
 torch.cuda.empty_cache()
 print('[Info] Using {} for inference.'.format(device))
 
-class Preprocess():
+class Preprocessor():
 
     def __init__(self, args):
-        super.__init__(self, Preprocess)
+        super.__init__(self, Preprocessor)
         self.args = args
         self.base_name = self.args.face.split('/')[-1]
         self.full_frames = []
@@ -76,6 +76,7 @@ class Preprocess():
         lx, ly, rx, ry = quad
         lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
         oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, self.full_frames[0].shape[0]), clx +lx, min(clx +rx, self.full_frames[0].shape[1])
+        self.coordinates = oy1, oy2, ox1, ox2
         # original_size = (ox2 - ox1, oy2 - oy1)
         self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
 
@@ -164,7 +165,7 @@ class Preprocess():
         out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(self.args.tmp_dir),
                               cv2.VideoWriter_fourcc(*'mp4v'), self.fps, (256, 256))
         if not os.path.isfile('temp/ ' + self.base_name +'_stablized.npy') or self.args.re_preprocess:
-            imgs = []
+            self.imgs = []
             for idx in tqdm(range(len(self.frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
                 if self.args.one_shot:
                     source_img = trans_image(self.frames_pil[0]).unsqueeze(0).to(device)
@@ -187,5 +188,5 @@ class Preprocess():
             np.save('temp/' + self.base_name + '_stablized.npy', imgs)
         else:
             print('[Step 3] Using saved stablized video.')
-            imgs = np.load('temp/' + self.base_name + '_stablized.npy')
+            self.imgs = np.load('temp/' + self.base_name + '_stablized.npy')
         del D_Net
