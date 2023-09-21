@@ -34,7 +34,7 @@ warnings.filterwarnings("ignore")
 
 args = options()
 
-import preprocessing.3dmm as preprocessing
+import preprocessing.facing as preprocessing
 
 def main():    
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
