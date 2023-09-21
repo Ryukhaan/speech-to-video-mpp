@@ -36,7 +36,7 @@ print('[Info] Using {} for inference.'.format(device))
 class Preprocessor():
 
     def __init__(self, args):
-        super.__init__(self, Preprocessor)
+        super().__init__(self)
         self.args = args
         self.base_name = self.args.face.split('/')[-1]
         self.full_frames = []
