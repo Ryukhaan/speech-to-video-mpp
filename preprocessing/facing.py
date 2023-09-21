@@ -130,6 +130,7 @@ class Preprocessor():
             self.semantic_npy = np.load('temp/ ' + self.base_name +'_coeffs.npy').astype(np.float32)
     def hack_3dmm_expression(self):
         net_recon = load_face3d_net(self.args.face3d_net_path, device)
+
         # generate the 3dmm coeff from a single image
         if self.args.exp_img is not None \
                 and ('.png' in self.args.exp_img or '.jpg' in self.args.exp_img):
@@ -165,6 +166,7 @@ class Preprocessor():
         # Video Image Stabilized
         out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(self.args.tmp_dir),
                               cv2.VideoWriter_fourcc(*'mp4v'), self.fps, (256, 256))
+
         if not os.path.isfile('temp/ ' + self.base_name +'_stablized.npy') or self.args.re_preprocess:
             self.imgs = []
             for idx in tqdm(range(len(self.frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
@@ -190,4 +192,6 @@ class Preprocessor():
         else:
             print('[Step 3] Using saved stablized video.')
             self.imgs = np.load('temp/' + self.base_name + '_stablized.npy')
+
         del D_Net, model
+        torch.cuda.empty_cache()
