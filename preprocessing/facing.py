@@ -126,7 +126,7 @@ class Preprocessor():
             np.save('temp/ ' + self.base_name +'_coeffs.npy', self.semantic_npy)
         else:
             print('[Step 2] Using saved coeffs.')
-            semantic_npy = np.load('temp/ ' + self.base_name +'_coeffs.npy').astype(np.float32)
+            self.semantic_npy = np.load('temp/ ' + self.base_name +'_coeffs.npy').astype(np.float32)
     def hack_3dmm_expression(self):
         net_recon = load_face3d_net(self.args.face3d_net_path, device)
         lm3d_std = load_lm3d('checkpoints/BFM')
