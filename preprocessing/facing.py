@@ -183,10 +183,10 @@ class Preprocessor():
                     output = D_Net(source_img, coeff)
                 img_stablized = np.uint8 \
                     ((output['fake_image'].squeeze(0).permute(1 ,2 ,0).cpu().clamp_(-1, 1).numpy() + 1 )/ 2. * 255)
-                imgs.append(cv2.cvtColor(img_stablized, cv2.COLOR_RGB2BGR))
+                self.imgs.append(cv2.cvtColor(img_stablized, cv2.COLOR_RGB2BGR))
 
                 out.write(cv2.cvtColor(img_stablized, cv2.COLOR_RGB2BGR))
-            np.save('temp/' + self.base_name + '_stablized.npy', imgs)
+            np.save('temp/' + self.base_name + '_stablized.npy', self.imgs)
         else:
             print('[Step 3] Using saved stablized video.')
             self.imgs = np.load('temp/' + self.base_name + '_stablized.npy')
