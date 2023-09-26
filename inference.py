@@ -316,6 +316,7 @@ def main():
             if args.cropped_image:
                 #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
                 tmp_xf = cv2.resize(xf, (0,0), fx=2, fy=2)
+                print(pp.shape, tmp_xf.shape)
                 pp, orig_face, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
                 pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
                 ff = xf.copy()
