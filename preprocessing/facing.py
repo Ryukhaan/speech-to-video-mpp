@@ -48,7 +48,7 @@ class Preprocessor():
         if not os.path.isfile(self.args.face):
             raise ValueError('--face argument must be a valid path to video/image file')
         elif self.args.face.split('.')[-1] in ['jpg', 'png', 'jpeg']:
-            self.full_frames = [cv2.imread(self.args.face)]
+            self.full_frames = [cv2.imread(self.args.face), cv2.imread(self.args.face)]
             self.fps = self.args.fps
         else:
             video_stream = cv2.VideoCapture(self.args.face)
