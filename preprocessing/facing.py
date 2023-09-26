@@ -53,7 +53,7 @@ class Preprocessor():
                 img = img[:-1, :, :]
             if img.shape[1] % 2 == 1:
                 img = img[:, :-1, :]
-            self.full_frames = [cv2.imread(self.args.face), cv2.imread(self.args.face)]
+            self.full_frames = [img, img]
             self.fps = self.args.fps
         else:
             video_stream = cv2.VideoCapture(self.args.face)
