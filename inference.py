@@ -234,7 +234,7 @@ def main():
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
         img = imgs[idx]
         #pred, _, _ = enhancer.process(img, aligned=True)
-        pred, _, _ = ref_enhancer.process(img, img, face_enhance=True, possion_blending=False)
+        pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False) #True
         imgs_enhanced.append(pred)
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1,oy2,ox1,ox2))
 
