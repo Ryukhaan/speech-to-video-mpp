@@ -417,7 +417,8 @@ def find_best_audio():
     # Get model name
     model_name = args.face.split('/')[-2]
     print(model_name)
-
+    if args.static is True:
+        return
     # Create temp directory
     os.makedirs(os.path.join('temp', args.tmp_dir), exist_ok=True)
     # Make it again if args is passed or the best audio is not already found
