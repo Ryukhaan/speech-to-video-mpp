@@ -43,7 +43,7 @@ class Preprocessor():
     def reading_video(self):
 
         # Image or Video ?
-        if os.path.isfile(self.args.face) and self.args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
+        if os.path.isfile(self.args.face) and self.args.face.split('.')[-1] in ['jpg', 'png', 'jpeg']:
             self.args.static = True
         if not os.path.isfile(self.args.face):
             raise ValueError('--face argument must be a valid path to video/image file')
