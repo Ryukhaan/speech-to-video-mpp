@@ -320,7 +320,7 @@ def main():
                 pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
                 ff = xf.copy()
                 ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
-                assert ff.shape[0] == frame_h and ff.shape[1] == frame_w
+                assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 #cv2.imwrite("./results/{}.png".format(delta), pp)
                 out.write(ff)
             else:
