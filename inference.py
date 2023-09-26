@@ -228,7 +228,7 @@ def main():
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
                                in_size=2048, channel_multiplier=2, narrow=1, sr_scale=2,
                                sr_model=None,
-                               model='GPEN-BFR-2048', use_sr=False)
+                               model='GPEN-BFR-2048', use_sr=True)
 
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
@@ -252,7 +252,7 @@ def main():
         instance.initialize()
         instance.setup()
 
-    restorer = GFPGANer(model_path='checkpoints/GFPGANv1.4.pth', upscale=2, arch='clean', \
+    restorer = GFPGANer(model_path='checkpoints/GFPGANv1.4.pth', upscale=1, arch='clean', \
                         channel_multiplier=2, bg_upsampler=None)
 
     kp_extractor = KeypointExtractor()
