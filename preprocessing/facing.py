@@ -46,9 +46,8 @@ class Preprocessor():
         if os.path.isfile(self.args.face) and self.args.face.split('.')[-1] in ['jpg', 'png', 'jpeg']:
             self.args.static = True
         if not os.path.isfile(self.args.face):
-            print(self.args.face, os.path.isfile(self.args.face) , self.args.face.split('.')[-1])
             raise ValueError('--face argument must be a valid path to video/image file')
-        elif self.args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
+        elif self.args.face.split('.')[-1] in ['jpg', 'png', 'jpeg']:
             self.full_frames = [cv2.imread(self.args.face)]
             fps = self.args.fps
         else:
