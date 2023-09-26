@@ -263,7 +263,7 @@ def main():
         
         with torch.no_grad():
             incomplete, reference = torch.split(img_batch, 3, dim=1) 
-            pred, low_res = model(mel_batch, img_batch, reference)
+            pred, low_res = preprocessor.model(mel_batch, img_batch, reference)
             pred = torch.clamp(pred, 0, 1)
 
             if args.up_face in ['sad', 'angry', 'surprise']:

@@ -160,7 +160,7 @@ class Preprocessor():
         del net_recon
         # load DNet, model(LNet and ENet)
         torch.cuda.empty_cache()
-        D_Net, model = load_model(self.args, device)
+        self.D_Net, self.model = load_model(self.args, device)
 
         # Video Image Stabilized
         out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(self.args.tmp_dir),
@@ -181,7 +181,7 @@ class Preprocessor():
                 # hacking the new expression
                 coeff[:, :64, :] = expression[None, :64, None].to(device)
                 with torch.no_grad():
-                    output = D_Net(source_img, coeff)
+                    output = self.D_Net(source_img, coeff)
                 img_stablized = np.uint8 \
                     ((output['fake_image'].squeeze(0).permute(1 ,2 ,0).cpu().clamp_(-1, 1).numpy() + 1 )/ 2. * 255)
                 self.imgs.append(cv2.cvtColor(img_stablized, cv2.COLOR_RGB2BGR))
@@ -192,5 +192,5 @@ class Preprocessor():
             print('[Step 3] Using saved stablized video.')
             self.imgs = np.load('temp/' + self.base_name + '_stablized.npy')
 
-        del D_Net, model
+        #del D_Net, model
         torch.cuda.empty_cache()
