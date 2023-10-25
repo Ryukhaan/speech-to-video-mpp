@@ -180,6 +180,7 @@ def main():
                 #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
 
                 mask = np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
+                print(np.array(preprocessor.frames_pil[idx]).shape, mask.shape)
                 dst_pts = lm[idx][3:14]
                 # TODO
                 # Add resize points coordinate
