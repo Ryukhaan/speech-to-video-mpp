@@ -108,7 +108,7 @@ class Preprocessor():
             mask = np.bitwise_not(mask)
             kernel = np.ones((5, 5), np.uint8)
             cv2.erode(mask, kernel)
-            res = rgb_copy * mask + (rgb_fake * (255 - mask))
+            res = cv2.bitwise_and(rgb_copy, rgb_copy, mask=255-mask) + cv2.bitwise_and(rgb_fake, rgb_fake, mask=mask)
             cv2.imwrite('./landmarks.png', res[::-1])
 
     def face_3dmm_extraction(self):
