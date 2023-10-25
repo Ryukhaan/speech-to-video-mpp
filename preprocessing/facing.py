@@ -103,7 +103,7 @@ class Preprocessor():
                 xj, yj = int(dst_pts[idx-1][0]), int(dst_pts[idx-1][1])
                 cv2.line(mask, (xj,yj), (xi,yi), (255,0,0), 3)
             im_flood = np.uint8(mask[:,:,0].copy())
-            cv2.floodFill(im_flood, mask, (0,0), 255);
+            cv2.floodFill(im_flood, np.uint8(mask[:,:,0]), (0,0), 255);
             cv2.imwrite('./landmarks.png', im_flood[:,:,::-1])
 
     def face_3dmm_extraction(self):
