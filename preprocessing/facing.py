@@ -95,7 +95,8 @@ class Preprocessor():
             print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
-            print(self.lm)
+            tmp = np.zeros_like(self.full_frames[0])
+            print(self.lm[0])
 
     def face_3dmm_extraction(self):
         if not os.path.isfile('temp/ ' + self.base_name +'_coeffs.npy') \
