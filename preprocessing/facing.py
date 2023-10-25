@@ -98,7 +98,7 @@ class Preprocessor():
             mask = np.array(self.frames_pil[5])
             dst_pts = self.lm[5][3:13]
             #mask = np.zeros_lik(tmp)
-            for idx, (x, y) in dst_pts:
+            for idx, (x, y) in enumerate(dst_pts):
                 cv2.line(mask, dst_pts[idx-1], dst_pts[idx], (255,0,0), 3)
             #for idx, (x,y) in enumerate(dst_pts):
             #    tmp[int(y)-1:int(y)+1,int(x)-1:int(x)+1, :] = [255,0,0]
