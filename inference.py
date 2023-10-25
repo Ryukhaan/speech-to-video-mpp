@@ -113,6 +113,7 @@ def main():
                         channel_multiplier=2, bg_upsampler=None)
 
     kp_extractor = KeypointExtractor()
+    idx = 0
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(tqdm(gen, desc='[Step 6] Lip Synthesis:', total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
@@ -146,8 +147,6 @@ def main():
 
         torch.cuda.empty_cache()
         delta = 0
-        idx = 0
-        inverse_scale = 1.
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
             y1, y2, x1, x2 = c
             p = cv2.resize(p.astype(np.uint8), (x2 - x1, y2 - y1))
