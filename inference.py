@@ -44,7 +44,6 @@ def main():
     preprocessor = preprocessing.Preprocessor(args)
     preprocessor.reading_video()
     preprocessor.landmarks_estimate()
-    return 0
     preprocessor.face_3dmm_extraction()
     preprocessor.hack_3dmm_expression()
 
@@ -147,6 +146,7 @@ def main():
 
         torch.cuda.empty_cache()
         delta = 0
+        idx = 0
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
             y1, y2, x1, x2 = c
             p = cv2.resize(p.astype(np.uint8), (x2 - x1, y2 - y1))
@@ -178,6 +178,20 @@ def main():
                 pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
                 ff = xf.copy()
                 ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
+
+                mask = np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
+                dst_pts = lm[idx][3:14]
+                # TODO
+                # Add resize points coordinate
+                for idx, (x, y) in enumerate(dst_pts):
+                    xi, yi = int(x), int(y)
+                    xj, yj = int(dst_pts[idx - 1][0]), int(dst_pts[idx - 1][1])
+                    cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
+                cv2.floodFill(mask, None, (0, 0), 255);
+                mask = np.bitwise_not(mask)
+                kernel = np.ones((5, 5), np.uint8)
+                cv2.erode(mask, kernel)
+                ff = cv2.bitwise_and(ff, ff, mask=255-mask) + cv2.bitwise_and(pp, pp,mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 #cv2.imwrite("./results/{}.png".format(delta), pp)
                 out.write(ff)
