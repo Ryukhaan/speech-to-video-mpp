@@ -183,6 +183,7 @@ def main():
                 mask = np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
                 inverse_scale = 1. #float(mask.shape[0]) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 dst_pts = lm[idx][1:16]
+                print(dst_pts)
                 # TODO
                 # Add resize points coordinate
                 for j, (x, y) in enumerate(dst_pts):
