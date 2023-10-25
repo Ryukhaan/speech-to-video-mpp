@@ -96,10 +96,10 @@ class Preprocessor():
             self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
             tmp = np.array(self.frames_pil[0])
-            #tmp.setflags(write=1)
-            for y,x in self.lm[0]:
+            for x,y in self.lm[0]:
                 tmp[int(y),int(x), :] = [255,0,0]
-            cv2.imwrite('./landmarks.png', tmp)
+
+            cv2.imwrite('./landmarks.png', tmp[:,:,::-1])
 
     def face_3dmm_extraction(self):
         if not os.path.isfile('temp/ ' + self.base_name +'_coeffs.npy') \
