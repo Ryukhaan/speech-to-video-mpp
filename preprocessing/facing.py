@@ -97,7 +97,7 @@ class Preprocessor():
             self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
             tmp = self.full_frames[0]
             print(tmp.shape)
-            for x,y in self.lm[0]:
+            for y,x in self.lm[0]:
                 tmp[int(y),int(x), :] = [255,0,0]
             cv2.imwrite('./landmarks.png', tmp)
 
