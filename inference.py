@@ -186,7 +186,7 @@ def main():
                 # TODO
                 # Add resize points coordinate
                 for j, (x, y) in enumerate(dst_pts):
-                    xi, yi = int(inverse_scale*(x-x1), int(inverse_scale*(y-y1))
+                    xi, yi = int(inverse_scale*(x-x1)), int(inverse_scale*(y-y1))
                     xj, yj = int(inverse_scale*(dst_pts[j - 1][0]-x1)), int(inverse_scale*(dst_pts[j - 1][1]-y1))
                     cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
                 cv2.floodFill(mask, None, (0, 0), 255);
