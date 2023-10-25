@@ -184,8 +184,8 @@ def main():
                 # TODO
                 # Add resize points coordinate
                 for idx, (x, y) in enumerate(dst_pts):
-                    xi, yi = int(x), int(y)
-                    xj, yj = int(dst_pts[idx - 1][0]), int(dst_pts[idx - 1][1])
+                    xi, yi = 2*int(x), 2*int(y)
+                    xj, yj = 2*int(dst_pts[idx - 1][0]), 2*int(dst_pts[idx - 1][1])
                     cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
                 cv2.floodFill(mask, None, (0, 0), 255);
                 mask = np.bitwise_not(mask)
