@@ -95,12 +95,15 @@ class Preprocessor():
             print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
-            tmp = np.array(self.frames_pil[5])
-            dst_pts = self.lm[5][3:16]
-            for idx, (x,y) in enumerate(dst_pts):
-                tmp[int(y)-1:int(y)+1,int(x)-1:int(x)+1, :] = [255,0,0]
+            mask = np.array(self.frames_pil[5])
+            dst_pts = self.lm[5][3:13]
+            #mask = np.zeros_lik(tmp)
+            for idx, (x, y) in dst_pts:
+                cv2.line(mask, dst_pts[idx-1], dst_pts[idx], (255,0,0), 3)
+            #for idx, (x,y) in enumerate(dst_pts):
+            #    tmp[int(y)-1:int(y)+1,int(x)-1:int(x)+1, :] = [255,0,0]
 
-            cv2.imwrite('./landmarks.png', tmp[:,:,::-1])
+            cv2.imwrite('./landmarks.png', mask[:,:,::-1])
 
     def face_3dmm_extraction(self):
         if not os.path.isfile('temp/ ' + self.base_name +'_coeffs.npy') \
