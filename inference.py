@@ -180,25 +180,25 @@ def main():
                 ff = xf.copy()
                 #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
 
-                mask = ff.copy() #np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
+                mask = np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
                 inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
                 inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 dst_pts = lm[idx][1:16]
                 # TODO
                 # Add resize points coordinate
-                cv2.rectangle(mask, (ox1, oy1), (ox2, oy2), (255, 0, 0), 3)
-                cv2.rectangle(mask, (ox1, oy1), (ox1+512, oy1+512), (0, 255, 0), 3)
+                #cv2.rectangle(mask, (ox1, oy1), (ox2, oy2), (255, 0, 0), 3)
+                #cv2.rectangle(mask, (ox1, oy1), (ox1+512, oy1+512), (0, 255, 0), 3)
                 for j, (x, y) in enumerate(dst_pts):
                     xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
                     xj, yj = int(inverse_scale_x*dst_pts[j - 1][0]+ox1), int(inverse_scale_y*dst_pts[j - 1][1]+oy1)
-                    cv2.line(mask, (xj, yj), (xi, yi), (255,0,0), 3)
-                #cv2.floodFill(mask, None, (0, 0), 255);
-                #mask = np.bitwise_not(mask)
-                #kernel = np.ones((7, 7), np.uint8)
-                #cv2.dilate(mask, kernel)
-                #ff = cv2.bitwise_and(ff, ff, mask=255-mask) + cv2.bitwise_and(pp, pp,mask=mask)
+                    cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
+                cv2.floodFill(mask, None, (0, 0), 255);
+                mask = np.bitwise_not(mask)
+                kernel = np.ones((7, 7), np.uint8)
+                cv2.dilate(mask, kernel)
+                ff = cv2.bitwise_and(ff, ff, mask=255-mask) + cv2.bitwise_and(pp, pp,mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                cv2.imwrite("./results/{}.png".format(idx), mask)
+                cv2.imwrite("./results/{}.png".format(idx), ff)
                 out.write(ff)
                 idx += 1
             else:
