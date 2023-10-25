@@ -95,8 +95,8 @@ class Preprocessor():
             print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
-            mask = np.array(self.frames_pil[5])
-            dst_pts = self.lm[5][3:13]
+            mask = np.array(self.frames_pil[10])
+            dst_pts = self.lm[10][3:14]
             #mask = np.zeros_lik(tmp)
             for idx, (x, y) in enumerate(dst_pts):
                 xi, yi = int(x), int(y)
