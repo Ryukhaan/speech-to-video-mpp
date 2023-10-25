@@ -189,20 +189,21 @@ def main():
                     xi, yi = int(inverse_scale*x), int(inverse_scale*y)
                     xj, yj = int(inverse_scale*dst_pts[idx - 1][0]), int(inverse_scale*dst_pts[idx - 1][1])
                     cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
-                cv2.floodFill(mask, None, (0, 0), 255);
-                mask = np.bitwise_not(mask)
-                kernel = np.ones((7, 7), np.uint8)
-                cv2.dilate(mask, kernel)
-                ff = cv2.bitwise_and(ff, ff, mask=255-mask) + cv2.bitwise_and(pp, pp,mask=mask)
+                #cv2.floodFill(mask, None, (0, 0), 255);
+                #mask = np.bitwise_not(mask)
+                #kernel = np.ones((7, 7), np.uint8)
+                #cv2.dilate(mask, kernel)
+                #ff = cv2.bitwise_and(ff, ff, mask=255-mask) + cv2.bitwise_and(pp, pp,mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 #cv2.imwrite("./results/{}.png".format(delta), pp)
-                out.write(ff)
+                out.write(mask)
                 idx += 1
             else:
                 tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
                 pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
-
                 out.write(pp)
+        if idx == 20:
+            break
     out.release()
     
     if not os.path.isdir(os.path.dirname(args.outfile)):
