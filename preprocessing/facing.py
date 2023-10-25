@@ -96,20 +96,20 @@ class Preprocessor():
             self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
 
-            rgb_copy = np.array(self.frames_pil[10])
-            rgb_fake = np.array(self.frames_pil[5])
-            mask = np.zeros((rgb_copy.shape[0], rgb_copy.shape[1]), dtype=np.uint8)
-            dst_pts = self.lm[10][3:14]
-            for idx, (x, y) in enumerate(dst_pts):
-                xi, yi = int(x), int(y)
-                xj, yj = int(dst_pts[idx-1][0]), int(dst_pts[idx-1][1])
-                cv2.line(mask, (xj,yj), (xi,yi), 255, 3)
-            cv2.floodFill(mask, None, (0,0), 255);
-            mask = np.bitwise_not(mask)
-            kernel = np.ones((5, 5), np.uint8)
-            cv2.erode(mask, kernel)
-            res = cv2.bitwise_and(rgb_copy, rgb_copy, mask=255-mask) + cv2.bitwise_and(rgb_fake, rgb_fake, mask=mask)
-            cv2.imwrite('./landmarks.png', res[::-1])
+            #rgb_copy = np.array(self.frames_pil[10])
+            #rgb_fake = np.array(self.frames_pil[5])
+            #mask = np.zeros((rgb_copy.shape[0], rgb_copy.shape[1]), dtype=np.uint8)
+            #dst_pts = self.lm[10][3:14]
+            #for idx, (x, y) in enumerate(dst_pts):
+            #    xi, yi = int(x), int(y)
+            #    xj, yj = int(dst_pts[idx-1][0]), int(dst_pts[idx-1][1])
+            #    cv2.line(mask, (xj,yj), (xi,yi), 255, 3)
+            #cv2.floodFill(mask, None, (0,0), 255);
+            #mask = np.bitwise_not(mask)
+            #kernel = np.ones((5, 5), np.uint8)
+            #cv2.erode(mask, kernel)
+            #res = cv2.bitwise_and(rgb_copy, rgb_copy, mask=255-mask) + cv2.bitwise_and(rgb_fake, rgb_fake, mask=mask)
+            #cv2.imwrite('./landmarks.png', res[::-1])
 
     def face_3dmm_extraction(self):
         if not os.path.isfile('temp/ ' + self.base_name +'_coeffs.npy') \
