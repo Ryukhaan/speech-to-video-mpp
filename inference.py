@@ -185,7 +185,8 @@ def main():
                 dst_pts = lm[idx][1:16]
                 # TODO
                 # Add resize points coordinate
-                cv2.rectangle(mask, (ox1, oy1), (ox2//2, oy2//2), (255, 0, 0), 3)
+                cv2.rectangle(mask, (ox1, oy1), (ox2, oy2), (255, 0, 0), 3)
+                cv2.rectangle(mask, (ox1, oy1), (ox1+512, oy1+512), (0, 255, 0), 3)
                 for j, (x, y) in enumerate(dst_pts):
                     xi, yi = int(inverse_scale*x+ox1), int(inverse_scale*y+oy1)
                     xj, yj = int(inverse_scale*dst_pts[j - 1][0]+ox1), int(inverse_scale*dst_pts[j - 1][1]+oy1)
