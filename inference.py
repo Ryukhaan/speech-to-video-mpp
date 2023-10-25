@@ -181,13 +181,13 @@ def main():
                 #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
 
                 mask = np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
-                inverse_scale = float(mask.shape[0]) / np.array(preprocessor.frames_pil[idx]).shape[0]
+                inverse_scale = 2. #float(mask.shape[0]) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 dst_pts = lm[idx][1:16]
                 # TODO
                 # Add resize points coordinate
                 for idx, (x, y) in enumerate(dst_pts):
-                    xi, yi = int(inverse_scale*x), int(inverse_scale*y)
-                    xj, yj = int(inverse_scale*dst_pts[idx - 1][0]), int(inverse_scale*dst_pts[idx - 1][1])
+                    xi, yi = int(inverse_scale*x+x1), int(inverse_scale*y+y1)
+                    xj, yj = int(inverse_scale*dst_pts[idx - 1][0]+x1), int(inverse_scale*dst_pts[idx - 1][1]+y1)
                     cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
                 #cv2.floodFill(mask, None, (0, 0), 255);
                 #mask = np.bitwise_not(mask)
@@ -202,8 +202,6 @@ def main():
                 tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
                 pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
                 out.write(pp)
-        if idx == 20:
-            break
     out.release()
     
     if not os.path.isdir(os.path.dirname(args.outfile)):
