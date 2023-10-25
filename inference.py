@@ -72,7 +72,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    mel_chunks = mel_chunks[:32]
+    mel_chunks = mel_chunks[:16]
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -195,8 +195,8 @@ def main():
                 #cv2.dilate(mask, kernel)
                 #ff = cv2.bitwise_and(ff, ff, mask=255-mask) + cv2.bitwise_and(pp, pp,mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                #cv2.imwrite("./results/{}.png".format(delta), pp)
-                out.write(mask)
+                cv2.imwrite("./results/{}.png".format(idx), mask)
+                #out.write(mask)
                 idx += 1
             else:
                 tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
