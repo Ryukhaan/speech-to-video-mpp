@@ -181,7 +181,7 @@ def main():
                 #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
 
                 mask = np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
-                inverse_scale = 2. #float(mask.shape[0]) / np.array(preprocessor.frames_pil[idx]).shape[0]
+                inverse_scale = float(mask.shape[0]) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 dst_pts = lm[idx][1:16]
                 # TODO
                 # Add resize points coordinate
@@ -189,12 +189,13 @@ def main():
                     xi, yi = int(inverse_scale*x+x1), int(inverse_scale*y+y1)
                     xj, yj = int(inverse_scale*dst_pts[j - 1][0]+x1), int(inverse_scale*dst_pts[j - 1][1]+y1)
                     cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
-                #cv2.floodFill(mask, None, (0, 0), 255);
-                #mask = np.bitwise_not(mask)
+                cv2.floodFill(mask, None, (0, 0), 255);
+                mask = np.bitwise_not(mask)
                 #kernel = np.ones((7, 7), np.uint8)
                 #cv2.dilate(mask, kernel)
                 #ff = cv2.bitwise_and(ff, ff, mask=255-mask) + cv2.bitwise_and(pp, pp,mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
+                print("Writing")
                 cv2.imwrite("./results/{}.png".format(idx), mask)
                 #out.write(mask)
                 idx += 1
