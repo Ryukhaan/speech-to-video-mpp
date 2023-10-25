@@ -191,12 +191,12 @@ def main():
                     cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
                 cv2.floodFill(mask, None, (0, 0), 255);
                 mask = np.bitwise_not(mask)
-                #kernel = np.ones((7, 7), np.uint8)
-                #cv2.dilate(mask, kernel)
-                #ff = cv2.bitwise_and(ff, ff, mask=255-mask) + cv2.bitwise_and(pp, pp,mask=mask)
+                kernel = np.ones((7, 7), np.uint8)
+                cv2.dilate(mask, kernel)
+                ff = cv2.bitwise_and(ff, ff, mask=255-mask) + cv2.bitwise_and(pp, pp,mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                cv2.imwrite("./results/{}.png".format(idx), mask)
-                #out.write(mask)
+                cv2.imwrite("./results/{}.png".format(idx), ff)
+                out.write(ff)
                 idx += 1
             else:
                 tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
