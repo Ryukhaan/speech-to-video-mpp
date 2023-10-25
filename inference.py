@@ -147,6 +147,7 @@ def main():
         torch.cuda.empty_cache()
         delta = 0
         idx = 0
+        inverse_scale = np.array(preprocessor.frames_pil[0]).shape[0] /
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
             y1, y2, x1, x2 = c
             p = cv2.resize(p.astype(np.uint8), (x2 - x1, y2 - y1))
@@ -180,13 +181,13 @@ def main():
                 #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
 
                 mask = np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
-                print(np.array(preprocessor.frames_pil[idx]).shape, mask.shape)
+                inverse_scale = float(mask.shape[0]) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 dst_pts = lm[idx][3:14]
                 # TODO
                 # Add resize points coordinate
                 for idx, (x, y) in enumerate(dst_pts):
-                    xi, yi = 2*int(x), 2*int(y)
-                    xj, yj = 2*int(dst_pts[idx - 1][0]), 2*int(dst_pts[idx - 1][1])
+                    xi, yi = int(inverse_scale*x), int(inverse_scale*y)
+                    xj, yj = int(inverse_scale*dst_pts[idx - 1][0]), int(inverse_scale*dst_pts[idx - 1][1])
                     cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
                 cv2.floodFill(mask, None, (0, 0), 255);
                 mask = np.bitwise_not(mask)
