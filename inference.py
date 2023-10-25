@@ -181,14 +181,14 @@ def main():
                 #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
 
                 mask = np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
-                inverse_scale = 1. #float(mask.shape[0]) / np.array(preprocessor.frames_pil[idx]).shape[0]
+                inverse_scale = float(mask.shape[0]) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 dst_pts = lm[idx][1:16]
                 print(dst_pts)
                 # TODO
                 # Add resize points coordinate
                 for j, (x, y) in enumerate(dst_pts):
-                    xi, yi = int(inverse_scale*(x+ox1)), int(inverse_scale*(y+oy1))
-                    xj, yj = int(inverse_scale*(dst_pts[j - 1][0]+ox1)), int(inverse_scale*(dst_pts[j - 1][1]+oy1))
+                    xi, yi = int(x+inverse_scale*ox1), int(y+inverse_scale*oy1)
+                    xj, yj = int(dst_pts[j - 1][0]+inverse_scale*ox1), int(dst_pts[j - 1][1]+inverse_scale*(oy1))
                     cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
                 cv2.floodFill(mask, None, (0, 0), 255);
                 mask = np.bitwise_not(mask)
