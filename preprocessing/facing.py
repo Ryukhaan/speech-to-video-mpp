@@ -96,8 +96,9 @@ class Preprocessor():
             self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
             tmp = self.full_frames[0]
+            print(tmp.shape)
             for x,y in self.lm[0]:
-                tmp[y,x,:] = [255,0,0]
+                tmp[y,x] = [255,0,0]
             cv2.imwrite('./landmarks.png', tmp)
 
     def face_3dmm_extraction(self):
