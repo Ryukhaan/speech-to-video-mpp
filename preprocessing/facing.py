@@ -100,7 +100,7 @@ class Preprocessor():
             #mask = np.zeros_lik(tmp)
             for idx, (x, y) in enumerate(dst_pts):
                 xi, yi = int(x), int(y)
-                xj, xj = int(dst_pts[idx-1][0]), int(dst_pts[idx-1][1])
+                xj, yj = int(dst_pts[idx-1][0]), int(dst_pts[idx-1][1])
                 cv2.line(mask, (xj,yj), (xi,yi), (255,0,0), 3)
             #for idx, (x,y) in enumerate(dst_pts):
             #    tmp[int(y)-1:int(y)+1,int(x)-1:int(x)+1, :] = [255,0,0]
