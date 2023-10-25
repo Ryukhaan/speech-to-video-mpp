@@ -191,7 +191,7 @@ def main():
                     cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
                 cv2.floodFill(mask, None, (0, 0), 255);
                 mask = np.bitwise_not(mask)
-                kernel = np.ones((3, 3), np.uint8)
+                kernel = np.ones((7, 7), np.uint8)
                 cv2.dilate(mask, kernel)
                 ff = cv2.bitwise_and(ff, ff, mask=255-mask) + cv2.bitwise_and(pp, pp,mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
