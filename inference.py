@@ -181,8 +181,8 @@ def main():
                 #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
 
                 mask = ff.copy() #np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
-                inverse_scale_x = 256. / np.array(preprocessor.frames_pil[idx]).shape[1]
-                inverse_scale_y = 256. / np.array(preprocessor.frames_pil[idx]).shape[0]
+                inverse_scale_x = np.array(preprocessor.frames_pil[idx]).shape[1] / (ox2 - ox1)
+                inverse_scale_y = np.array(preprocessor.frames_pil[idx]).shape[0] / (oy2 - oy1)
                 dst_pts = lm[idx][1:16]
                 # TODO
                 # Add resize points coordinate
