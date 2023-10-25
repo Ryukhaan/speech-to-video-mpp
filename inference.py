@@ -195,6 +195,7 @@ def main():
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 #cv2.imwrite("./results/{}.png".format(delta), pp)
                 out.write(ff)
+            idx += 1
             else:
                 tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
                 pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
