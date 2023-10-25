@@ -72,7 +72,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    mel_chunks = mel_chunks[:16]
+    mel_chunks = mel_chunks[:8]
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -185,7 +185,7 @@ def main():
                 dst_pts = lm[idx][1:16]
                 # TODO
                 # Add resize points coordinate
-                cv2.rectangle(mask, (ox1, oy1), (ox2-ox1, oy2-oy1), (255, 0, 0), 3)
+                cv2.rectangle(mask, (ox1, oy1), (ox2, oy2), (255, 0, 0), 3)
                 for j, (x, y) in enumerate(dst_pts):
                     xi, yi = int(inverse_scale*x+ox1), int(inverse_scale*y+oy1)
                     xj, yj = int(inverse_scale*dst_pts[j - 1][0]+ox1), int(inverse_scale*dst_pts[j - 1][1]+oy1)
