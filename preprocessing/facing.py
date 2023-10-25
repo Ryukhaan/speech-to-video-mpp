@@ -95,7 +95,7 @@ class Preprocessor():
             print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
-            tmp = self.frames_pil[0]
+            tmp = np.asarray(self.frames_pil[0])
             for y,x in self.lm[0]:
                 tmp[int(y),int(x), :] = [255,0,0]
             cv2.imwrite('./landmarks.png', tmp)
