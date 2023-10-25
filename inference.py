@@ -147,7 +147,7 @@ def main():
         torch.cuda.empty_cache()
         delta = 0
         idx = 0
-        inverse_scale = np.array(preprocessor.frames_pil[0]).shape[0] /
+        inverse_scale = 1.
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
             y1, y2, x1, x2 = c
             p = cv2.resize(p.astype(np.uint8), (x2 - x1, y2 - y1))
