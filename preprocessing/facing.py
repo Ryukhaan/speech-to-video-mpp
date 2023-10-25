@@ -98,7 +98,7 @@ class Preprocessor():
             tmp = self.full_frames[0]
             print(tmp.shape)
             for x,y in self.lm[0]:
-                tmp[y,x] = [255,0,0]
+                tmp[int(y),int(x), :] = [255,0,0]
             cv2.imwrite('./landmarks.png', tmp)
 
     def face_3dmm_extraction(self):
