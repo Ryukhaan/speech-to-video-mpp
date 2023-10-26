@@ -196,7 +196,7 @@ def main():
                 for j, (x, y) in enumerate(dst_pts):
                     xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
                     xj, yj = int(inverse_scale_x*dst_pts[j - 1][0]+ox1), int(inverse_scale_y*dst_pts[j - 1][1]+oy1)
-                    cv2.line(mask, (xj, yj), (xi, yi), (0,255,0), 3)
+                    cv2.line(mask, (xj, yj), (xi, yi), 255, 3)
                 cv2.floodFill(mask, None, (0, 0), 255);
                 mask = np.bitwise_not(mask)
                 kernel = np.array([[1,1,1], [1,1,1], [0,0,0]], dtype=np.uint8)
