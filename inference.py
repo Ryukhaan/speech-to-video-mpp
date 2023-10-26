@@ -180,10 +180,13 @@ def main():
                 ff = xf.copy()
                 #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
 
-                mask = np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
+                mask = ff.copy() #np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
                 inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
                 inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 dst_pts = lm[idx][-19:-1]
+                for j, (x,y) in enumerate(lm[idx]):
+                    cv2.circle(mask, (x,y), 3, 255, 1)
+                    cv2.putText(mask, str(j), (x+5,y)cv2.FONT_HERSHEY_DUPLEX, 1.5, 255, 2, cv2.LINE_AA)
                 # TODO
                 # Add resize points coordinate
                 #cv2.rectangle(mask, (ox1, oy1), (ox2, oy2), (255, 0, 0), 3)
