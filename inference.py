@@ -183,7 +183,7 @@ def main():
                 mask = ff.copy() #np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
                 inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
                 inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
-                dst_pts = lm[idx][-18:-1]
+                dst_pts = lm[idx][-19:-1]
                 # TODO
                 # Add resize points coordinate
                 #cv2.rectangle(mask, (ox1, oy1), (ox2, oy2), (255, 0, 0), 3)
