@@ -203,7 +203,7 @@ def main():
                 cv2.dilate(mask, kernel, iterations = 3)
                 ff = cv2.bitwise_and(ff, ff, mask=255-mask) #+ cv2.bitwise_and(pp, pp,mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                cv2.imwrite("./results/{}.png".format(idx), ff)
+                cv2.imwrite("./results/{}.png".format(idx), mask)
                 #out.write(ff)
                 idx += 1
             else:
