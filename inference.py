@@ -187,7 +187,7 @@ def main():
                 for j, (x,y) in enumerate(lm[idx]):
                     xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
                     cv2.circle(mask, (xi,yi), 3, (0,255,0), 1)
-                    cv2.putText(mask, str(j), (xi+5,yi), cv2.FONT_HERSHEY_DUPLEX, 1.5, (0,0,255), 2, cv2.LINE_AA)
+                    cv2.putText(mask, str(j), (xi+5,yi), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,0,255), 1, cv2.LINE_AA)
                 # TODO
                 # Add resize points coordinate
                 #cv2.rectangle(mask, (ox1, oy1), (ox2, oy2), (255, 0, 0), 3)
