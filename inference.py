@@ -188,10 +188,10 @@ def main():
                 # Add resize points coordinate
                 #cv2.rectangle(mask, (ox1, oy1), (ox2, oy2), (255, 0, 0), 3)
                 #cv2.rectangle(mask, (ox1, oy1), (ox1+512, oy1+512), (0, 255, 0), 3)
-                #for j, (x, y) in enumerate(dst_pts):
-                #    xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
-                #    xj, yj = int(inverse_scale_x*dst_pts[j - 1][0]+ox1), int(inverse_scale_y*dst_pts[j - 1][1]+oy1)
-                #    cv2.line(mask, (xj, yj), (xi, yi), (255,0,0), 3)
+                for j, (x, y) in enumerate(dst_pts):
+                    xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
+                    xj, yj = int(inverse_scale_x*dst_pts[j - 1][0]+ox1), int(inverse_scale_y*dst_pts[j - 1][1]+oy1)
+                    cv2.line(mask, (xj, yj), (xi, yi), (255,0,0), 3)
                 dst_pts = lm[idx][3:14]
                 for j, (x, y) in enumerate(dst_pts):
                     xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
@@ -200,10 +200,10 @@ def main():
                 cv2.floodFill(mask, None, (0, 0), 255);
                 mask = np.bitwise_not(mask)
                 kernel = np.array([[1,1,1], [1,1,1], [0,0,0]], dtype=np.uint8)
-                cv2.dilate(mask, kernel, iterations = 3)
-                ff = cv2.bitwise_and(ff, ff, mask=255-mask) #+ cv2.bitwise_and(pp, pp,mask=mask)
+                cv2.dilate(mask, kernel, iterations = 5)
+                ff = cv2.bitwise_and(ff, ff, mask=255-mask) + cv2.bitwise_and(pp, pp,mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                cv2.imwrite("./results/{}.png".format(idx), mask)
+                cv2.imwrite("./results/{}.png".format(idx), ff)
                 #out.write(ff)
                 idx += 1
             else:
