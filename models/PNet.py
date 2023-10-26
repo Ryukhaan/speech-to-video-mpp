@@ -28,7 +28,7 @@ class PNet(nn.Module):
 
         self.pooling = nn.AdativeAvgPool1d(1)
         self.output_nc = descriptor_nc
-    def forward(self, phoneme):
+    def forward(self, phoneme_emb, positional_emb):
         out = self.first(phoneme)
         for i in range(self.nlayer):
             model = getattr(self, 'encoder' + str(i))
