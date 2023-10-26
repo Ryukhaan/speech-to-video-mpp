@@ -11,7 +11,6 @@ einops>=0.6.0
 encodec>=0.1.1
 fastdtw>=0.3.4
 soundfile==0.12.1
-torchaudio==0.13.1
 coloredlogs>=15.0.1
 deepspeed>=0.7.7
 diskcache>=5.4.0
