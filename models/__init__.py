@@ -3,7 +3,7 @@ from models.DNet import DNet
 from models.LNet import LNet
 from models.ENet import ENet
 
-from torchsummary import summary
+#from torchsummary import summary
 
 def _load(checkpoint_path):
     checkpoint = torch.load(checkpoint_path)
