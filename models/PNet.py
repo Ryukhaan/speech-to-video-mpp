@@ -31,8 +31,9 @@ class PhonemeEmbeddings(nn.Module):
     def forward(self, x):
         return self.embeddings(x) * math.sqrt(self.d_model)
 
-class PositionalEconding(nn.Module):
+class PositionalEncoding(nn.Module):
     def __init__(self, d_model=256, seq_len=20, dropout=0.1):
+        super(PositionalEncoding, self).__init__()
         self.d_model = d_model
         self.seq_len = seq_len
         self.dropout = nn.Dropout(dropout)
@@ -113,30 +114,50 @@ class MultiHeadAttentionBlock(nn.Module):
         # (batch, seq_len, d_model) --> (batch, seq_len, d_model)
         return self.w_o(x)
 
-class PNet(nn.Module):
+class EncoderBlock(nn.Module):
 
-    def __init__(self, coef_nc=19, descriptor_nc=256, nlayer=3):
-        super(PNet, self).__init__()
-
-        self.nlayer = nlayer
-        nonlineartiry = nn.LeakyReLU(0.1)
-
-        self.first = nn.Sequential(
-            torch.nn.Conv1d(coef_nc, descriptor_nc, kernel_size=7, padding=0, bias=True)
+    def __init__(self, features, attention_block, feedforward_block, dropout=0.1):
+        super(EncoderBlock, self).__init__()
+        self.att_block = attention_block
+        self.ffw_block = feedforward_block
+        self.residual_connections = nn.ModuleList(
+            ResidualConnection(features, dropout) for _ in range(2)
         )
 
-        for i in range(nlayer):
-            net = nn.Sequential(nonlineartiry,
-                                torch.nn.Conv1d(descriptor_nc, descriptor_nc, kernel_size=3, padding=0, dilation=3)
-                                )
-            setattr(self, 'encoder' + str(i), net)
+    def forward(self, x, src_mask):
+        x = self.residual_connections[0](x, lambda y: self.att_block(y,y,y,src_mask))
+        x = self.residual_connections[1](x, self.ffw_block)
+        return x
 
-        self.pooling = nn.AdativeAvgPool1d(1)
-        self.output_nc = descriptor_nc
-    def forward(self, phoneme_emb, positional_emb):
-        out = self.first(phoneme)
-        for i in range(self.nlayer):
-            model = getattr(self, 'encoder' + str(i))
-            out = model(out) + out[:,:,3:-3]
-        out = self.pooling(out)
-        return out
+class Encoder(nn.Module):
+
+    def __init__(self, features, layers):
+        super(Encoder, self).__init__()
+        self.layers = layers
+        self.norm = nn.LayerNorm(features)
+
+    def forward(self, x, mask):
+        for layer in self.layers:
+            x = self.layers(x, mask)
+        return self.norm(x)
+
+class PNet(nn.Module):
+    def __init__(self, src_phone_size, src_seq_len, d_model=256, n_blocks=2, h=8, d_ff = 256, dropout=0.1):
+        super(PNet, self).__init__()
+        self.src_embed = PhonemeEmbeddings(d_model, src_phone_size)
+        self.src_pos = PositionalEncoding(d_model, src_seq_len, dropout)
+        self.encoder_blocks = []
+        for i in range(n_blocks):
+            encoder_self_attention = MultiHeadAttentionBlock(d_model, h, dropout=dropout)
+            feed_forward = FeedForwardBlock(d_model, d_ff, dropout=dropout)
+            encoder_block = EncoderBlock(d_model, encoder_self_attention, feed_forward, dropout=dropout)
+            setattr(self, 'encoder' + str(i), encoder_block)
+            self.encoder_blocks.append(encoder_block)
+        self.encoder = Encoder(d_model, nn.ModuleList(self.encoder_blocks))
+        for p in self.encoder.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
+    def forward(self, x, mask):
+        x = self.src_embed(x)
+        x = self.src_pos(x)
+        return self.encoder(x, mask)
