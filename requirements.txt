@@ -8,3 +8,5 @@ librosa==0.9.2
 dlib==19.24.0
 gradio>=3.7.0
 numpy==1.23.4
+fastdtw>=0.3.4
+torchsummary>=1.5.1
