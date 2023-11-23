@@ -10,6 +10,10 @@ from tqdm import tqdm
 from PIL import Image
 from scipy.io import loadmat
 
+import json
+import os
+from scipy.io import wavfile
+
 sys.path.append('third_part')
 # 3dmm extraction
 from third_part.face3d.util.preprocess import align_img
@@ -199,3 +203,51 @@ class Preprocessor():
 
         #del D_Net, model
         torch.cuda.empty_cache()
+
+    def load_phones_dictionary(self):
+        # Load Phones Dictionary
+        with open(self.args.phones_dict_path, 'r') as file:
+            self.dictionary = json.load(file)
+        self.dictionary = self.dictionary['phones']
+        self.dictionary.insert(0, 'spn')
+        return self.dictionary
+    def get_phones_per_ms(self):
+        # with open(f"./mvlrs_align/{folder}/{video}.json", 'r') as file:
+        folder = os.path.basename(self.args.json_path)
+        # basename = os.path.dirname(args.json_path)
+        basename_without_ext = os.path.splitext(os.path.basename(self.args.json_path))[0]
+        with open(self.args.json_name, 'r') as file:
+            json_data = json.load(file)
+
+        # Get Phones (and words)
+        words = json_data['tiers']['words']
+        self.phones = json_data['tiers']['phones']
+        # Load File WAV associated to the JSON
+        wavfile = os.path.join([folder, basename_without_ext + '.wav'])
+        samplerate, wav_data = wavfile.read(wavfile, 'r')
+        milliseconds = len(wav_data) / samplerate * 1000
+
+        self.phones_per_ms = np.zeros((int(milliseconds), 1), dtype=np.int32)
+        for (start, end, phone) in self.phones['entries']:
+            if phone == "d̪":
+                phone = "ð"
+            if phone == "t̪":
+                phone = "θ"
+            if phone == "kʷ":
+                phone = "k"
+            if phone == "tʷ":
+                phone = "t"
+            if phone == "cʷ":
+                phone = "k"
+            if phone == "ɾʲ":
+                phone = "ɒ"
+            if phone == "ɾ̃":
+                phone = "θ"
+            if phone == "ɟʷ":
+                phone = "ɟ"
+            if phone == "ɡʷ":
+                phone = "ɡ"
+            if phone == "vʷ":
+                phone = "v"
+            self.phones_per_ms[int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
+        return self.phones_per_ms

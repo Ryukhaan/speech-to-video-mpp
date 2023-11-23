@@ -23,6 +23,9 @@ from encodec.utils import convert_audio
 import torchaudio
 
 import pickle
+
+import preprocessing.facing as preprocessing
+
 sys.path.append('third_part')
 # 3dmm extraction
 from third_part.face3d.util.preprocess import align_img
@@ -43,116 +46,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 args = options()
-
-class ArcFaceLoss(torch.nn.Module):
-    def __init__(self, device):
-        super(ArcFaceLoss, self).__init__()
-        self.face3d_net_path = 'checkpoints/face3d_pretrain_epoch_20.pth'
-        self.device = device
-        self.lm3d = 'checkpoints/BFM'
-        self.l2_loss = torch.nn.MSELoss()
-
-    def forward(self, y_pred, y_true):
-
-        torch.cuda.empty_cache()
-        net_recon = load_face3d_net(self.face3d_net_path, self.device)
-        lm3d_std = load_lm3d(self.lm3d)
-        print(y_pred.shape)
-        _, C, W, H = y_pred.shape
-
-        lm_idx = lm[idx].reshape([-1, 2])
-        if np.mean(lm_idx) == -1:
-            lm_idx = (lm3d_std[:, :2]+1) / 2.
-            lm_idx = np.concatenate([lm_idx[:, :1] * W, lm_idx[:, 1:2] * H], 1)
-        else:
-            lm_idx[:, -1] = H - 1 - lm_idx[:, -1]
-
-        # Y Predicted
-        d_ypred = y_pred.cpu().detach().numpy()
-        d_ypred = cv2.fromarray(d_ypred)
-        trans_params, im_idx, lm_idx, _ = align_img(d_ypred[0], lm_idx, lm3d_std)
-        trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
-        im_idx_tensor = torch.tensor(np.array(im_idx)/255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
-        with torch.no_grad():
-            coeffs = split_coeff(net_recon(im_idx_tensor))
-        pred_coeff = {key:coeffs[key].cpu().numpy() for key in coeffs}
-        pred_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'],\
-                                         pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
-        # Y Targets
-        #d_ytrue = y_true.cpu().detach().numpy()
-        #d_ytrue = cv2.fromarray(d_ytrue)
-        #trans_params, im_idx, lm_idx, _ = align_img(d_ytrue[0], lm_idx, lm3d_std)
-        #trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
-        #im_idx_tensor = torch.tensor(np.array(im_idx) / 255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
-        #with torch.no_grad():
-        #    coeffs = split_coeff(net_recon(im_idx_tensor))
-        #true_coeff = {key: coeffs[key].cpu().numpy() for key in coeffs}
-        #true_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'], \
-        #                             pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
-        return self.l2_loss(pred_coeff, y_true)
-
-class VGGPerceptualLoss(torch.nn.Module):
-    def __init__(self, resize=True):
-        super(VGGPerceptualLoss, self).__init__()
-        blocks = []
-        blocks.append(torchvision.models.vgg16(pretrained=True).features[:4].eval().to('cuda'))
-        blocks.append(torchvision.models.vgg16(pretrained=True).features[4:9].eval().to('cuda'))
-        blocks.append(torchvision.models.vgg16(pretrained=True).features[9:16].eval().to('cuda'))
-        blocks.append(torchvision.models.vgg16(pretrained=True).features[16:23].eval().to('cuda'))
-        for bl in blocks:
-            for p in bl.parameters():
-                p.requires_grad = False
-        self.blocks = torch.nn.ModuleList(blocks)
-        self.transform = torch.nn.functional.interpolate
-        self.resize = resize
-        self.register_buffer("mean", torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1).to('cuda'))
-        self.register_buffer("std", torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1).to('cuda'))
-
-    def forward(self, input, target, feature_layers=[0, 1, 2, 3], style_layers=[]):
-        if input.shape[1] != 3:
-            input = input.repeat(1, 3, 1, 1)
-            target = target.repeat(1, 3, 1, 1)
-        #input = (input-self.mean) / self.std
-        #target = (target-self.mean) / self.std
-        if self.resize:
-            input = self.transform(input, mode='bilinear', size=(224, 224), align_corners=False)
-            target = self.transform(target, mode='bilinear', size=(224, 224), align_corners=False)
-        loss = 0.0
-        x = input.to('cuda')
-        y = target.to('cuda')
-        for i, block in enumerate(self.blocks):
-            x = block(x)
-            y = block(y)
-            if i in feature_layers:
-                loss += torch.nn.functional.l1_loss(x, y)
-            if i in style_layers:
-                act_x = x.reshape(x.shape[0], x.shape[1], -1)
-                act_y = y.reshape(y.shape[0], y.shape[1], -1)
-                gram_x = act_x @ act_x.permute(0, 2, 1)
-                gram_y = act_y @ act_y.permute(0, 2, 1)
-                loss += torch.nn.functional.l1_loss(gram_x, gram_y)
-        return loss
-
-class LNetLoss(torch.nn.Module):
-    def __init__(self):
-        super(LNetLoss, self).__init__()
-
-    def forward(self, y_pred, y_true):
-
-        y_pred = torchvision.transforms.Resize((384, 384))(y_pred)
-        L1 = torch.nn.L1Loss()
-        l1_val = L1(y_pred, y_true)
-
-        L_perceptual = VGGPerceptualLoss()
-        lp_val = 0.0 #L_perceptual(y_pred, y_true)
-
-        # L_sync = 0.0
-        lsync_val = 0.0  # L_sync(y_pred, y_true)
-
-        lambda_1 = .5
-        lambda_p = 1.
-        lambda_sync = 0.3
-        return lambda_1 * l1_val + lambda_p * lp_val + lambda_sync * lsync_val
 
 class ENetLoss(torch.nn.Module):
     def __init__(self, device):
@@ -188,34 +81,47 @@ class ENetLoss(torch.nn.Module):
 
 def train():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    args.device = device
     gc.collect()
     torch.cuda.empty_cache()
     print('[Info] Using {} for inference.'.format(device))
+    preprocessor = preprocessing.Preprocessor(args)
+    preprocessor.reading_video()
 
-    base_name = args.face.split('/')[-1]
-    # Image or Video ?
-    if os.path.isfile(args.face) and args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
-        args.static = True
-    if not os.path.isfile(args.face):
-        raise ValueError('--face argument must be a valid path to video/image file')
-    elif args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
-        full_frames = [cv2.imread(args.face)]
-        fps = args.fps
-    else:
-        video_stream = cv2.VideoCapture(args.face)
-        fps = video_stream.get(cv2.CAP_PROP_FPS)
+    # Select 5 frames
+    full_frames = preprocessor.full_frames
+    i = np.random.randint(0, high=len(full_frames)-5)
+    full_frames = full_frames[i:i+5]
+    preprocessor.full_frames = full_frames
 
-        full_frames = []
-        while True:
-            still_reading, frame = video_stream.read()
-            if not still_reading:
-                video_stream.release()
-                break
-            y1, y2, x1, x2 = args.crop
-            if x2 == -1: x2 = frame.shape[1]
-            if y2 == -1: y2 = frame.shape[0]
-            frame = frame[y1:y2, x1:x2]
-            full_frames.append(frame)
+    preprocessor.landmarks_estimate()
+    preprocessor.face_3dmm_extraction()
+    preprocessor.hack_3dmm_expression()
+
+    # base_name = args.face.split('/')[-1]
+    # # Image or Video ?
+    # if os.path.isfile(args.face) and args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
+    #     args.static = True
+    # if not os.path.isfile(args.face):
+    #     raise ValueError('--face argument must be a valid path to video/image file')
+    # elif args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
+    #     full_frames = [cv2.imread(args.face)]
+    #     fps = args.fps
+    # else:
+    #     video_stream = cv2.VideoCapture(args.face)
+    #     fps = video_stream.get(cv2.CAP_PROP_FPS)
+    #
+    #     full_frames = []
+    #     while True:
+    #         still_reading, frame = video_stream.read()
+    #         if not still_reading:
+    #             video_stream.release()
+    #             break
+    #         y1, y2, x1, x2 = args.crop
+    #         if x2 == -1: x2 = frame.shape[1]
+    #         if y2 == -1: y2 = frame.shape[0]
+    #         frame = frame[y1:y2, x1:x2]
+    #         full_frames.append(frame)
 
     print("[Step 0] Number of frames available for inference: " + str(len(full_frames)))
     # face detection & cropping, cropping the first frame as the style of FFHQ
