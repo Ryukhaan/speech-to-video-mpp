@@ -1,6 +1,9 @@
 import torch
+from torch import nn
 import torchvision
 import numpy
+
+import syncnet
 
 class LipSyncLoss(torch.nn.Module):
     def __init__(self, device, net):
@@ -10,10 +13,22 @@ class LipSyncLoss(torch.nn.Module):
         self.net = net
         self.number_of_frames = 5
         self.p_sync = torch.nn.CosineSimilarity()
-    def forward(self, y_pred):
+        self.log_loss = nn.BCELoss()
+
+    def load_network(self, path):
+        self.net = syncnet.SyncNet_color()
+        checkpoint = torch.load(path)
+        self.net.load_state_dict(checkpoint["state_dict"])
+    def cosine_loss(self, a, v, y):
+        d = nn.functional.cosine_similarity(a, v)
+        loss = self.log_loss(d.unsqueeze(1), y)
+        return loss
+
+    def forward(self, y_pred, y_true):
         audio_emb, video_emb = self.net(y_pred)
-        p = self.p_sync(video_emb, audio_emb)
+        p = self.cosine_loss(video_emb, audio_emb, y_true)
         return torch.nn.mean(-torch.log(p))
+
 class ArcFaceLoss(torch.nn.Module):
     def __init__(self, device):
         super(ArcFaceLoss, self).__init__()
@@ -114,10 +129,10 @@ class LNetLoss(torch.nn.Module):
         l1_val = L1(y_pred, y_true)
 
         L_perceptual = VGGPerceptualLoss()
-        lp_val = 0.0 #L_perceptual(y_pred, y_true)
+        lp_val = L_perceptual(y_pred, y_true)
 
         # L_sync = 0.0
-        lsync_val = 0.0  # L_sync(y_pred, y_true)
+        lsync_val = LipSyncLoss(y_pred, y_true)
 
         lambda_1 = .5
         lambda_p = 1.

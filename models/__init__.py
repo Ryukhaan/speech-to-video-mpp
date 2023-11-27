@@ -5,9 +5,29 @@ from models.ENet import ENet
 
 from torchsummary import summary
 
+global_step = 0
+glbal_epoch = 0
+
 def _load(checkpoint_path):
     checkpoint = torch.load(checkpoint_path)
     return checkpoint
+
+def load_checkpoint_lipsync(path, model, optimizer, reset_optimizer=False):
+    global global_step
+    global global_epoch
+
+    print("Load checkpoint from: {}".format(path))
+    checkpoint = _load(path)
+    model.load_state_dict(checkpoint["state_dict"])
+    if not reset_optimizer:
+        optimizer_state = checkpoint["optimizer"]
+        if optimizer_state is not None:
+            print("Load optimizer state from {}".format(path))
+            optimizer.load_state_dict(checkpoint["optimizer"])
+    global_step = checkpoint["global_step"]
+    global_epoch = checkpoint["global_epoch"]
+
+    return model
 
 def load_checkpoint(path, model):
     print("Load checkpoint from: {}".format(path))

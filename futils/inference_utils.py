@@ -50,6 +50,8 @@ def options():
     parser.add_argument('--re_preprocess', action='store_true')
 
     parser.add_argument('--cropped_image', default=False, action='store_true', help='Cropped the mouth to paste on the original video')
+    parser.add_argument('--dict_path', default="", help="Path to phones dictionary")
+    parser.add_argument('--json_path', default="", help="Path to JSON MFA result")
     args = parser.parse_args()
     return args
 

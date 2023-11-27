@@ -211,24 +211,27 @@ class Preprocessor():
         self.dictionary = self.dictionary['phones']
         self.dictionary.insert(0, 'spn')
         return self.dictionary
+
     def get_phones_per_ms(self):
-        # with open(f"./mvlrs_align/{folder}/{video}.json", 'r') as file:
+        # Get folder and file without ext.
         folder = os.path.basename(self.args.json_path)
-        # basename = os.path.dirname(args.json_path)
         basename_without_ext = os.path.splitext(os.path.basename(self.args.json_path))[0]
         with open(self.args.json_name, 'r') as file:
             json_data = json.load(file)
 
-        # Get Phones (and words)
+        # Get Phones and words from json
         words = json_data['tiers']['words']
         self.phones = json_data['tiers']['phones']
+
         # Load File WAV associated to the JSON
         wavfile = os.path.join([folder, basename_without_ext + '.wav'])
         samplerate, wav_data = wavfile.read(wavfile, 'r')
         milliseconds = len(wav_data) / samplerate * 1000
 
+        # Each phones = (start_in_s, end_in_s, phone_str)
         self.phones_per_ms = np.zeros((int(milliseconds), 1), dtype=np.int32)
         for (start, end, phone) in self.phones['entries']:
+            # Some errors have been transcribed by MFA
             if phone == "d̪":
                 phone = "ð"
             if phone == "t̪":
