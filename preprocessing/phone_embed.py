@@ -151,6 +151,7 @@ class Transformer(nn.Module):
 class PhoneConverter(nn.Module):
 
     def __init__(self):
+        #TODO Modify value according to melspectogram
         super().__init__()
         self.src_vocab_size = 5000
         self.tgt_vocab_size = 5000

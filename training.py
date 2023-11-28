@@ -2,6 +2,7 @@ import glob
 
 import gc
 import torch
+from torch import nn
 import torchvision
 from torchsummary import summary
 
@@ -23,7 +24,7 @@ from encodec.utils import convert_audio
 import torchaudio
 
 import pickle
-
+from models import losses
 import preprocessing.facing as preprocessing
 
 sys.path.append('third_part')
@@ -46,40 +47,49 @@ import warnings
 warnings.filterwarnings("ignore")
 
 args = options()
+class Dataset(object):
 
-class ENetLoss(torch.nn.Module):
-    def __init__(self, device):
-        super(ENetLoss, self).__init__()
-        self.device = device
+    def __init__(self):
 
-    def forward(self, semantic, y_pred, y_true):
+    def __getitem__(self, item):
+        return 0
 
-        # L1-Loss
-        L1 = torch.nn.L1Loss()
-        l1_val = L1(y_pred, y_true)
+def train(device, model, train_data_loader, test_data_loader, optimizer,
+          checkpoint_dir=None, checkpoint_interval=None, nepochs=None):
 
-        # Loss Perceptual with VGG pretrained
-        L_perceptual = VGGPerceptualLoss()
-        lp_val = 0. #L_perceptual(y_pred, y_true)
+    global global_step, global_epoch
+    resumed_step = global_step
+    loss_func = losses.LNetLoss()
+    while global_epoch < nepochs:
+        running_loss = 0.
+        prog_bar = tqdm(enumerate(train_data_loader))
+        for step, (x, code, phone, y) in prog_bar:
+            model.train()
+            optimizer.zero_grad()
 
-        # Acrface loss (L2 function) for Identity
-        l_id = ArcFaceLoss(self.device)
-        lid_val = l_id(y_pred, semantic)
-        #lid_val = 0.
+            x = x.to(device)
+            mel = mel.to(device)
+            y = y.to(device)
 
-        # Adversial network AV-hubert ?
-        #l_adv = ()
-        #ladv_val = l_adv(y_pred, y_true)
-        ladv_val = 0.
-        # TODO : implement advsersial loss and id arcface loss
+            pred = model(x, code, phone)
+            loss = loss_func(pred, y)
+            loss.backward()
+            optimizer.step()
 
-        lambda_1 = 0.5
-        lambda_p = 1.
-        lambda_adv = 100.
-        lambda_id = 0.4
-        return lambda_1 * l1_val + lambda_p * lp_val + lambda_adv * ladv_val + lambda_id * lid_val
+            global_step += 1
+            cur_session_steps = global_step - resumed_step
+            running_loss += loss.item()
+            if global_step == 1 or global_step % checkpoint_interval == 0:
+                save_checkpoint(
+                    model, optimizer, global_step, checkpoint_dir, global_epoch)
 
-def train():
+            if global_step % hparams.syncnet_eval_interval == 0:
+                with torch.no_grad():
+                    eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
+
+            prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
+        global_epoch += 1
+
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     args.device = device
     gc.collect()
@@ -439,6 +449,34 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
         mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
         yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+
+def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
+    eval_steps = 1400
+    print('Evaluating for {} steps'.format(eval_steps))
+    losses = []
+    loss = losses.LNetLoss()
+    while 1:
+        for step, (x, mel, y) in enumerate(test_data_loader):
+
+            model.eval()
+
+            # Transform data to CUDA device
+            x = x.to(device)
+
+            mel = mel.to(device)
+
+            a, v = model(mel, x)
+            y = y.to(device)
+
+            loss = loss(a, v, y)
+            losses.append(loss.item())
+
+            if step > eval_steps: break
+
+        averaged_loss = sum(losses) / len(losses)
+        print(averaged_loss)
+
+        return
 
 if __name__ == "__main__":
     train()
