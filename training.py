@@ -5,6 +5,7 @@ import torch
 from torch import nn
 import torchvision
 from torchsummary import summary
+from torch.utils import data as data_utils
 
 import numpy as np
 import cv2, os, sys, subprocess, platform, torch
@@ -456,19 +457,19 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     losses = []
     loss = losses.LNetLoss()
     while 1:
-        for step, (x, mel, y) in enumerate(test_data_loader):
+        for step, (x, codes, phones, y) in enumerate(test_data_loader):
 
             model.eval()
 
             # Transform data to CUDA device
             x = x.to(device)
+            codes = codes.to(device)
+            phones = phones.to(device)
 
-            mel = mel.to(device)
-
-            a, v = model(mel, x)
+            pred = model(x, codes, phones)
             y = y.to(device)
 
-            loss = loss(a, v, y)
+            loss = loss(pred, y)
             losses.append(loss.item())
 
             if step > eval_steps: break
@@ -479,4 +480,37 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
         return
 
 if __name__ == "__main__":
-    train()
+    use_cuda = torch.cuda.is_available()
+    checkpoint_dir = args.checkpoint_dir
+    checkpoint_path = args.checkpoint_path
+
+    if not os.path.exists(checkpoint_dir): os.mkdir(checkpoint_dir)
+
+    # Dataset and Dataloader setup
+    train_dataset = Dataset('train')
+    test_dataset = Dataset('val')
+
+    train_data_loader = data_utils.DataLoader(
+        train_dataset, batch_size=hparams.syncnet_batch_size, shuffle=True,
+        num_workers=hparams.num_workers)
+
+    test_data_loader = data_utils.DataLoader(
+        test_dataset, batch_size=hparams.syncnet_batch_size,
+        num_workers=8)
+
+    device = torch.device("cuda" if use_cuda else "cpu")
+
+    # Model
+    model = SyncNet().to(device)
+    print('total trainable params {}'.format(sum(p.numel() for p in model.parameters() if p.requires_grad)))
+
+    optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
+                           lr=hparams.syncnet_lr)
+
+    if checkpoint_path is not None:
+        load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
+
+    train(device, model, train_data_loader, test_data_loader, optimizer,
+          checkpoint_dir=checkpoint_dir,
+          checkpoint_interval=hparams.syncnet_checkpoint_interval,
+          nepochs=hparams.nepochs)
