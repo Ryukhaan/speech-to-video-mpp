@@ -1,6 +1,7 @@
 import glob
 from os.path import dirname, join, basename, isfile
 
+import json
 import gc
 import torch
 from torch import nn
@@ -14,6 +15,7 @@ import cv2, os, sys, subprocess, platform, torch
 from tqdm import tqdm
 from PIL import Image
 from scipy.io import loadmat
+from scipy.io import wavfile
 
 from pydub import AudioSegment
 from pydub.utils import make_chunks
@@ -47,11 +49,14 @@ from futils.ffhq_preprocess import Croper
 from futils.alignment_stit import crop_faces, calc_alignment_coefficients, paste_image
 from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, options, split_coeff, \
                                   trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint
+from futils.inference_utils import load_model as fu_load_model
 from futils import hparams
 import warnings
 warnings.filterwarnings("ignore")
 
 args = options()
+
+lnet_T = 5
 
 def get_image_list(data_root, split):
 	filelist = []
@@ -66,15 +71,15 @@ def get_image_list(data_root, split):
 class Dataset(object):
 
     def __init__(self, split):
+        global args
+        self.args = args
         self.all_videos = get_image_list(args.data_root, split)
+        self.preprocessor = preprocessing.Preprocessor(args=None)
+        self.net_recon = None
 
     # Weird function
     def get_frame_id(self, frame):
         return int(basename(frame).split('.')[0])
-
-    def get_window(self, start_frame):
-        start_id = self.get_frame_id(start_frame)
-        return window_fnames
 
     def read_video(self, index):
         video_stream = cv2.VideoCapture(self.all_videos[index])
@@ -92,18 +97,196 @@ class Dataset(object):
             self.full_frames.append(frame)
         return self.full_frames
 
+    def get_segmented_window(self, start_frame):
+        assert lnet_T == 5
+        if start_frame < 1: return None
+        return self.full_frames[start_frame-2:start_frame+lnet_T-2]
+
     def get_segmented_codes(self, index, start_frame):
-        codes = []
+        assert lnet_T == 5
+        if start_frame < 1: return None
+        codes = np.load(basename(self.all_videos[index]).split('.')[0] + "_codes.npy",
+                allow_pickle=True)
+        codes = codes[start_frame-2: start_frame+lnet_T-2]
+        codes = codes.reshape(-1, 32 * 15)
+        print(codes.shape)
         return codes
 
     def get_segmented_phones(self, index, start_frame):
-        phones = []
-        return codes
+        assert lnet_T == 5
+        if start_frame < 1: return None
+        # Get folder and file without ext.
+        basefile_name = basename(self.all_videos[index]).split('.')[0]
+        with open(basefile_name + ".json", 'r') as file:
+            json_data = json.load(file)
 
+        # Get Phones and words from json
+        words = json_data['tiers']['words']
+        self.phones = json_data['tiers']['phones']
+
+        # Load File WAV associated to the JSON
+        samplerate, wav_data = wavfile.read(basefile_name + ".wav", 'r')
+        milliseconds = len(wav_data) / samplerate * 1000
+
+        # Each phones = (start_in_s, end_in_s, phone_str)
+        self.phones_per_ms = np.zeros((int(milliseconds), 1), dtype=np.int32)
+        for (start, end, phone) in self.phones['entries']:
+            # Some errors have been transcribed by MFA
+            if phone == "d̪":
+                phone = "ð"
+            if phone == "t̪":
+                phone = "θ"
+            if phone == "kʷ":
+                phone = "k"
+            if phone == "tʷ":
+                phone = "t"
+            if phone == "cʷ":
+                phone = "k"
+            if phone == "ɾʲ":
+                phone = "ɒ"
+            if phone == "ɾ̃":
+                phone = "θ"
+            if phone == "ɟʷ":
+                phone = "ɟ"
+            if phone == "ɡʷ":
+                phone = "ɡ"
+            if phone == "vʷ":
+                phone = "v"
+            self.phones_per_ms[int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
+        self.phones_per_ms = np.append(self.phones_per_ms, (100, 100),'constant', constant_value=0)
+        phones = self.phones_per_ms[100 + (start_frame-2)*200 : 100 + (start_frame-2+lnet_T)*200 ]
+        print(phones.shape)
+        return phones
+
+    def prepare_window(self, window):
+        # Convert to 3 x T x H x W
+        x = np.asarray(window) / 255.
+        x = np.transpose(x, (3, 0, 1, 2))
+        return x
+
+    def landmarks_estimate(self, nframes):
+        # face detection & cropping, cropping the first frame as the style of FFHQ
+        croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+        full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
+        full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+
+        clx, cly, crx, cry = crop
+        lx, ly, rx, ry = quad
+        lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
+        oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, nframes[0].shape[0]), clx +lx, min(clx +rx, nframes[0].shape[1])
+        self.coordinates = oy1, oy2, ox1, ox2
+        # original_size = (ox2 - ox1, oy2 - oy1)
+        self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
+
+        # get the landmark according to the detected face.
+        # Change this one
+        #if not os.path.isfile('temp/ ' + self.base_name +'_landmarks.txt') or self.args.re_preprocess:
+        torch.cuda.empty_cache()
+        print('[Step 1] Landmarks Extraction in Video.')
+        kp_extractor = KeypointExtractor()
+        self.lm = kp_extractor.extract_keypoint(self.frames_pil, './temp/ ' + self.base_name +'_landmarks.txt')
+        #else:
+        #    print('[Step 1] Using saved landmarks.')
+        #    self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
+        #    self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
+
+    def face_3dmm_extraction(self):
+        torch.cuda.empty_cache()
+        if self.net_recon is None:
+            self.net_recon = load_face3d_net(self.args.face3d_net_path, device)
+        lm3d_std = load_lm3d('checkpoints/BFM')
+        video_coeffs = []
+        for idx in tqdm(range(len(self.frames_pil)), desc="[Step 2] 3DMM Extraction In Video:"):
+            frame = self.frames_pil[idx]
+            W, H = frame.size
+            lm_idx = self.lm[idx].reshape([-1, 2])
+            if np.mean(lm_idx) == -1:
+                lm_idx = (lm3d_std[:, :2 ] +1) / 2.
+                lm_idx = np.concatenate([lm_idx[:, :1] * W, lm_idx[:, 1:2] * H], 1)
+            else:
+                lm_idx[:, -1] = H - 1 - lm_idx[:, -1]
+
+            trans_params, im_idx, lm_idx, _ = align_img(frame, lm_idx, lm3d_std)
+            trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
+            im_idx_tensor = torch.tensor(np.array(im_idx ) /255., dtype=torch.float32).permute(2, 0, 1).to \
+                (device).unsqueeze(0)
+            with torch.no_grad():
+                coeffs = split_coeff(self.net_recon(im_idx_tensor))
+
+            pred_coeff = {key :coeffs[key].cpu().numpy() for key in coeffs}
+            pred_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'], \
+                                         pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
+            video_coeffs.append(pred_coeff)
+        self.semantic_npy = np.array(video_coeffs)[: ,0]
+        #np.save('temp/ ' + self.base_name +'_coeffs.npy', self.semantic_npy)
+        #del net_recon
+
+    def hack_3dmm_expression(self):
+        print('extract the exp from' , self.args.exp_img)
+        exp_pil = Image.open(self.args.exp_img).convert('RGB')
+        lm3d_std = load_lm3d('third_part/face3d/BFM')
+
+        W, H = exp_pil.size
+        kp_extractor = KeypointExtractor()
+        lm_exp = kp_extractor.extract_keypoint([exp_pil], 'temp/ ' + self.base_name +'_temp.txt')[0]
+        if np.mean(lm_exp) == -1:
+            lm_exp = (lm3d_std[:, :2] + 1) / 2.
+            lm_exp = np.concatenate(
+                [lm_exp[:, :1] * W, lm_exp[:, 1:2] * H], 1)
+        else:
+            lm_exp[:, -1] = H - 1 - lm_exp[:, -1]
+
+        trans_params, im_exp, lm_exp, _ = align_img(exp_pil, lm_exp, lm3d_std)
+        trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
+        im_exp_tensor = torch.tensor(np.array(im_exp ) /255., dtype=torch.float32).permute(2, 0, 1).to(device).unsqueeze(0)
+        with torch.no_grad():
+            expression = split_coeff(self.net_recon(im_exp_tensor))['exp'][0]
+
+        torch.cuda.empty_cache()
+        self.D_Net, self.model = fu_load_model(self.args, device)
+
+        # Video Image Stabilized
+        self.imgs = []
+        for idx in tqdm(range(len(self.frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
+            if self.args.one_shot:
+                source_img = trans_image(self.frames_pil[0]).unsqueeze(0).to(device)
+                semantic_source_numpy = self.semantic_npy[0:1]
+            else:
+                source_img = trans_image(self.frames_pil[idx]).unsqueeze(0).to(device)
+                semantic_source_numpy = self.semantic_npy[idx:idx +1]
+            ratio = find_crop_norm_ratio(semantic_source_numpy, self.semantic_npy)
+            coeff = transform_semantic(self.semantic_npy, idx, ratio).unsqueeze(0).to(device)
+
+            # hacking the new expression
+            coeff[:, :64, :] = expression[None, :64, None].to(device)
+            with torch.no_grad():
+                output = self.D_Net(source_img, coeff)
+            img_stablized = np.uint8 \
+                ((output['fake_image'].squeeze(0).permute(1 ,2 ,0).cpu().clamp_(-1, 1).numpy() + 1 )/ 2. * 255)
+            self.imgs.append(cv2.cvtColor(img_stablized, cv2.COLOR_RGB2BGR))
+
+        #del D_Net, model
+        torch.cuda.empty_cache()
     def __len__(self):
         return len(self.all_videos)
-    def __getitem__(self, item):
-        return 0
+
+    def __getitem__(self, idx):
+        while True:
+            idx = np.random.randint(0, len(self.all_videos) - 1)
+            vidname = self.all_videos[idx]
+            frames = self.read_video(idx)
+            # Sure that nframe if >= 2 and lower than N - 3
+            start_frame = np.random.randint(2, len(frames) - 3)
+
+            nframes = self.get_segmented_window(start_frame)
+            codes = self.get_segmented_codes(idx, start_frame)
+            phones = self.get_segmented_phones(idx, start_frame)
+
+            self.landmarks_estimate(nframes)
+
+
+
+
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
           checkpoint_dir=None, checkpoint_interval=None, nepochs=None):

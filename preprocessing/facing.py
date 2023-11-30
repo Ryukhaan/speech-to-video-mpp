@@ -42,7 +42,7 @@ class Preprocessor():
     def __init__(self, args):
         #super().__init__()
         self.args = args
-        self.base_name = self.args.face.split('/')[-1]
+        self.base_name = self.args.face.split('/')[-1] if args is not None else None
         self.full_frames = []
     def reading_video(self):
 
