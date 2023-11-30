@@ -3,6 +3,7 @@ import glob
 import gc
 import torch
 from torch import nn
+from torch import optim
 import torchvision
 from torchsummary import summary
 from torch.utils import data as data_utils
@@ -480,6 +481,49 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
         print(averaged_loss)
 
         return
+
+def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch, prefix=''):
+    checkpoint_path = join(
+        checkpoint_dir, "{}checkpoint_step{:09d}.pth".format(prefix, global_step))
+    optimizer_state = optimizer.state_dict() if hparams.save_optimizer_state else None
+    torch.save({
+        "state_dict": model.state_dict(),
+        "optimizer": optimizer_state,
+        "global_step": step,
+        "global_epoch": epoch,
+    }, checkpoint_path)
+    print("Saved checkpoint:", checkpoint_path)
+
+def _load(checkpoint_path):
+    if use_cuda:
+        checkpoint = torch.load(checkpoint_path)
+    else:
+        checkpoint = torch.load(checkpoint_path,
+                                map_location=lambda storage, loc: storage)
+    return checkpoint
+
+
+def load_checkpoint(path, model, optimizer, reset_optimizer=False, overwrite_global_states=True):
+    global global_step
+    global global_epoch
+
+    print("Load checkpoint from: {}".format(path))
+    checkpoint = _load(path)
+    s = checkpoint["state_dict"]
+    new_s = {}
+    for k, v in s.items():
+        new_s[k.replace('module.', '')] = v
+    model.load_state_dict(new_s)
+    if not reset_optimizer:
+        optimizer_state = checkpoint["optimizer"]
+        if optimizer_state is not None:
+            print("Load optimizer state from {}".format(path))
+            optimizer.load_state_dict(checkpoint["optimizer"])
+    if overwrite_global_states:
+        global_step = checkpoint["global_step"]
+        global_epoch = checkpoint["global_epoch"]
+
+    return model
 
 if __name__ == "__main__":
     use_cuda = torch.cuda.is_available()
