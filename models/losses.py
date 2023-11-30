@@ -3,7 +3,7 @@ from torch import nn
 import torchvision
 import numpy
 
-import syncnet
+from models.syncnet import SyncNet_color
 
 class LipSyncLoss(torch.nn.Module):
     def __init__(self, device, net):
@@ -16,7 +16,7 @@ class LipSyncLoss(torch.nn.Module):
         self.log_loss = nn.BCELoss()
 
     def load_network(self, path):
-        self.net = syncnet.SyncNet_color()
+        self.net = SyncNet_color()
         checkpoint = torch.load(path)
         self.net.load_state_dict(checkpoint["state_dict"])
     def cosine_loss(self, a, v, y):
