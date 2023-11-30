@@ -39,8 +39,8 @@ from third_part.face3d.util.preprocess import align_img
 from third_part.face3d.util.load_mats import load_lm3d
 from third_part.face3d.extract_kp_videos import KeypointExtractor
 # face enhancement
-from third_part.GPEN.face_enhancement import FaceEnhancement
-from third_part.GFPGAN.gfpgan import GFPGANer
+#from third_part.GPEN.face_enhancement import FaceEnhancement
+#from third_part.GFPGAN.gfpgan import GFPGANer
 # expression control
 from third_part.ganimation_replicate.model.ganimation import GANimationModel
 
@@ -279,11 +279,12 @@ class Dataset(object):
             start_frame = np.random.randint(2, len(frames) - 3)
 
             nframes = self.get_segmented_window(start_frame)
-            codes = self.get_segmented_codes(idx, start_frame)
+            codes  = self.get_segmented_codes(idx, start_frame)
             phones = self.get_segmented_phones(idx, start_frame)
 
             self.landmarks_estimate(nframes)
-
+            self.face_3dmm_extraction()
+            self.hack_3dmm_expression()
 
 
 
