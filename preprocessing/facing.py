@@ -229,7 +229,7 @@ class Preprocessor():
         milliseconds = len(wav_data) / samplerate * 1000
 
         # Each phones = (start_in_s, end_in_s, phone_str)
-        self.phones_per_ms = np.zeros((int(milliseconds), 1), dtype=np.int32)
+        self.phones_per_ms = np.zeros((int(milliseconds)+200, 1), dtype=np.int32)
         for (start, end, phone) in self.phones['entries']:
             # Some errors have been transcribed by MFA
             if phone == "d̪":
@@ -252,5 +252,5 @@ class Preprocessor():
                 phone = "ɡ"
             if phone == "vʷ":
                 phone = "v"
-            self.phones_per_ms[int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
+            self.phones_per_ms[100+int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
         return self.phones_per_ms
