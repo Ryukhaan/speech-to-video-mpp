@@ -1,4 +1,5 @@
 import glob
+from os.path import dirname, join, basename, isfile
 
 import gc
 import torch
@@ -51,10 +52,56 @@ import warnings
 warnings.filterwarnings("ignore")
 
 args = options()
+
+def get_image_list(data_root, split):
+	filelist = []
+	with open('filelists/{}.txt'.format(split)) as f:
+		for line in f:
+			line = line.strip()
+			if ' ' in line: line = line.split()[0]
+			filelist.append(os.path.join(data_root, line))
+
+	return filelist
+
 class Dataset(object):
 
-    def __init__(self):
+    def __init__(self, split):
+        self.all_videos = get_image_list(args.data_root, split)
 
+    # Weird function
+    def get_frame_id(self, frame):
+        return int(basename(frame).split('.')[0])
+
+    def get_window(self, start_frame):
+        start_id = self.get_frame_id(start_frame)
+        return window_fnames
+
+    def read_video(self, index):
+        video_stream = cv2.VideoCapture(self.all_videos[index])
+        self.fps = video_stream.get(cv2.CAP_PROP_FPS)
+        self.full_frames = []
+        while True:
+            still_reading, frame = video_stream.read()
+            if not still_reading:
+                video_stream.release()
+                break
+            y1, y2, x1, x2 = self.args.crop
+            if x2 == -1: x2 = frame.shape[1]
+            if y2 == -1: y2 = frame.shape[0]
+            frame = frame[y1:y2, x1:x2]
+            self.full_frames.append(frame)
+        return self.full_frames
+
+    def get_segmented_codes(self, index, start_frame):
+        codes = []
+        return codes
+
+    def get_segmented_phones(self, index, start_frame):
+        phones = []
+        return codes
+
+    def __len__(self):
+        return len(self.all_videos)
     def __getitem__(self, item):
         return 0
 
