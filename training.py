@@ -86,6 +86,7 @@ class Dataset(object):
     def read_video(self, index):
         video_stream = cv2.VideoCapture(self.all_videos[index])
         self.fps = video_stream.get(cv2.CAP_PROP_FPS)
+        print(video_stream)
         self.full_frames = []
         while True:
             still_reading, frame = video_stream.read()
