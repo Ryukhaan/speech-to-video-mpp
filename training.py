@@ -299,8 +299,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     loss_func = losses.LNetLoss()
     while global_epoch < nepochs:
         running_loss = 0.
-        prog_bar = tqdm(train_data_loader, total=len(train_data_loader)+1)
-        step = 0
+        prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
         for step, (x, code, phone, y) in prog_bar:
             model.train()
             optimizer.zero_grad()
@@ -326,7 +325,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                     eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
 
             prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
-            step += 1
+
         global_epoch += 1
 
     # device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -755,11 +754,11 @@ if __name__ == "__main__":
     test_dataset = Dataset(val_list)
 
     train_data_loader = data_utils.DataLoader(
-        train_dataset, batch_size=hparams.batch_size, shuffle=True,
-        num_workers=hparams.num_workers)
+        train_dataset, batch_size=hparams.batch_size, shuffle=True)
+        #num_workers=hparams.num_workers)
     test_data_loader = data_utils.DataLoader(
-        test_dataset, batch_size=hparams.batch_size,
-        num_workers=8)
+        test_dataset, batch_size=hparams.batch_size)
+        #num_workers=8)
 
     device = torch.device("cuda" if use_cuda else "cpu")
 
