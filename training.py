@@ -118,7 +118,7 @@ class Dataset(object):
         assert lnet_T == 5
         if start_frame < 1: return None
         # Get folder and file without ext.
-        basefile_name = basename(self.all_videos[index]).split('.')[0]
+        basefile_name = self.all_videos[index].split('.')[0]
         with open(basefile_name + ".json", 'r') as file:
             json_data = json.load(file)
 
