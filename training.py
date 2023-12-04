@@ -62,10 +62,8 @@ def get_image_list(data_root, split):
 	filelist = []
 	with open('filelists/{}.txt'.format(split)) as f:
 		for line in f:
-			line = line.strip()
-			if ' ' in line: line = line.split()[0]
-			filelist.append(os.path.join(data_root, line))
-
+            if line.split('.')[-1] == 'wav':
+                filelist.append(os.path.join(data_root, line))
 	return filelist
 
 class Dataset(object):

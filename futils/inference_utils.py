@@ -20,6 +20,7 @@ warnings.filterwarnings("ignore")
 def train_options():
     parser = argparse.ArgumentParser(description='Inference code to lip-sync videos in the wild using Wav2Lip models')
 
+    parser.add_argument('--data_root', type=str, required=True)
     parser.add_argument('--checkpoint_dir', type=str, default='checkpoints/')
     parser.add_argument('--checkpoint_path', type=str, default='checkpoints/Pnet.pth')
     parser.add_argument('--DNet_path', type=str, default='checkpoints/DNet.pt')
