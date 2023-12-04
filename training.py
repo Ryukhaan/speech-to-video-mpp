@@ -779,7 +779,7 @@ if __name__ == "__main__":
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True,
         num_workers=hparams.num_workers)
-
+    print(len(train_data_loader))
     test_data_loader = data_utils.DataLoader(
         test_dataset, batch_size=hparams.batch_size,
         num_workers=8)
