@@ -78,6 +78,11 @@ class Dataset(object):
         self.all_videos = filenames #get_image_list(args.data_root, split)
         self.preprocessor = preprocessing.Preprocessor(args=None)
         self.net_recon = None
+        with open('./dictionary/english_mfa_v2_0_0.json', 'r') as file:
+            self.dictionary = json.load(file)
+        self.dictionary = self.dictionary['phones']
+        print(len(self.dictionary))
+        self.dictionary.insert(0, 'spn')
 
     # Weird function
     def get_frame_id(self, frame):
