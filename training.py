@@ -765,6 +765,7 @@ if __name__ == "__main__":
 
     filenames = get_image_list(args.data_root, 'train')
     seed = 42
+    print(len(filenames))
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.7, test_size=0.3)
     print(len(filenames), len(train_list), len(val_list))
     # Dataset and Dataloader setup
