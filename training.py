@@ -771,6 +771,7 @@ if __name__ == "__main__":
     seed = 42
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     print(len(filenames), len(train_list), len(val_list))
+    print(hparams.batch_size)
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list)
     test_dataset = Dataset(val_list)
