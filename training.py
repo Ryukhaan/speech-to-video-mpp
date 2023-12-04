@@ -57,7 +57,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 args = train_options()
-haprams = hparams.hparams
+hparams = hparams.hparams
 lnet_T = 5
 
 def get_image_list(data_root, split):
