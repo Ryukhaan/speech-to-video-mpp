@@ -97,6 +97,7 @@ class Dataset(object):
             if y2 == -1: y2 = frame.shape[0]
             frame = frame[y1:y2, x1:x2]
             self.full_frames.append(frame)
+        print(len(self.full_frames))
         return self.full_frames
 
     def get_segmented_window(self, start_frame):
@@ -277,7 +278,7 @@ class Dataset(object):
             idx = np.random.randint(0, len(self.all_videos) - 1)
             vidname = self.all_videos[idx]
             frames = self.read_video(idx)
-            print(len(frames))
+            print(vidname, len(frames))
             # Sure that nframe if >= 2 and lower than N - 3
             start_frame = np.random.randint(2, len(frames) - 3)
 
