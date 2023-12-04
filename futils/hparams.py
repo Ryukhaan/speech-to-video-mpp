@@ -12,6 +12,12 @@ class HParams:
 			raise AttributeError("'HParams' object has no attribute %s" % key)
 		return self.data[key]
 
+	def __str__(self):
+		return str(self.data)
+
+	def __repr__(self):
+		return repr(self.data)
+
 	def set_hparam(self, key, value):
 		self.data[key] = value
 
