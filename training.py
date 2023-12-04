@@ -107,7 +107,7 @@ class Dataset(object):
     def get_segmented_codes(self, index, start_frame):
         assert lnet_T == 5
         if start_frame < 1: return None
-        codes = np.load(basename(self.all_videos[index]).split('.')[0] + "_codes.npy",
+        codes = np.load(self.all_videos[index].split('.')[0] + "_codes.npy",
                 allow_pickle=True)
         codes = codes[start_frame-2: start_frame+lnet_T-2]
         codes = codes.reshape(-1, 32 * 15)
