@@ -88,6 +88,7 @@ class Dataset(object):
         self.fps = video_stream.get(cv2.CAP_PROP_FPS)
         self.full_frames = []
         while True:
+            print("Here")
             still_reading, frame = video_stream.read()
             if not still_reading:
                 video_stream.release()
