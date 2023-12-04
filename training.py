@@ -64,7 +64,7 @@ def get_image_list(data_root, split):
     filelist = []
     with open('./filelists/{}.txt'.format(split)) as f:
         for line in f:
-            print(line)
+            line = line.rstrip()
             if line.split('.')[-1] == 'wav':
                 filelist.append(os.path.join(data_root, line))
                 print(os.path.join(data_root, line))
