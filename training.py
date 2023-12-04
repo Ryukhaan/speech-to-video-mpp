@@ -66,7 +66,7 @@ def get_image_list(data_root, split):
     with open('./filelists/{}.txt'.format(split)) as f:
         for line in f:
             line = line.rstrip()
-            if line.split('.')[-1] == 'wav':
+            if line.split('.')[-1] == 'mp4':
                 filelist.append(os.path.join(data_root, line))
     return filelist
 
@@ -84,13 +84,11 @@ class Dataset(object):
         return int(basename(frame).split('.')[0])
 
     def read_video(self, index):
-        print(self.all_videos[index])
         video_stream = cv2.VideoCapture(self.all_videos[index])
         self.fps = video_stream.get(cv2.CAP_PROP_FPS)
         self.full_frames = []
         while True:
             still_reading, frame = video_stream.read()
-            print(still_reading)
             if not still_reading:
                 video_stream.release()
                 break
@@ -99,7 +97,6 @@ class Dataset(object):
             if y2 == -1: y2 = frame.shape[0]
             frame = frame[y1:y2, x1:x2]
             self.full_frames.append(frame)
-        print(len(self.full_frames))
         return self.full_frames
 
     def get_segmented_window(self, start_frame):
