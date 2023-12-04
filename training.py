@@ -740,6 +740,8 @@ def load_checkpoint(path, model, optimizer, reset_optimizer=False, overwrite_glo
     global global_epoch
 
     print("Load checkpoint from: {}".format(path))
+    if not os.path.isfile(path):
+        return model
     checkpoint = _load(path)
     s = checkpoint["state_dict"]
     new_s = {}
