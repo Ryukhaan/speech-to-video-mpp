@@ -772,7 +772,7 @@ if __name__ == "__main__":
     train_dataset = Dataset(train_list)
     test_dataset = Dataset(val_list)
 
-    print(hparams)
+    print(str(hparams))
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True,
         num_workers=hparams.num_workers)
