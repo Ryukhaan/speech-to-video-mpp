@@ -62,10 +62,12 @@ lnet_T = 5
 
 def get_image_list(data_root, split):
     filelist = []
-    with open('filelists/{}.txt'.format(split)) as f:
+    with open('./filelists/{}.txt'.format(split)) as f:
         for line in f:
+            print(line)
             if line.split('.')[-1] == 'wav':
                 filelist.append(os.path.join(data_root, line))
+                print(os.path.join(data_root, line))
     return filelist
 
 class Dataset(object):
