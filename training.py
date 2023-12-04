@@ -52,12 +52,12 @@ from futils.alignment_stit import crop_faces, calc_alignment_coefficients, paste
 from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, train_options, split_coeff, \
                                   trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint
 from futils.inference_utils import load_model as fu_load_model
-from futils import hparams
+from futils import hparams, hparams_debug_string
 import warnings
 warnings.filterwarnings("ignore")
 
 args = train_options()
-
+hparams_debug_string()
 lnet_T = 5
 
 def get_image_list(data_root, split):
@@ -772,7 +772,6 @@ if __name__ == "__main__":
     train_dataset = Dataset(train_list)
     test_dataset = Dataset(val_list)
 
-    print(str(hparams))
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True,
         num_workers=hparams.num_workers)
