@@ -764,8 +764,8 @@ if __name__ == "__main__":
     if not os.path.exists(checkpoint_dir): os.mkdir(checkpoint_dir)
 
     filenames = get_image_list(args.data_root, 'train')
-    random_state = 42
-    train_list, val_list = train_test_split(filenames, random_state, train_size=0.7)
+    seed = 42
+    train_list, val_list = train_test_split(filenames, random_state=seed, train_size=0.7)
     print(len(train_list), len(val_list))
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list)
