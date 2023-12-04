@@ -82,6 +82,7 @@ class Dataset(object):
             self.dictionary = json.load(file)
         self.dictionary = self.dictionary['phones']
         self.dictionary.insert(0, 'spn')
+        self.kp_extractor = None
 
     # Weird function
     def get_frame_id(self, frame):
@@ -189,8 +190,9 @@ class Dataset(object):
         #if not os.path.isfile('temp/ ' + self.base_name +'_landmarks.txt') or self.args.re_preprocess:
         torch.cuda.empty_cache()
         print('[Step 1] Landmarks Extraction in Video.')
-        kp_extractor = KeypointExtractor()
-        self.lm = kp_extractor.extract_keypoint(self.frames_pil)
+        if self.kp_extractor is None:
+            self.kp_extractor = KeypointExtractor()
+        self.lm = self.kp_extractor.extract_keypoint(self.frames_pil)
         #else:
         #    print('[Step 1] Using saved landmarks.')
         #    self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
