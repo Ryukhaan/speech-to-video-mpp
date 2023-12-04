@@ -28,6 +28,8 @@ from scipy.signal import correlate
 #from encodec.utils import convert_audio
 import torchaudio
 
+from sklearn.model_selection import train_test_split
+
 from models.LNet import LNet
 import pickle
 from models import losses
@@ -68,10 +70,10 @@ def get_image_list(data_root, split):
 
 class Dataset(object):
 
-    def __init__(self, split):
+    def __init__(self, filenames):
         global args
         self.args = args
-        self.all_videos = get_image_list(args.data_root, split)
+        self.all_videos = filenames #get_image_list(args.data_root, split)
         self.preprocessor = preprocessing.Preprocessor(args=None)
         self.net_recon = None
 
@@ -761,9 +763,13 @@ if __name__ == "__main__":
 
     if not os.path.exists(checkpoint_dir): os.mkdir(checkpoint_dir)
 
+    filenames = get_image_list(args.data_root, 'train')
+    random_state = 42
+    train_list, val_list = train_test_split(filenames, random_state)
+    print(len(train_list), len(val_list))
     # Dataset and Dataloader setup
-    train_dataset = Dataset('train')
-    test_dataset = Dataset('val')
+    train_dataset = Dataset(train_list)
+    test_dataset = Dataset(val_list)
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.syncnet_batch_size, shuffle=True,
