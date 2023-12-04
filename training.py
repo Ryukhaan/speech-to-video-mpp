@@ -301,6 +301,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
         for step, (x, code, phone, y) in prog_bar:
+            print(step)
+            continue
             model.train()
             optimizer.zero_grad()
 
@@ -748,7 +750,6 @@ if __name__ == "__main__":
     seed = 42
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     print(len(filenames), len(train_list), len(val_list))
-    print(hparams.batch_size)
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list)
     test_dataset = Dataset(val_list)
