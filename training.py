@@ -59,7 +59,8 @@ warnings.filterwarnings("ignore")
 args = train_options()
 hparams = hparams.hparams
 lnet_T = 5
-
+global_step = 0
+global_epoch = 0
 def get_image_list(data_root, split):
     filelist = []
     with open('./filelists/{}.txt'.format(split)) as f:
