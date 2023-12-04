@@ -47,14 +47,14 @@ from third_part.ganimation_replicate.model.ganimation import GANimationModel
 from futils import audio
 from futils.ffhq_preprocess import Croper
 from futils.alignment_stit import crop_faces, calc_alignment_coefficients, paste_image
-from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, options, split_coeff, \
+from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, train_options, split_coeff, \
                                   trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint
 from futils.inference_utils import load_model as fu_load_model
 from futils import hparams
 import warnings
 warnings.filterwarnings("ignore")
 
-args = options()
+args = train_options()
 
 lnet_T = 5
 
