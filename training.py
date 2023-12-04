@@ -81,7 +81,6 @@ class Dataset(object):
         with open('./dictionary/english_mfa_v2_0_0.json', 'r') as file:
             self.dictionary = json.load(file)
         self.dictionary = self.dictionary['phones']
-        print(len(self.dictionary))
         self.dictionary.insert(0, 'spn')
 
     # Weird function
@@ -160,7 +159,7 @@ class Dataset(object):
             if phone == "vʷ":
                 phone = "v"
             self.phones_per_ms[int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
-        self.phones_per_ms = np.append(self.phones_per_ms, (100, 100),'constant', constant_value=0)
+        self.phones_per_ms = np.pad(self.phones_per_ms, (100, 100), 'constant', constant_value=0)
         phones = self.phones_per_ms[100 + (start_frame-2)*200 : 100 + (start_frame-2+lnet_T)*200 ]
         print(phones.shape)
         return phones
@@ -282,7 +281,6 @@ class Dataset(object):
             idx = np.random.randint(0, len(self.all_videos) - 1)
             vidname = self.all_videos[idx]
             frames = self.read_video(idx)
-            print(vidname, len(frames))
             # Sure that nframe if >= 2 and lower than N - 3
             start_frame = np.random.randint(2, len(frames) - 3)
 
