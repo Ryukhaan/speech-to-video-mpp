@@ -59,9 +59,9 @@ args = train_options()
 lnet_T = 5
 
 def get_image_list(data_root, split):
-	filelist = []
-	with open('filelists/{}.txt'.format(split)) as f:
-		for line in f:
+    filelist = []
+    with open('filelists/{}.txt'.format(split)) as f:
+        for line in f:
             if line.split('.')[-1] == 'wav':
                 filelist.append(os.path.join(data_root, line))
 	return filelist
