@@ -67,7 +67,6 @@ def get_image_list(data_root, split):
             line = line.rstrip()
             if line.split('.')[-1] == 'wav':
                 filelist.append(os.path.join(data_root, line))
-                print(os.path.join(data_root, line))
     return filelist
 
 class Dataset(object):
@@ -767,7 +766,6 @@ if __name__ == "__main__":
 
     filenames = get_image_list(args.data_root, 'train')
     seed = 42
-    print(len(filenames))
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.7, test_size=0.3)
     print(len(filenames), len(train_list), len(val_list))
     # Dataset and Dataloader setup
@@ -775,11 +773,11 @@ if __name__ == "__main__":
     test_dataset = Dataset(val_list)
 
     train_data_loader = data_utils.DataLoader(
-        train_dataset, batch_size=hparams.syncnet_batch_size, shuffle=True,
+        train_dataset, batch_size=hparams.batch_size, shuffle=True,
         num_workers=hparams.num_workers)
 
     test_data_loader = data_utils.DataLoader(
-        test_dataset, batch_size=hparams.syncnet_batch_size,
+        test_dataset, batch_size=hparams.batch_size,
         num_workers=8)
 
     device = torch.device("cuda" if use_cuda else "cpu")
