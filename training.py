@@ -299,7 +299,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     loss_func = losses.LNetLoss()
     while global_epoch < nepochs:
         running_loss = 0.
-        prog_bar = tqdm(enumerate(train_data_loader))
+        prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)//4+1)
         for step, (x, code, phone, y) in prog_bar:
             model.train()
             optimizer.zero_grad()
