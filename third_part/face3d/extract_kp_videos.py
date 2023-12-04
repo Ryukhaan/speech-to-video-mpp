@@ -15,7 +15,8 @@ from torch.multiprocessing import Pool, Process, set_start_method
 class KeypointExtractor():
     def __init__(self):
         torch.cuda.empty_cache()
-        self.detector = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D)   
+        # face_alignement.LandmarksType._2D = 1
+        self.detector = face_alignment.FaceAlignment(1)
 
     def extract_keypoint(self, images, name=None, info=True):
         if isinstance(images, list):
