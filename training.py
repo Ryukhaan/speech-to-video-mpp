@@ -31,7 +31,7 @@ import torchaudio
 from models.LNet import LNet
 import pickle
 from models import losses
-#import preprocessing.facing as preprocessing
+import preprocessing.facing as preprocessing
 
 sys.path.append('third_part')
 # 3dmm extraction
