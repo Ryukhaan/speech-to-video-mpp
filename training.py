@@ -277,6 +277,7 @@ class Dataset(object):
             idx = np.random.randint(0, len(self.all_videos) - 1)
             vidname = self.all_videos[idx]
             frames = self.read_video(idx)
+            print(len(frames))
             # Sure that nframe if >= 2 and lower than N - 3
             start_frame = np.random.randint(2, len(frames) - 3)
 
