@@ -190,7 +190,7 @@ class Dataset(object):
         torch.cuda.empty_cache()
         print('[Step 1] Landmarks Extraction in Video.')
         kp_extractor = KeypointExtractor()
-        self.lm = kp_extractor.extract_keypoint(self.frames_pil, './temp/ ' + self.base_name +'_landmarks.txt')
+        self.lm = kp_extractor.extract_keypoint(self.frames_pil)
         #else:
         #    print('[Step 1] Using saved landmarks.')
         #    self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
