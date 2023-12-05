@@ -176,10 +176,10 @@ class Dataset(object):
         # face detection & cropping, cropping the first frame as the style of FFHQ
         croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
         full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
-        if full_frames_RGB is None:
-            print(frames)
-            return
-        full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+        try:
+            full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+        except TypeError:
+            return 1
 
         clx, cly, crx, cry = crop
         lx, ly, rx, ry = quad
@@ -193,10 +193,11 @@ class Dataset(object):
         # Change this one
         #if not os.path.isfile('temp/ ' + self.base_name +'_landmarks.txt') or self.args.re_preprocess:
         torch.cuda.empty_cache()
-        print('[Step 1] Landmarks Extraction in Video.')
+        #print('[Step 1] Landmarks Extraction in Video.')
         if self.kp_extractor is None:
             self.kp_extractor = KeypointExtractor()
         self.lm = self.kp_extractor.extract_keypoint(self.frames_pil)
+        return 0
         #else:
         #    print('[Step 1] Using saved landmarks.')
         #    self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
@@ -208,7 +209,7 @@ class Dataset(object):
             self.net_recon = load_face3d_net(self.args.face3d_net_path, device)
         lm3d_std = load_lm3d('checkpoints/BFM')
         video_coeffs = []
-        for idx in tqdm(range(len(self.frames_pil)), desc="[Step 2] 3DMM Extraction In Video:"):
+        for idx in tqdm(range(len(self.frames_pil))):#, desc="[Step 2] 3DMM Extraction In Video:"):
             frame = self.frames_pil[idx]
             W, H = frame.size
             lm_idx = self.lm[idx].reshape([-1, 2])
@@ -259,7 +260,7 @@ class Dataset(object):
 
         # Video Image Stabilized
         self.imgs = []
-        for idx in tqdm(range(len(self.frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
+        for idx in tqdm(range(len(self.frames_pil))): #desc="[Step 3] Stablize the expression In Video:"):
             if self.args.one_shot:
                 source_img = trans_image(self.frames_pil[0]).unsqueeze(0).to(device)
                 semantic_source_numpy = self.semantic_npy[0:1]
@@ -294,7 +295,8 @@ class Dataset(object):
             codes  = self.get_segmented_codes(idx, start_frame)
             phones = self.get_segmented_phones(idx, start_frame)
 
-            self.landmarks_estimate(nframes)
+            if not self.landmarks_estimate(nframes):
+                continue
             self.face_3dmm_extraction()
             self.hack_3dmm_expression()
 
