@@ -84,6 +84,8 @@ class Dataset(object):
         self.dictionary.insert(0, 'spn')
         self.kp_extractor = None
 
+        self.D_Net, self.model = fu_load_model(self.args, device)
+
     # Weird function
     def get_frame_id(self, frame):
         return int(basename(frame).split('.')[0])
@@ -231,27 +233,27 @@ class Dataset(object):
 
     def hack_3dmm_expression(self):
         print('extract the exp from' , self.args.exp_img)
-        exp_pil = Image.open(self.args.exp_img).convert('RGB')
-        lm3d_std = load_lm3d('third_part/face3d/BFM')
-
-        W, H = exp_pil.size
-        kp_extractor = KeypointExtractor()
-        lm_exp = kp_extractor.extract_keypoint([exp_pil], 'temp/ ' + self.base_name +'_temp.txt')[0]
-        if np.mean(lm_exp) == -1:
-            lm_exp = (lm3d_std[:, :2] + 1) / 2.
-            lm_exp = np.concatenate(
-                [lm_exp[:, :1] * W, lm_exp[:, 1:2] * H], 1)
-        else:
-            lm_exp[:, -1] = H - 1 - lm_exp[:, -1]
-
-        trans_params, im_exp, lm_exp, _ = align_img(exp_pil, lm_exp, lm3d_std)
-        trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
-        im_exp_tensor = torch.tensor(np.array(im_exp ) /255., dtype=torch.float32).permute(2, 0, 1).to(device).unsqueeze(0)
-        with torch.no_grad():
-            expression = split_coeff(self.net_recon(im_exp_tensor))['exp'][0]
-
-        torch.cuda.empty_cache()
-        self.D_Net, self.model = fu_load_model(self.args, device)
+        # exp_pil = Image.open(self.args.exp_img).convert('RGB')
+        # lm3d_std = load_lm3d('third_part/face3d/BFM')
+        #
+        # W, H = exp_pil.size
+        # kp_extractor = KeypointExtractor()
+        # lm_exp = kp_extractor.extract_keypoint([exp_pil], 'temp/ ' + self.base_name +'_temp.txt')[0]
+        # if np.mean(lm_exp) == -1:
+        #     lm_exp = (lm3d_std[:, :2] + 1) / 2.
+        #     lm_exp = np.concatenate(
+        #         [lm_exp[:, :1] * W, lm_exp[:, 1:2] * H], 1)
+        # else:
+        #     lm_exp[:, -1] = H - 1 - lm_exp[:, -1]
+        #
+        # trans_params, im_exp, lm_exp, _ = align_img(exp_pil, lm_exp, lm3d_std)
+        # trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
+        # im_exp_tensor = torch.tensor(np.array(im_exp ) /255., dtype=torch.float32).permute(2, 0, 1).to(device).unsqueeze(0)
+        # with torch.no_grad():
+        #     expression = split_coeff(self.net_recon(im_exp_tensor))['exp'][0]
+        #
+        # torch.cuda.empty_cache()
+        expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
 
         # Video Image Stabilized
         self.imgs = []
