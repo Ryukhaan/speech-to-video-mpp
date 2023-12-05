@@ -125,9 +125,8 @@ class Dataset(object):
         assert lnet_T == 5
         if start_frame < 1: return None
         # Get folder and file without ext.
-        basefile_name = self.all_videos[index].split('.')[0]
-        print(basefile_name, basefile_name + ".json")
-        with open(basefile_name + ".json", 'r') as file:
+        basefile = self.all_videos[index].split('.')[0]
+        with open(basefile + ".json", 'r') as file:
             json_data = json.load(file)
 
         # Get Phones and words from json
@@ -135,7 +134,7 @@ class Dataset(object):
         self.phones = json_data['tiers']['phones']
 
         # Load File WAV associated to the JSON
-        samplerate, wav_data = wavfile.read(basefile_name + ".wav", 'r')
+        samplerate, wav_data = wavfile.read(basefile + ".wav", 'r')
         milliseconds = len(wav_data) / samplerate * 1000
 
         # Each phones = (start_in_s, end_in_s, phone_str)
