@@ -308,6 +308,7 @@ class Dataset(object):
                 continue
 
             window = self.prepare_window(nframes)
+            self.imgs = np.asarray(self.imgs)
             stabilized_window = self.prepare_window(self.imgs)
             self.imgs_masked = self.imgs.copy()
             self.imgs_masked[:, img_size // 2:] = 0
