@@ -126,9 +126,8 @@ class Dataset(object):
         if start_frame < 1: return None
         # Get folder and file without ext.
         basefile = self.all_videos[index].split('.')[0]
-        with open(basefile + ".json", 'r') as file:
+        with open(basefile + ".json", 'r', encoding='utf-8') as file:
             json_data = json.load(file)
-
         # Get Phones and words from json
         words = json_data['tiers']['words']
         self.phones = json_data['tiers']['phones']
