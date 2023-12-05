@@ -297,9 +297,29 @@ class Dataset(object):
 
             if not self.landmarks_estimate(nframes):
                 continue
-            self.face_3dmm_extraction()
-            self.hack_3dmm_expression()
+            try:
+                self.face_3dmm_extraction()
+            except Exception as e:
+                continue
+            try:
+                self.hack_3dmm_expression()
+            except Exception as e:
+                continue
 
+            window = self.prepare_window(nframes)
+            stabilized_window = self.prepare_window(self.imgs)
+            self.imgs_masked = self.imgs.copy()
+            self.imgs_masked[:, args.img_size // 2:] = 0
+            masked_window = self.prepare_window(self.imgs_masked)
+            x = np.concatenate([masked_window, stabilized_window], axis=3)
+
+            y = window.copy()
+            y = torch.FloatTensor(y)
+
+            codes = torch.FloatTensor(codes)
+            phones = torch.FloatTensor(phones)
+
+            return x, codes, phones, y
 
 
 
