@@ -136,7 +136,7 @@ class Dataset(object):
         # Load File WAV associated to the JSON
         samplerate, wav_data = wavfile.read(basefile + ".wav", 'r')
         milliseconds = len(wav_data) / samplerate * 1000
-        print(milliseconds, get_duration(basefile + ".wav"))
+        print(milliseconds, get_duration(filename=basefile+".wav"))
         # Each phones = (start_in_s, end_in_s, phone_str)
         self.phones_per_ms = np.zeros(int(milliseconds), dtype=np.int32)
         for (start, end, phone) in self.phones['entries']:
