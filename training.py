@@ -162,6 +162,7 @@ class Dataset(object):
                 phone = "v"
             self.phones_per_ms[int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
         self.phones_per_ms = np.pad(self.phones_per_ms, ((100, 100)), 'constant', constant_values=0)
+        print(self.phones_per_ms.shape)
         phones = self.phones_per_ms[100 + (start_frame-2)*200 : 100 + (start_frame-2+lnet_T)*200 ]
         print(phones.shape)
         return phones
