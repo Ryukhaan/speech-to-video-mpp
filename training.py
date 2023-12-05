@@ -339,7 +339,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             optimizer.zero_grad()
 
             x = x.to(device)
-            mel = mel.to(device)
+            code = code.to(device)
+            phone = phone.to(device)
             y = y.to(device)
 
             pred = model(x, code, phone)
