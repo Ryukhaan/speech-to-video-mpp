@@ -137,7 +137,7 @@ class Dataset(object):
         milliseconds = len(wav_data) / samplerate * 1000
 
         # Each phones = (start_in_s, end_in_s, phone_str)
-        self.phones_per_ms = np.zeros((int(milliseconds)), dtype=np.int32)
+        self.phones_per_ms = np.zeros(int(milliseconds), dtype=np.int32)
         for (start, end, phone) in self.phones['entries']:
             # Some errors have been transcribed by MFA
             if phone == "d̪":
