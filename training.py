@@ -284,6 +284,7 @@ class Dataset(object):
         return len(self.all_videos)
 
     def __getitem__(self, idx):
+        img_size = 384
         while True:
             idx = np.random.randint(0, len(self.all_videos) - 1)
             vidname = self.all_videos[idx]
@@ -309,7 +310,7 @@ class Dataset(object):
             window = self.prepare_window(nframes)
             stabilized_window = self.prepare_window(self.imgs)
             self.imgs_masked = self.imgs.copy()
-            self.imgs_masked[:, args.img_size // 2:] = 0
+            self.imgs_masked[:, img_size // 2:] = 0
             masked_window = self.prepare_window(self.imgs_masked)
             x = np.concatenate([masked_window, stabilized_window], axis=3)
 
