@@ -335,6 +335,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
         for step, (x, code, phone, y) in prog_bar:
+            print(code.shape, phone.shape)
             model.train()
             optimizer.zero_grad()
 
