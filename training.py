@@ -209,7 +209,7 @@ class Dataset(object):
             self.net_recon = load_face3d_net(self.args.face3d_net_path, device)
         lm3d_std = load_lm3d('checkpoints/BFM')
         video_coeffs = []
-        for idx in tqdm(range(len(self.frames_pil))):#, desc="[Step 2] 3DMM Extraction In Video:"):
+        for idx in range(len(self.frames_pil)):#, desc="[Step 2] 3DMM Extraction In Video:"):
             frame = self.frames_pil[idx]
             W, H = frame.size
             lm_idx = self.lm[idx].reshape([-1, 2])
@@ -260,7 +260,7 @@ class Dataset(object):
 
         # Video Image Stabilized
         self.imgs = []
-        for idx in tqdm(range(len(self.frames_pil))): #desc="[Step 3] Stablize the expression In Video:"):
+        for idx in range(len(self.frames_pil)): #desc="[Step 3] Stablize the expression In Video:"):
             if self.args.one_shot:
                 source_img = trans_image(self.frames_pil[0]).unsqueeze(0).to(device)
                 semantic_source_numpy = self.semantic_npy[0:1]
