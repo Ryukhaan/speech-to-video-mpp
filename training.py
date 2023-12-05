@@ -118,7 +118,7 @@ class Dataset(object):
                 allow_pickle=True)
         codes = codes[start_frame-2: start_frame+lnet_T-2]
         codes = codes.reshape(-1, 32 * 15)
-        print(codes.shape)
+        #print(codes.shape)
         return codes
 
     def get_segmented_phones(self, index, start_frame):
@@ -164,7 +164,7 @@ class Dataset(object):
             self.phones_per_ms[int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
         self.phones_per_ms = np.pad(self.phones_per_ms, (100, 100), 'constant', constant_values=0)
         phones = self.phones_per_ms[100 + (start_frame-2)*200 : 100 + (start_frame-2+lnet_T)*200 ]
-        print(phones.shape)
+        #print(phones.shape)
         return phones
 
     def prepare_window(self, window):
@@ -232,7 +232,7 @@ class Dataset(object):
         #del net_recon
 
     def hack_3dmm_expression(self):
-        print('extract the exp from' , self.args.exp_img)
+        #print('extract the exp from' , self.args.exp_img)
         # exp_pil = Image.open(self.args.exp_img).convert('RGB')
         # lm3d_std = load_lm3d('third_part/face3d/BFM')
         #
