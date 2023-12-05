@@ -22,7 +22,7 @@ class KeypointExtractor():
         if isinstance(images, list):
             keypoints = []
             if info:
-                i_range = tqdm(images)
+                i_range = images
             else:
                 i_range = images
 
