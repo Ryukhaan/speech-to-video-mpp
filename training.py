@@ -72,7 +72,7 @@ def get_image_list(data_root, split):
 
 class Dataset(object):
 
-    def __init__(self, filenames):
+    def __init__(self, filenames, device):
         global args
         self.args = args
         self.all_videos = filenames #get_image_list(args.data_root, split)
@@ -748,6 +748,7 @@ def load_checkpoint(path, model, optimizer, reset_optimizer=False, overwrite_glo
 
 if __name__ == "__main__":
     use_cuda = torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda else "cpu")
     checkpoint_dir = args.checkpoint_dir
     checkpoint_path = args.checkpoint_path
 
@@ -758,8 +759,8 @@ if __name__ == "__main__":
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     print(len(filenames), len(train_list), len(val_list))
     # Dataset and Dataloader setup
-    train_dataset = Dataset(train_list)
-    test_dataset = Dataset(val_list)
+    train_dataset = Dataset(train_list, device)
+    test_dataset = Dataset(val_list, device)
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
@@ -768,7 +769,7 @@ if __name__ == "__main__":
         test_dataset, batch_size=hparams.batch_size)
         #num_workers=8)
 
-    device = torch.device("cuda" if use_cuda else "cpu")
+
 
     # Model
     model = LNet().to(device)
