@@ -176,6 +176,9 @@ class Dataset(object):
         # face detection & cropping, cropping the first frame as the style of FFHQ
         croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
         full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
+        if full_frames_RGB is None:
+            print(frames)
+            return
         full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
 
         clx, cly, crx, cry = crop
