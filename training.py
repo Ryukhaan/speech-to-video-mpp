@@ -126,6 +126,7 @@ class Dataset(object):
         if start_frame < 1: return None
         # Get folder and file without ext.
         basefile_name = self.all_videos[index].split('.')[0]
+        print(basefile_name, basefile_name + ".json")
         with open(basefile_name + ".json", 'r') as file:
             json_data = json.load(file)
 
