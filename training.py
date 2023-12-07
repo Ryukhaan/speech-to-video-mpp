@@ -317,7 +317,7 @@ class Dataset(object):
             return x, codes, phones, y
 
     def save_preprocess(self):
-        for idx, file in tqdm(enumerate(self.all_videos)):
+        for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
             self.idx = idx
             self.read_video(idx)
             self.landmarks_estimate(self.full_frames, save=True)
