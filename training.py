@@ -211,7 +211,7 @@ class Dataset(object):
 
     def face_3dmm_extraction(self, save=False, start_frame=0):
         torch.cuda.empty_cache()
-        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + "_coeffs.npy")
+        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + "_coeffs.npy"):
             if self.net_recon is None:
                 self.net_recon = load_face3d_net(self.args.face3d_net_path, device)
             lm3d_std = load_lm3d('checkpoints/BFM')
