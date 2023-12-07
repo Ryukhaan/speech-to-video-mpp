@@ -316,14 +316,13 @@ class Dataset(object):
 
             return x, codes, phones, y
 
-    def save_preprocess(self, directory):
+    def save_preprocess(self):
         for idx, file in tqdm(enumerate(self.all_videos)):
             self.idx = idx
             self.read_video(idx)
             self.landmarks_estimate(self.full_frames, save=True)
             self.face_3dmm_extraction(save=True)
             self.hack_3dmm_expression(save=True)
-
 
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
@@ -515,7 +514,9 @@ if __name__ == "__main__":
     print(len(filenames), len(train_list), len(val_list))
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
+    train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
+    test_dataset.save_preprocess()
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
