@@ -193,7 +193,7 @@ class Dataset(object):
 
         # get the landmark according to the detected face.
         # Change this one
-        if not os.path.isfile('temp/ ' + self.base_name +'_landmarks.txt'):
+        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_landmarks.txt'):
             torch.cuda.empty_cache()
             #print('[Step 1] Landmarks Extraction in Video.')
             if self.kp_extractor is None:
