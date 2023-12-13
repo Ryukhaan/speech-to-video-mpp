@@ -201,6 +201,7 @@ class Dataset(object):
             if not save:
                 self.lm = self.kp_extractor.extract_keypoint(self.frames_pil)
             else:
+                print("Save")
                 self.lm = self.kp_extractor.extract_keypoint(self.frames_pil, self.all_videos[self.idx].split('.')[0] + '_landmarks.txt')
         else:
             #print('[Step 1] Using saved landmarks.')
