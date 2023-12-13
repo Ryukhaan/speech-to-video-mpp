@@ -85,7 +85,7 @@ class Dataset(object):
         self.dictionary.insert(0, 'spn')
         self.kp_extractor = None
 
-        self.D_Net, self.model = fu_load_model(self.args, device)
+        #self.D_Net, self.model = fu_load_model(self.args, device)
         self.idx = 0
 
     # Weird function
