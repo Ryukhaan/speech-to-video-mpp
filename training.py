@@ -205,6 +205,7 @@ class Dataset(object):
                                                              self.all_videos[self.idx].split('.')[0] + '_landmarks.txt')
         else:
             #print('[Step 1] Using saved landmarks.')
+            print(self.all_videos[self.idx])
             self.lm = np.loadtxt( self.all_videos[self.idx].split('.')[0] +'_landmarks.txt').astype(np.float32)
             print(self.lm.shape)
             self.lm = self.lm[start_frame:start_frame+lnet_T]
