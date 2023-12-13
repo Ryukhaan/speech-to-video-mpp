@@ -198,16 +198,13 @@ class Dataset(object):
             #print('[Step 1] Landmarks Extraction in Video.')
             if self.kp_extractor is None:
                 self.kp_extractor = KeypointExtractor()
-            if save:
-                self.lm = self.kp_extractor.extract_keypoint(self.frames_pil, )
+            if not save:
+                self.lm = self.kp_extractor.extract_keypoint(self.frames_pil)
             else:
-                self.lm = self.kp_extractor.extract_keypoint(self.frames_pil,
-                                                             self.all_videos[self.idx].split('.')[0] + '_landmarks.txt')
+                self.lm = self.kp_extractor.extract_keypoint(self.frames_pil, self.all_videos[self.idx].split('.')[0] + '_landmarks.txt')
         else:
             #print('[Step 1] Using saved landmarks.')
-            print(self.all_videos[self.idx])
             self.lm = np.loadtxt( self.all_videos[self.idx].split('.')[0] +'_landmarks.txt').astype(np.float32)
-            print(self.lm.shape)
             self.lm = self.lm[start_frame:start_frame+lnet_T]
             print(self.lm.shape)
             self.lm = self.lm.reshape([len(self.frames_pil), -1, 2])
@@ -324,8 +321,8 @@ class Dataset(object):
             self.idx = idx
             self.read_video(idx)
             self.landmarks_estimate(self.full_frames, save=True)
-            self.face_3dmm_extraction(save=True)
-            self.hack_3dmm_expression(save=True)
+            #self.face_3dmm_extraction(save=True)
+            #self.hack_3dmm_expression(save=True)
 
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
@@ -517,9 +514,9 @@ if __name__ == "__main__":
     print(len(filenames), len(train_list), len(val_list))
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
-    #train_dataset.save_preprocess()
+    train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
-    #test_dataset.save_preprocess()
+    test_dataset.save_preprocess()
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
