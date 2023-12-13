@@ -207,6 +207,7 @@ class Dataset(object):
             #print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt( self.all_videos[self.idx].split('.')[0] +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm[start_frame:start_frame+lnet_T]
+            print(self.lm.shape)
             self.lm = self.lm.reshape([len(self.frames_pil), -1, 2])
 
     def face_3dmm_extraction(self, save=False, start_frame=0):
