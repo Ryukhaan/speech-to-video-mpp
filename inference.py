@@ -184,10 +184,30 @@ def main():
                 inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
                 inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 dst_pts = lm[idx][-19:-1]
-                for j, (x,y) in enumerate(lm[idx]):
+                #for j, (x,y) in enumerate(lm[idx]):
+                #    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
+                #    cv2.circle(mask, (xi,yi), 3, (0,255,0), 1)
+                #    cv2.putText(mask, str(j), (xi+5,yi), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,0,255), 1, cv2.LINE_AA)
+                mouth = lm[idx][48:]
+                bottom_face = lm[idx][2:14+1]
+                nose = lm[idx][27:35+1]
+                nose_mask = ff.copy()
+                element = np.ones((3,3), dtype=np.uint8)
+                # Create Nose Mask
+                for j, (x,y) in enumerate(nose):
                     xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
-                    cv2.circle(mask, (xi,yi), 3, (0,255,0), 1)
-                    cv2.putText(mask, str(j), (xi+5,yi), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,0,255), 1, cv2.LINE_AA)
+                    xj, yj = int(inverse_scale_x * dst_pts[j - 1][0] + ox1), int(inverse_scale_y * dst_pts[j - 1][1] + oy1)
+                    cv2.line(nose_mask, (xj, yj), (xi, yi), (255, 0, 0), 3)
+                nose_mask = nose[:,:,0].astype(np.uint8)
+                nose_mask = cv2.dilate(nose_mask, element, iterations=3)
+
+                for j, (x,y) in enumerate(bottom_face):
+                    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
+                    xj, yj = int(inverse_scale_x * dst_pts[j - 1][0] + ox1), int(inverse_scale_y * dst_pts[j - 1][1] + oy1)
+                    cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
+                mask = mask[:,:,0].astype(np.uint8)
+                mask = np.multiply(mask, 255 - nose_mask)
+                ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 # TODO
                 # Add resize points coordinate
                 #cv2.rectangle(mask, (ox1, oy1), (ox2, oy2), (255, 0, 0), 3)
