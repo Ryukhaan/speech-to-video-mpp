@@ -220,9 +220,10 @@ def main():
                 mask = np.multiply(mask, 255 - nose_mask)
                 print(mask.shape, ff.shape)
                 #mask = np.dstack((mask, mask, mask))
-                ff_masked = np.ma.masked_array(ff, mask).data
-                pp_masked = np.ma.masked_array(pp, np.logical_not(mask)).data
-                ff = ff_masked + pp_masked
+                for channel in ff.shape[2]:
+                    ff_masked = np.ma.masked_array(ff[:,:,channel], mask).data
+                    pp_masked = np.ma.masked_array(pp[:,:,channel], np.logical_not(mask)).data
+                    ff[:,:,channel] = ff_masked + pp_masked
                 #ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 cv2.imwrite("./results/{}.png".format(idx), mask)
