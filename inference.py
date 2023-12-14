@@ -72,7 +72,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    mel_chunks = mel_chunks[:16] # Change here length of inference video
+    #mel_chunks = mel_chunks[:16] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -221,7 +221,7 @@ def main():
                 # Remove nose from bottom face
                 mask = np.multiply(mask, 1 - nose_mask)
                 # Apply to each channel
-                cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
+                #cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
                 for channel in range(ff.shape[2]):
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(pp[:,:,channel], mask>0)
@@ -234,7 +234,7 @@ def main():
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 #ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                cv2.imwrite("./results/{}.png".format(idx), ff)
+                #cv2.imwrite("./results/{}.png".format(idx), ff)
                 out.write(ff)
                 idx += 1
             else:
