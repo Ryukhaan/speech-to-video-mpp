@@ -216,7 +216,7 @@ def main():
                 mask = mask[:, :, 0].astype(np.uint8)
                 fill_mask = np.zeros((h + 2, w + 2), np.uint8)
                 cv2.floodFill(mask, fill_mask, (0, 0), 255)
-                #mask = cv2.bitwise_not(mask)
+                mask = cv2.bitwise_not(mask)
                 cv2.imwrite("./results/bot_face_{}.png".format(idx), mask)
                 #mask = np.dstack((mask, mask, mask))
 
