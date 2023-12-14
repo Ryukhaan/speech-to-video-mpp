@@ -180,7 +180,7 @@ def main():
                 ff = xf.copy()
                 #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
 
-                mask = ff.copy() #np.zeros((ff.shape[0], ff.shape[1]), dtype=np.uint8)
+                mask = np.zeros_like(ff)
                 inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
                 inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 dst_pts = lm[idx][-19:-1]
@@ -191,7 +191,7 @@ def main():
                 mouth = lm[idx][48:]
                 bottom_face = lm[idx][2:14+1]
                 nose = lm[idx][27:35+1]
-                nose_mask = ff.copy()
+                nose_mask = np.zeros_like(ff)
                 element = np.ones((3,3), dtype=np.uint8)
                 # Create Nose Mask
                 for j, (x,y) in enumerate(nose):
