@@ -199,14 +199,15 @@ def main():
                     xj, yj = int(inverse_scale_x * dst_pts[j - 1][0] + ox1), int(inverse_scale_y * dst_pts[j - 1][1] + oy1)
                     cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
                 nose_mask = nose_mask[:,:,0].astype(np.uint8)
+                # Imfill nose mask
                 h, w = nose_mask.shape[:2]
                 fill_mask = np.zeros((h + 2, w + 2), np.uint8)
                 cv2.floodFill(nose_mask, fill_mask, (0, 0), 255)
                 nose_mask = cv2.bitwise_not(nose_mask)
-                nose_mask = np.dstack((nose_mask, nose_mask, nose_mask))
-
+                #nose_mask = np.dstack((nose_mask, nose_mask, nose_mask))
+                # Dilate to have less incoherence
                 nose_mask = cv2.dilate(nose_mask, element, iterations=3)
-                print(mask.shape)
+
                 for j, (x,y) in enumerate(bottom_face):
                     xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
                     xj, yj = int(inverse_scale_x * dst_pts[j - 1][0] + ox1), int(inverse_scale_y * dst_pts[j - 1][1] + oy1)
@@ -214,9 +215,10 @@ def main():
                 mask = mask[:, :, 0].astype(np.uint8)
                 cv2.floodFill(mask, fill_mask, (0, 0), 255)
                 mask = cv2.bitwise_not(mask)
-                mask = np.dstack((mask, mask, mask))
+                #mask = np.dstack((mask, mask, mask))
 
                 mask = np.multiply(mask, 255 - nose_mask)
+                mask = np.dstack((mask, mask, mask))
                 ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 cv2.imwrite("./results/{}.png".format(idx), mask)
