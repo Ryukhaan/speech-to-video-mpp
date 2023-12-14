@@ -220,7 +220,7 @@ def main():
                 mask = np.multiply(mask, 255 - nose_mask)
                 print(mask.shape, ff.shape)
                 #mask = np.dstack((mask, mask, mask))
-                for channel in ff.shape[2]:
+                for channel in range(ff.shape[2]):
                     ff_masked = np.ma.masked_array(ff[:,:,channel], mask).data
                     pp_masked = np.ma.masked_array(pp[:,:,channel], np.logical_not(mask)).data
                     ff[:,:,channel] = ff_masked + pp_masked
