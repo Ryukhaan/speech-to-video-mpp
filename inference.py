@@ -207,7 +207,7 @@ def main():
                 nose_mask = cv2.dilate(nose_mask, element, iterations=5)
 
                 # Draw bottom face
-                bottom_face = lm[idx][2:14 + 1]
+                bottom_face = lm[idx][0:16 + 1]
                 for j, (x,y) in enumerate(bottom_face):
                     xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
                     xj, yj = int(inverse_scale_x * bottom_face[j - 1][0] + ox1), int(inverse_scale_y * bottom_face[j - 1][1] + oy1)
@@ -225,7 +225,7 @@ def main():
                 for channel in range(ff.shape[2]):
                     ff_masked = np.multiply(ff[:,:,channel], mask)
                     pp_masked = np.multiply(pp[:,:,channel], np.logical_not(mask))
-                    ff[:,:,channel] = ff_masked + pp_masked
+                    ff[:,:,2-channel] = ff_masked + pp_masked
 
                 # Draw detected mouth landmarks
                 mouth = lm[idx][48:]
