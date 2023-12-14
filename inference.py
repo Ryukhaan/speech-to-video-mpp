@@ -220,6 +220,7 @@ def main():
                 #mask = np.dstack((mask, mask, mask))
 
                 mask = np.multiply(mask, 1 - nose_mask)
+                cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
                 #mask = np.dstack((mask, mask, mask))
                 for channel in range(ff.shape[2]):
                     ff_masked = np.ma.masked_array(ff[:,:,channel], mask).data
