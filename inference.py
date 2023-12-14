@@ -204,7 +204,7 @@ def main():
                 cv2.floodFill(nose_mask, fill_mask, (0, 0), 255)
                 nose_mask = cv2.bitwise_not(nose_mask)
                 # Dilate to have less incoherence
-                nose_mask = cv2.dilate(nose_mask, element, iterations=5)
+                nose_mask = cv2.dilate(nose_mask, element, iterations=10)
 
                 # Draw bottom face
                 bottom_face = lm[idx][0:16 + 1]
@@ -223,9 +223,9 @@ def main():
                 # Apply to each channel
                 cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
                 for channel in range(ff.shape[2]):
-                    ff_masked = np.multiply(ff[:,:,channel], mask)
+                    ff_masked = np.multiply(ff[:,:,channel], mask>0)
                     pp_masked = np.multiply(pp[:,:,channel], np.logical_not(mask))
-                    ff[:,:,2-channel] = ff_masked + pp_masked
+                    ff[:,:,channel] = ff_masked + pp_masked
 
                 # Draw detected mouth landmarks
                 mouth = lm[idx][48:]
