@@ -214,6 +214,7 @@ def main():
                     xj, yj = int(inverse_scale_x * bottom_face[j - 1][0] + ox1), int(inverse_scale_y * bottom_face[j - 1][1] + oy1)
                     cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
                 mask = mask[:, :, 0].astype(np.uint8)
+                fill_mask = np.zeros((h + 2, w + 2), np.uint8)
                 cv2.floodFill(mask, fill_mask, (0, 0), 255)
                 #mask = cv2.bitwise_not(mask)
                 cv2.imwrite("./results/bot_face_{}.png".format(idx), mask)
