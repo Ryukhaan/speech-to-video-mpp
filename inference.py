@@ -189,7 +189,6 @@ def main():
                 #    cv2.circle(mask, (xi,yi), 3, (0,255,0), 1)
                 #    cv2.putText(mask, str(j), (xi+5,yi), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,0,255), 1, cv2.LINE_AA)
                 mouth = lm[idx][48:]
-                bottom_face = lm[idx][2:14+1]
                 nose = lm[idx][27:35+1]
                 nose_mask = np.zeros_like(ff)
                 element = np.ones((3,3), dtype=np.uint8)
@@ -199,7 +198,6 @@ def main():
                     xj, yj = int(inverse_scale_x * nose[j - 1][0] + ox1), int(inverse_scale_y * nose[j - 1][1] + oy1)
                     cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
                 nose_mask = nose_mask[:,:,0].astype(np.uint8)
-                cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
                 # Imfill nose mask
                 h, w = nose_mask.shape[:2]
                 fill_mask = np.zeros((h + 2, w + 2), np.uint8)
@@ -208,7 +206,9 @@ def main():
                 #nose_mask = np.dstack((nose_mask, nose_mask, nose_mask))
                 # Dilate to have less incoherence
                 nose_mask = cv2.dilate(nose_mask, element, iterations=3)
+                cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
 
+                bottom_face = lm[idx][2:14 + 1]
                 for j, (x,y) in enumerate(bottom_face):
                     xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
                     xj, yj = int(inverse_scale_x * bottom_face[j - 1][0] + ox1), int(inverse_scale_y * bottom_face[j - 1][1] + oy1)
