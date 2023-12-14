@@ -72,7 +72,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    mel_chunks = mel_chunks[:8] # Change here length of inference video
+    mel_chunks = mel_chunks[:16] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -223,8 +223,8 @@ def main():
                 # Apply to each channel
                 cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
                 for channel in range(ff.shape[2]):
-                    ff_masked = np.multiply(ff[:,:,channel], mask>0)
-                    pp_masked = np.multiply(pp[:,:,channel], np.logical_not(mask))
+                    ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
+                    pp_masked = np.multiply(pp[:,:,channel], mask>0)
                     ff[:,:,channel] = ff_masked + pp_masked
 
                 # Draw detected mouth landmarks
