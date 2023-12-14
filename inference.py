@@ -193,13 +193,19 @@ def main():
                 nose = lm[idx][27:35+1]
                 nose_mask = ff.copy()
                 element = np.ones((3,3), dtype=np.uint8)
-                print(nose_mask.shape)
+                print("nose", nose_mask.shape)
                 # Create Nose Mask
                 for j, (x,y) in enumerate(nose):
                     xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
                     xj, yj = int(inverse_scale_x * dst_pts[j - 1][0] + ox1), int(inverse_scale_y * dst_pts[j - 1][1] + oy1)
                     cv2.line(nose_mask, (xj, yj), (xi, yi), 255, 3)
+                print('end nose', nose_mask.shape)
                 nose_mask = nose.astype(np.uint8)
+                h, w = nose_mask.shape[:2]
+                fill_mask = np.zeros((h + 2, w + 2), np.uint8)
+                cv2.floodFill(nose_mask, fill_mask, (0, 0), 255)
+                nose_mask = cv2.bitwise_not(nose_mask)
+
                 print(nose_mask.shape)
                 nose_mask = cv2.dilate(nose_mask, element, iterations=3)
                 print(mask.shape)
