@@ -218,6 +218,7 @@ def main():
                 #mask = np.dstack((mask, mask, mask))
 
                 mask = np.multiply(mask, 255 - nose_mask)
+                print(mask.shape, ff.shape)
                 #mask = np.dstack((mask, mask, mask))
                 ff_masked = np.ma.masked_array(ff, mask).data
                 pp_masked = np.ma.masked_array(pp, np.logical_not(mask)).data
