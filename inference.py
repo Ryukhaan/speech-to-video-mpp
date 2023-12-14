@@ -224,8 +224,8 @@ def main():
                 cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
                 #mask = np.dstack((mask, mask, mask))
                 for channel in range(ff.shape[2]):
-                    ff_masked = np.ma.masked_array(ff[:,:,channel], mask).data
-                    pp_masked = np.ma.masked_array(pp[:,:,channel], np.logical_not(mask)).data
+                    ff_masked = np.multiply(ff[:,:,channel], mask)
+                    pp_masked = np.multiply(pp[:,:,channel], np.logical_not(mask))
                     ff[:,:,channel] = ff_masked + pp_masked
                 #ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
