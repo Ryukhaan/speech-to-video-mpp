@@ -231,7 +231,7 @@ def main():
                 mouth = lm[idx][48:]
                 for j, (x,y) in enumerate(mouth):
                     xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
-                    cv2.circle(ff, 3, (xi, yi), (255, 0, 0), 1)
+                    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 #ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 cv2.imwrite("./results/{}.png".format(idx), mask)
