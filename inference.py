@@ -205,7 +205,7 @@ def main():
                 nose_mask = cv2.bitwise_not(nose_mask)
                 #nose_mask = np.dstack((nose_mask, nose_mask, nose_mask))
                 # Dilate to have less incoherence
-                nose_mask = cv2.dilate(nose_mask, element, iterations=3)
+                nose_mask = cv2.dilate(nose_mask, element, iterations=5)
                 cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
 
                 bottom_face = lm[idx][2:14 + 1]
