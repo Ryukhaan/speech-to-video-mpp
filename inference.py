@@ -183,7 +183,7 @@ def main():
                 mask = np.zeros_like(ff)
                 inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
                 inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
-                dst_pts = lm[idx][-19:-1]
+                #dst_pts = lm[idx][-19:-1]
                 #for j, (x,y) in enumerate(lm[idx]):
                 #    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
                 #    cv2.circle(mask, (xi,yi), 3, (0,255,0), 1)
@@ -196,7 +196,7 @@ def main():
                 # Create Nose Mask
                 for j, (x,y) in enumerate(nose):
                     xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
-                    xj, yj = int(inverse_scale_x * dst_pts[j - 1][0] + ox1), int(inverse_scale_y * dst_pts[j - 1][1] + oy1)
+                    xj, yj = int(inverse_scale_x * nose[j - 1][0] + ox1), int(inverse_scale_y * nose[j - 1][1] + oy1)
                     cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
                 nose_mask = nose_mask[:,:,0].astype(np.uint8)
                 cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
@@ -211,7 +211,7 @@ def main():
 
                 for j, (x,y) in enumerate(bottom_face):
                     xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
-                    xj, yj = int(inverse_scale_x * dst_pts[j - 1][0] + ox1), int(inverse_scale_y * dst_pts[j - 1][1] + oy1)
+                    xj, yj = int(inverse_scale_x * bottom_face[j - 1][0] + ox1), int(inverse_scale_y * bottom_face[j - 1][1] + oy1)
                     cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
                 mask = mask[:, :, 0].astype(np.uint8)
                 cv2.imwrite("./results/bot_face_{}.png".format(idx), nose_mask)
