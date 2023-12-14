@@ -199,6 +199,7 @@ def main():
                     xj, yj = int(inverse_scale_x * dst_pts[j - 1][0] + ox1), int(inverse_scale_y * dst_pts[j - 1][1] + oy1)
                     cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
                 nose_mask = nose_mask[:,:,0].astype(np.uint8)
+                cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
                 # Imfill nose mask
                 h, w = nose_mask.shape[:2]
                 fill_mask = np.zeros((h + 2, w + 2), np.uint8)
@@ -213,12 +214,12 @@ def main():
                     xj, yj = int(inverse_scale_x * dst_pts[j - 1][0] + ox1), int(inverse_scale_y * dst_pts[j - 1][1] + oy1)
                     cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
                 mask = mask[:, :, 0].astype(np.uint8)
+                cv2.imwrite("./results/bot_face_{}.png".format(idx), nose_mask)
                 cv2.floodFill(mask, fill_mask, (0, 0), 255)
                 mask = cv2.bitwise_not(mask)
                 #mask = np.dstack((mask, mask, mask))
 
-                mask = np.multiply(mask, 255 - nose_mask)
-                print(mask.shape, ff.shape)
+                mask = np.multiply(mask, 1 - nose_mask)
                 #mask = np.dstack((mask, mask, mask))
                 for channel in range(ff.shape[2]):
                     ff_masked = np.ma.masked_array(ff[:,:,channel], mask).data
