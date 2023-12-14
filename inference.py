@@ -72,7 +72,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    mel_chunks = mel_chunks[:8]
+    mel_chunks = mel_chunks[:8] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -188,7 +188,7 @@ def main():
                 #    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
                 #    cv2.circle(mask, (xi,yi), 3, (0,255,0), 1)
                 #    cv2.putText(mask, str(j), (xi+5,yi), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,0,255), 1, cv2.LINE_AA)
-                mouth = lm[idx][48:]
+
                 nose = lm[idx][27:35+1]
                 nose_mask = np.zeros_like(ff)
                 element = np.ones((3,3), dtype=np.uint8)
@@ -203,30 +203,35 @@ def main():
                 fill_mask = np.zeros((h + 2, w + 2), np.uint8)
                 cv2.floodFill(nose_mask, fill_mask, (0, 0), 255)
                 nose_mask = cv2.bitwise_not(nose_mask)
-                #nose_mask = np.dstack((nose_mask, nose_mask, nose_mask))
                 # Dilate to have less incoherence
                 nose_mask = cv2.dilate(nose_mask, element, iterations=5)
-                cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
 
+                # Draw bottom face
                 bottom_face = lm[idx][2:14 + 1]
                 for j, (x,y) in enumerate(bottom_face):
                     xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
                     xj, yj = int(inverse_scale_x * bottom_face[j - 1][0] + ox1), int(inverse_scale_y * bottom_face[j - 1][1] + oy1)
                     cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
+                # Filled
                 mask = mask[:, :, 0].astype(np.uint8)
                 fill_mask = np.zeros((h + 2, w + 2), np.uint8)
                 cv2.floodFill(mask, fill_mask, (0, 0), 255)
                 mask = cv2.bitwise_not(mask)
-                cv2.imwrite("./results/bot_face_{}.png".format(idx), mask)
-                #mask = np.dstack((mask, mask, mask))
 
+                # Remove nose from bottom face
                 mask = np.multiply(mask, 1 - nose_mask)
+                # Apply to each channel
                 cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
-                #mask = np.dstack((mask, mask, mask))
                 for channel in range(ff.shape[2]):
                     ff_masked = np.multiply(ff[:,:,channel], mask)
                     pp_masked = np.multiply(pp[:,:,channel], np.logical_not(mask))
                     ff[:,:,channel] = ff_masked + pp_masked
+
+                # Draw detected mouth landmarks
+                mouth = lm[idx][48:]
+                for j, (x,y) in enumerate(mouth):
+                    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
+                    cv2.circle(ff, 3, (xi, yi), (255, 0, 0), 1)
                 #ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 cv2.imwrite("./results/{}.png".format(idx), mask)
