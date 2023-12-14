@@ -218,8 +218,9 @@ def main():
                 #mask = np.dstack((mask, mask, mask))
 
                 mask = np.multiply(mask, 255 - nose_mask)
-                mask = np.dstack((mask, mask, mask))
-                ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
+                #mask = np.dstack((mask, mask, mask))
+                ff = np.ma.masked_array(ff, np.logical_not(mask)) + np.ma.masked_array(pp, mask)
+                #ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 cv2.imwrite("./results/{}.png".format(idx), mask)
                 out.write(ff)
