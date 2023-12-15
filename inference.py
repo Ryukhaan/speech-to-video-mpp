@@ -221,7 +221,7 @@ def main():
                 # Remove nose from bottom face
                 mask = np.multiply(mask, 1 - nose_mask)
                 # Apply to each channel
-                #cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
+                cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
                 for channel in range(ff.shape[2]):
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(pp[:,:,channel], mask>0)
@@ -231,10 +231,10 @@ def main():
                 # Draw detected mouth landmarks
                 mouth = lm[idx][48:]
                 for j, (x,y) in enumerate(mouth):
-                    xi, yi = int(inverse_scale_x*x + ox1), int(inverse_scale_y*y + oy1)
+                    xi, yi = int(inverse_scale_x*(x2 - x1 - x) + ox1), int(inverse_scale_y*(y2 - y1 - y) + oy1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 for j, (x, y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
+                    xi, yi = int(inverse_scale_x*(x2 - x1 - x) + ox1), int(inverse_scale_y*(y2 - y1 - y) + oy1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 #ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
