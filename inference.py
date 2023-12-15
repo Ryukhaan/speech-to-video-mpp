@@ -72,7 +72,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    mel_chunks = mel_chunks[:100] # Change here length of inference video
+    mel_chunks = mel_chunks[:60] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -194,7 +194,7 @@ def main():
                 element = np.ones((3,3), dtype=np.uint8)
                 # Create Nose Mask
                 for j, (x,y) in enumerate(nose):
-                    xi, yi = int(inverse_scale_x * x + x1), int(inverse_scale_y * y + y1)
+                    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
                     xj, yj = int(inverse_scale_x * nose[j - 1][0] + x1), int(inverse_scale_y * nose[j - 1][1] + y1)
                     cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
                 nose_mask = nose_mask[:,:,0].astype(np.uint8)
@@ -209,8 +209,8 @@ def main():
                 # Draw bottom face
                 bottom_face = lm[idx][0:16 + 1]
                 for j, (x,y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x * x + x1), int(inverse_scale_y * y + y1)
-                    xj, yj = int(inverse_scale_x * bottom_face[j - 1][0] + x1), int(inverse_scale_y * bottom_face[j - 1][1] + y1)
+                    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
+                    xj, yj = int(inverse_scale_x * bottom_face[j - 1][0] + ox1), int(inverse_scale_y * bottom_face[j - 1][1] + oy1)
                     cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
                 # Filled
                 mask = mask[:, :, 0].astype(np.uint8)
@@ -231,7 +231,7 @@ def main():
                 # Draw detected mouth landmarks
                 mouth = lm[idx][48:]
                 for j, (x,y) in enumerate(mouth):
-                    xi, yi = int(inverse_scale_x * x + oy1), int(inverse_scale_y * y + ox1)
+                    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 #ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
