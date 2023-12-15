@@ -72,7 +72,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    mel_chunks = mel_chunks[:4] # Change here length of inference video
+    #mel_chunks = mel_chunks[:4] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -221,26 +221,26 @@ def main():
                 # Remove nose from bottom face
                 mask = np.multiply(mask, 1 - nose_mask)
                 # Apply to each channel
-                cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
+                #cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
                 for channel in range(ff.shape[2]):
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(pp[:,:,channel], mask>0)
                     ff[:,:,channel] = ff_masked + pp_masked
 
                 # Visual debug
-                ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
-                cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
-                cv2.circle(ff, (ox2, oy2), 3, (0,0,255), 1)
+                #ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
+                #cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
+                #cv2.circle(ff, (ox2, oy2), 3, (0,0,255), 1)
                 # Draw detected mouth landmarks
                 mouth = lm[idx][48:]
                 for j, (x,y) in enumerate(mouth):
-                    xi, yi = int(inverse_scale_x*x + ox1), int(inverse_scale_y*(y2 - y1 - y)+oy1)
+                    xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y+oy1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 for j, (x, y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x + ox1), int(inverse_scale_y*(y2 - y1 - y)+oy2)
+                    xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y+oy2)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                cv2.imwrite("./results/{}.png".format(idx), ff)
+                #cv2.imwrite("./results/{}.png".format(idx), ff)
                 out.write(ff)
                 idx += 1
             else:
