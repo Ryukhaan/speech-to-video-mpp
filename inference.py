@@ -229,11 +229,11 @@ def main():
 
                 ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
                 cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
-                cv2.circle(ff, (ox2, oy2), 3, (0,255,0), 1)
+                cv2.circle(ff, (ox2, oy2), 3, (0,0,255), 1)
                 # Draw detected mouth landmarks
                 mouth = lm[idx][48:]
                 for j, (x,y) in enumerate(mouth):
-                    xi, yi = int(inverse_scale_x*(x2 - x1 - x) + ox1), int(inverse_scale_y*(y2 - y1 - y))
+                    xi, yi = int(inverse_scale_x*(x2 - x1 - x) + ox1), int(inverse_scale_y*(y2 - y1 - y)+oy1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 for j, (x, y) in enumerate(bottom_face):
                     xi, yi = int(inverse_scale_x*x + (x2 - x1)), int(inverse_scale_y*(y2 - y1 - y))
