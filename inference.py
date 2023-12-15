@@ -227,6 +227,7 @@ def main():
                     pp_masked = np.multiply(pp[:,:,channel], mask>0)
                     ff[:,:,channel] = ff_masked + pp_masked
 
+                ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
                 # Draw detected mouth landmarks
                 mouth = lm[idx][48:]
                 for j, (x,y) in enumerate(mouth):
