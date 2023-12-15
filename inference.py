@@ -209,8 +209,8 @@ def main():
                 # Draw bottom face
                 bottom_face = lm[idx][0:16 + 1]
                 for j, (x,y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y + oy1)
-                    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + ox1), int(512-inverse_scale_y*bottom_face[j - 1][1] + oy1)
+                    xi, yi = int(inverse_scale_x*x + x1), int(512-inverse_scale_y*y + y1)
+                    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + x1), int(512-inverse_scale_y*bottom_face[j - 1][1] + y1)
                     cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
                 # Filled
                 mask = mask[:, :, 0].astype(np.uint8)
