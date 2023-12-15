@@ -231,10 +231,10 @@ def main():
                 # Draw detected mouth landmarks
                 mouth = lm[idx][48:]
                 for j, (x,y) in enumerate(mouth):
-                    xi, yi = int(w-inverse_scale_x*x - x1), int(h-inverse_scale_y*y - y1)
+                    xi, yi = int(w-inverse_scale_x*x - ox1), int(h-inverse_scale_y*y - oy1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 for j, (x, y) in enumerate(bottom_face):
-                    xi, yi = int(w-inverse_scale_x * x - x1), int(h-inverse_scale_y * y - y1)
+                    xi, yi = int(w-inverse_scale_x * x - ox1), int(h-inverse_scale_y * y - oy1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 #ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
