@@ -209,8 +209,8 @@ def main():
                 # Draw bottom face
                 bottom_face = lm[idx][0:16 + 1]
                 for j, (x,y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x + ox1), int(inverse_scale_y*y + oy1)
-                    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + ox1), int(inverse_scale_y*bottom_face[j - 1][1] + oy1)
+                    xi, yi = int(inverse_scale_x*x + x1), int(inverse_scale_y*y + y1)
+                    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + x1), int(inverse_scale_y*bottom_face[j - 1][1] + y1)
                     cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
                 # Filled
                 mask = mask[:, :, 0].astype(np.uint8)
@@ -231,7 +231,10 @@ def main():
                 # Draw detected mouth landmarks
                 mouth = lm[idx][48:]
                 for j, (x,y) in enumerate(mouth):
-                    xi, yi = int(inverse_scale_x*x + ox1), int(inverse_scale_y*y + oy1)
+                    xi, yi = int(inverse_scale_x*x + x1), int(inverse_scale_y*y + y1)
+                    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
+                for j, (x, y) in enumerate(bottom_face):
+                    xi, yi = int(inverse_scale_x * x + x1), int(inverse_scale_y * y + y1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 #ff = cv2.bitwise_and(ff, ff, mask=255 - mask) + cv2.bitwise_and(pp, pp, mask=mask)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
