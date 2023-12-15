@@ -237,7 +237,7 @@ def main():
                     xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y+oy1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 for j, (x, y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y+oy2)
+                    xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y+oy1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 #cv2.imwrite("./results/{}.png".format(idx), ff)
