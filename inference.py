@@ -263,7 +263,7 @@ def main():
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(pp[:,:,channel], mask>0)
                     ff[:,:,channel] = ff_masked + pp_masked
-                cv2.imwrite("./results/full_mask{}.png".format(idx), removal_mask)
+                cv2.imwrite("./results/full_mask{}.png".format(idx), 255*np.uint8(removal_mask))
                 # Visual debug
                 #ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
                 #cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
