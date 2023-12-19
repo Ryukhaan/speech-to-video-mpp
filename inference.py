@@ -217,18 +217,18 @@ def main():
                 fill_mask = np.zeros((h + 2, w + 2), np.uint8)
                 cv2.floodFill(mask, fill_mask, (0, 0), 255)
                 mask = cv2.bitwise_not(mask)
-                cv2.imwrite("./results/mouth_{}.png".format(idx), mask)
+                #cv2.imwrite("./results/mouth_{}.png".format(idx), mask)
 
                 # Remove nose from bottom face
                 mask = np.multiply(mask, 255 - nose_mask)
                 # Apply to each channel
-                cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
+                #cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
 
                 for channel in range(ff.shape[2]):
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(pp[:,:,channel], mask>0)
                     ff[:,:,channel] = ff_masked + pp_masked
-                cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
+                #cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
                 # Visual debug
                 #ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
                 #cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
@@ -238,16 +238,16 @@ def main():
                 #ff = cv2.rectangle(ff, (x1, y1), (x2, y2), (0, 255, 0))
                 #cv2.circle(ff, (x1, y1), 3, (255, 255, 0), 2)
                 #cv2.circle(ff, (x2, y2), 3, (255, 0, 255), 2)
-                dx, dy = lm[idx][0]
-                mouth = lm[idx][48:]
-                for j, (x, y) in enumerate(mouth):
-                    xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
-                    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
-                for j, (x, y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
-                    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
-                assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                cv2.imwrite("./results/out_{}.png".format(idx), ff)
+
+                #mouth = lm[idx][48:]
+                #for j, (x, y) in enumerate(mouth):
+                #    xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
+                #    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
+                #for j, (x, y) in enumerate(bottom_face):
+                #    xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
+                #    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
+                #assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
+                #cv2.imwrite("./results/out_{}.png".format(idx), ff)
                 out.write(ff)
                 idx += 1
             else:
