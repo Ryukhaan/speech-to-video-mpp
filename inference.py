@@ -254,14 +254,14 @@ def main():
                 #cv2.imwrite("./results/mouth_{}.png".format(idx), mask)
 
                 # Bottom Face - All others
-                mask = np.multiply(bottom_mask, 1 - removal_mask)
+                mask = np.bitwise_and(bottom_mask, 1 - removal_mask)
 
                 # Apply to each channel
                 #cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
 
                 for channel in range(ff.shape[2]):
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
-                    pp_masked = np.multiply(pp[:,:,channel], mask>0)
+                    pp_masked = np.multiply(pp[:,:,channel], mask)
                     ff[:,:,channel] = ff_masked + pp_masked
                 cv2.imwrite("./results/full_mask{}.png".format(idx), 255*np.uint8(mask))
                 # Visual debug
