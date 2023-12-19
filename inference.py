@@ -36,6 +36,25 @@ args = options()
 
 import preprocessing.facing as preprocessing
 
+def make_mask(points, ff, ix, iy, ox, oy, apply_dilatation=True):
+    mask = np.zeros_like(ff)
+    element = np.ones((3, 3), dtype=np.uint8)
+    # Create Nose Mask
+    for j, (x, y) in enumerate(points):
+        xi, yi = int(ix * x + ox), int(512 - iy * y + oy)
+        xj, yj = int(ix * points[j - 1][0] + ox), int(iy * points[j - 1][1] + oy)
+        cv2.line(mask, (xj, yj), (xi, yi), (255, 0, 0), 3)
+    # Imfill nose mask
+    mask = mask[:, :, 0].astype(np.uint8)
+    h, w = mask.shape[:2]
+    fill_mask = np.zeros((h + 2, w + 2), np.uint8)
+    cv2.floodFill(mask, fill_mask, (0, 0), 255)
+    mask = cv2.bitwise_not(mask)
+    # Dilate to have less incoherence
+    if apply_dilatation:
+        mask = cv2.dilate(mask, element, iterations=10)
+    return mask
+
 def main():    
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     gc.collect()
@@ -72,7 +91,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    #mel_chunks = mel_chunks[:6] # Change here length of inference video
+    mel_chunks = mel_chunks[:6] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -189,38 +208,54 @@ def main():
                 #    cv2.circle(mask, (xi,yi), 3, (0,255,0), 1)
                 #    cv2.putText(mask, str(j), (xi+5,yi), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,0,255), 1, cv2.LINE_AA)
 
-                nose = lm[idx][27:35+1]
-                nose_mask = np.zeros_like(ff)
-                element = np.ones((3,3), dtype=np.uint8)
+                # Nose
+                nose_mask = make_mask(lm[idx][27:35+1], ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                      apply_dilatation=True)
+                # Right Eye
+                eye1 = make_mask(lm[idx][36:41 + 1], ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                        apply_dilatation=True)
+                # Left Eye
+                eye2 = make_mask(lm[idx][42:47 + 1], ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                        apply_dilatation=True)
+
+                removal_mask = (nose_mask | eye1) | eye2
+
+                # Bottom Face
+                bottom_mask = make_mask(lm[idx][0:16 + 1], ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                      apply_dilatation=True)
+                #nose = lm[idx][27:35+1]
+                #nose_mask = np.zeros_like(ff)
+                #element = np.ones((3,3), dtype=np.uint8)
                 # Create Nose Mask
-                for j, (x,y) in enumerate(nose):
-                    xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y + oy1)
-                    xj, yj = int(inverse_scale_x*nose[j-1][0] + ox1), int(inverse_scale_y*nose[j-1][1] + oy1)
-                    cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
+                #for j, (x,y) in enumerate(nose):
+                 #   xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y + oy1)
+                 #   xj, yj = int(inverse_scale_x*nose[j-1][0] + ox1), int(inverse_scale_y*nose[j-1][1] + oy1)
+                #    cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
                 # Imfill nose mask
-                nose_mask = nose_mask[:,:,0].astype(np.uint8)
-                h, w = nose_mask.shape[:2]
-                fill_mask = np.zeros((h + 2, w + 2), np.uint8)
-                cv2.floodFill(nose_mask, fill_mask, (0, 0), 255)
-                nose_mask = cv2.bitwise_not(nose_mask)
+                #nose_mask = nose_mask[:,:,0].astype(np.uint8)
+                #h, w = nose_mask.shape[:2]
+                #fill_mask = np.zeros((h + 2, w + 2), np.uint8)
+                #cv2.floodFill(nose_mask, fill_mask, (0, 0), 255)
+                #nose_mask = cv2.bitwise_not(nose_mask)
                 # Dilate to have less incoherence
-                nose_mask = cv2.dilate(nose_mask, element, iterations=10)
+                #nose_mask = cv2.dilate(nose_mask, element, iterations=10)
 
                 # Draw bottom face
-                bottom_face = lm[idx][0:16 + 1]
-                for j, (x,y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x + ox1), int(inverse_scale_y*y + oy1)
-                    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + ox1), int(inverse_scale_y*bottom_face[j - 1][1] + oy1)
-                    cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
+                #bottom_face = lm[idx][0:16 + 1]
+                #for j, (x,y) in enumerate(bottom_face):
+                #    xi, yi = int(inverse_scale_x*x + ox1), int(inverse_scale_y*y + oy1)
+                #    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + ox1), int(inverse_scale_y*bottom_face[j - 1][1] + oy1)
+                #    cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
                 # Imfilled bottom fase
-                mask = mask[:, :, 0].astype(np.uint8)
-                fill_mask = np.zeros((h + 2, w + 2), np.uint8)
-                cv2.floodFill(mask, fill_mask, (0, 0), 255)
-                mask = cv2.bitwise_not(mask)
+                #mask = mask[:, :, 0].astype(np.uint8)
+                #fill_mask = np.zeros((h + 2, w + 2), np.uint8)
+                #cv2.floodFill(mask, fill_mask, (0, 0), 255)
+                #mask = cv2.bitwise_not(mask)
                 #cv2.imwrite("./results/mouth_{}.png".format(idx), mask)
 
-                # Remove nose from bottom face
-                mask = np.multiply(mask, 255 - nose_mask)
+                # Bottom Face - All others
+                mask = np.multiply(bottom_mask, 255 - removal_mask)
+
                 # Apply to each channel
                 #cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
 
@@ -228,7 +263,7 @@ def main():
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(pp[:,:,channel], mask>0)
                     ff[:,:,channel] = ff_masked + pp_masked
-                #cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
+                cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
                 # Visual debug
                 #ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
                 #cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
@@ -247,7 +282,7 @@ def main():
                 #    xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
                 #    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 #assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                #cv2.imwrite("./results/out_{}.png".format(idx), ff)
+                cv2.imwrite("./results/out_{}.png".format(idx), ff)
                 out.write(ff)
                 idx += 1
             else:
