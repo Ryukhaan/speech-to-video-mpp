@@ -195,16 +195,8 @@ def main():
                 # Create Nose Mask
                 for j, (x,y) in enumerate(nose):
                     xi, yi = int(inverse_scale_x*x + x1), int(512-inverse_scale_y*y + y1)
-                    xj, yj = int(inverse_scale_x*nose[j-1][0] + ox1), int(512-inverse_scale_y*nose[j-1][1] + oy1)
+                    xj, yj = int(inverse_scale_x*nose[j-1][0] + ox1), int(inverse_scale_y*nose[j-1][1] + y1)
                     cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
-
-                # Draw bottom face
-                bottom_face = lm[idx][0:16 + 1]
-                for j, (x,y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x + x1), int(512-inverse_scale_y*y + y1)
-                    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + ox1), int(512-inverse_scale_y*bottom_face[j - 1][1] + oy1)
-                    cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
-
                 # Imfill nose mask
                 nose_mask = nose_mask[:,:,0].astype(np.uint8)
                 h, w = nose_mask.shape[:2]
@@ -214,6 +206,12 @@ def main():
                 # Dilate to have less incoherence
                 nose_mask = cv2.dilate(nose_mask, element, iterations=10)
 
+                # Draw bottom face
+                bottom_face = lm[idx][0:16 + 1]
+                for j, (x,y) in enumerate(bottom_face):
+                    xi, yi = int(inverse_scale_x*x + x1), int(512-inverse_scale_y*y + y1)
+                    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + x1), int(inverse_scale_y*bottom_face[j - 1][1] + y1)
+                    cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
                 # Imfilled bottom fase
                 mask = mask[:, :, 0].astype(np.uint8)
                 fill_mask = np.zeros((h + 2, w + 2), np.uint8)
@@ -237,10 +235,10 @@ def main():
                 # Draw detected mouth landmarks
                 mouth = lm[idx][48:]
                 for j, (x,y) in enumerate(mouth):
-                    xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y+oy1)
+                    xi, yi = int(inverse_scale_x*x + x1), int(inverse_scale_y*y+y1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 for j, (x, y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y+oy1)
+                    xi, yi = int(inverse_scale_x*x + x1), int(inverse_scale_y*y+y1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 cv2.imwrite("./results/out_{}.png".format(idx), ff)
