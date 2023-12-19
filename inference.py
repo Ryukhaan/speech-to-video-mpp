@@ -194,8 +194,8 @@ def main():
                 element = np.ones((3,3), dtype=np.uint8)
                 # Create Nose Mask
                 for j, (x,y) in enumerate(nose):
-                    xi, yi = int(inverse_scale_x*x + x1), int(512-inverse_scale_y*y + y1)
-                    xj, yj = int(inverse_scale_x*nose[j-1][0] + ox1), int(inverse_scale_y*nose[j-1][1] + y1)
+                    xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y + oy1)
+                    xj, yj = int(inverse_scale_x*nose[j-1][0] + ox1), int(inverse_scale_y*nose[j-1][1] + oy1)
                     cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
                 # Imfill nose mask
                 nose_mask = nose_mask[:,:,0].astype(np.uint8)
@@ -209,8 +209,8 @@ def main():
                 # Draw bottom face
                 bottom_face = lm[idx][0:16 + 1]
                 for j, (x,y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x + x1), int(512-inverse_scale_y*y + y1)
-                    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + x1), int(inverse_scale_y*bottom_face[j - 1][1] + y1)
+                    xi, yi = int(inverse_scale_x*x + ox1), int(inverse_scale_y*y + oy1)
+                    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + ox1), int(inverse_scale_y*bottom_face[j - 1][1] + oy1)
                     cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
                 # Imfilled bottom fase
                 mask = mask[:, :, 0].astype(np.uint8)
