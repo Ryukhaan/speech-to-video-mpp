@@ -38,12 +38,12 @@ import preprocessing.facing as preprocessing
 
 def make_mask(points, ff, ix, iy, ox, oy, apply_dilatation=True):
     mask = np.zeros_like(ff)
-
     # Create Nose Mask
     for j, (x, y) in enumerate(points):
         xi, yi = int(ix * x + ox), int(512 - iy * y + oy)
         xj, yj = int(ix * points[j - 1][0] + ox), int(iy * points[j - 1][1] + oy)
         cv2.line(mask, (xj, yj), (xi, yi), (255, 0, 0), 3)
+        cv2.circle(mask, (xi, yi), 3, (0,255,0), 5)
     # Imfill nose mask
     cv2.imwrite("./results/mask_{}.png", mask)
     mask = mask[:, :, 0].astype(np.uint8)
