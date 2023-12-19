@@ -46,6 +46,7 @@ def make_mask(points, ff, ix, iy, ox, oy, apply_dilatation=True):
         cv2.line(mask, (xj, yj), (xi, yi), (255, 0, 0), 3)
     # Imfill nose mask
     mask = mask[:, :, 0].astype(np.uint8)
+    cv2.imwrite("./results/mask_{}.png", 255 * np.uint8(mask))
     h, w = mask.shape[:2]
     fill_mask = np.zeros((h + 2, w + 2), np.uint8)
     cv2.floodFill(mask, fill_mask, (0, 0), 255)
