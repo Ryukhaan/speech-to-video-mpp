@@ -265,7 +265,7 @@ def main():
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(pp[:,:,channel], mask)
                     ff[:,:,channel] = ff_masked + pp_masked
-                #cv2.imwrite("./results/full_mask{}.png".format(idx), 255*np.uint8(mask))
+                cv2.imwrite("./results/full_mask{}.png".format(idx), 255*np.uint8(mask))
                 #cv2.imwrite("./results/nose_{}.png".format(idx), 255 * np.uint8(removal_mask))
                 #cv2.imwrite("./results/mouth_{}.png".format(idx), 255 * np.uint8(bottom_mask))
                 # Visual debug
