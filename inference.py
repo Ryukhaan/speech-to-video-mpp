@@ -222,7 +222,7 @@ def main():
 
                 # Bottom Face
                 bottom_mask = make_mask(lm[idx][0:16 + 1], ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                      apply_dilatation=True)
+                                      apply_dilatation=False)
                 #nose = lm[idx][27:35+1]
                 #nose_mask = np.zeros_like(ff)
                 #element = np.ones((3,3), dtype=np.uint8)
