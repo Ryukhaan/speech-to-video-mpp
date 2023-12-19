@@ -218,7 +218,7 @@ def main():
                 eye2 = make_mask(lm[idx][42:47 + 1], ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
                                         apply_dilatation=True)
 
-                removal_mask = np.uint8((nose_mask + eye1 + eye2) >= 255)
+                removal_mask = 255 * np.uint8((nose_mask + eye1 + eye2) >= 255)
 
                 # Bottom Face
                 bottom_mask = make_mask(lm[idx][0:16 + 1], ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
@@ -254,7 +254,7 @@ def main():
                 #cv2.imwrite("./results/mouth_{}.png".format(idx), mask)
 
                 # Bottom Face - All others
-                mask = np.multiply(bottom_mask, 1 - removal_mask)
+                mask = np.multiply(bottom_mask, 255 - removal_mask)
 
                 # Apply to each channel
                 #cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
