@@ -225,13 +225,13 @@ def main():
                                       apply_dilatation=False)
                 cv2.imwrite("./results/mouth_{}.png".format(idx), 255 * np.uint8(bottom_mask))
                 bottom_mask = bottom_mask > 0
-                cv2.imwrite("./results/mouth_2_{}.png".format(idx), 255 * np.uint8(bottom_mask))
+                cv2.imwrite("./results/mouth_2_{}.png".format(idx), bottom_mask)
                 #nose = lm[idx][27:35+1]
                 #nose_mask = np.zeros_like(ff)
                 #element = np.ones((3,3), dtype=np.uint8)
                 # Create Nose Mask
                 #for j, (x,y) in enumerate(nose):
-                 #   xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y + oy1)
+                 #   xi, yi = int(inverse_scale_x*x + ox1), int(inverse_scale_y*y + oy1)
                  #   xj, yj = int(inverse_scale_x*nose[j-1][0] + ox1), int(inverse_scale_y*nose[j-1][1] + oy1)
                 #    cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
                 # Imfill nose mask
