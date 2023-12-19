@@ -287,8 +287,9 @@ def main():
                 #    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 #assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 #cv2.imwrite("./results/out_{}.png".format(idx), ff)
+
                 height, width = ff.shape[:2]
-                restored_img, ff_512, mask_512 = [cv2.resize(x, (512,512)) for x in (restored_img, ff, np.float32(mask))]
+                #restored_img = [cv2.resize(x, (10,512)) for x in restored_img]
                 #img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, mask, 10)
                 #pp = np.uint8(cv2.resize(np.clip(img, 0, 255), (width, height)))
                 pp, orig_faces, enhanced_faces = enhancer.process(restored_img, xf, bbox=c, face_enhance=False,
