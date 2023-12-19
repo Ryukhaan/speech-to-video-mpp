@@ -257,7 +257,7 @@ def main():
 
                 # Bottom Face - All others
                 mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
-                mask = np.flipud(mask)
+                #mask = np.flipud(mask)
                 # Apply to each channel
                 #cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
 
