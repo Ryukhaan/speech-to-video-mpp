@@ -72,7 +72,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    mel_chunks = mel_chunks[:24] # Change here length of inference video
+    mel_chunks = mel_chunks[:12] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -194,15 +194,15 @@ def main():
                 element = np.ones((3,3), dtype=np.uint8)
                 # Create Nose Mask
                 for j, (x,y) in enumerate(nose):
-                    xi, yi = int(inverse_scale_x*x + x1), int(inverse_scale_y*y + y1)
-                    xj, yj = int(inverse_scale_x*nose[j-1][0] + ox1), int(inverse_scale_y*nose[j-1][1] + oy1)
+                    xi, yi = int(inverse_scale_x*x + x1), int(512-inverse_scale_y*y + y1)
+                    xj, yj = int(inverse_scale_x*nose[j-1][0] + ox1), int(512-inverse_scale_y*nose[j-1][1] + oy1)
                     cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
 
                 # Draw bottom face
                 bottom_face = lm[idx][0:16 + 1]
                 for j, (x,y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x + x1), int(inverse_scale_y*y + y1)
-                    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + ox1), int(inverse_scale_y*bottom_face[j - 1][1] + oy1)
+                    xi, yi = int(inverse_scale_x*x + x1), int(512-inverse_scale_y*y + y1)
+                    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + ox1), int(512-inverse_scale_y*bottom_face[j - 1][1] + oy1)
                     cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
 
                 # Imfill nose mask
@@ -221,7 +221,7 @@ def main():
                 mask = cv2.bitwise_not(mask)
 
                 # Remove nose from bottom face
-                mask = np.multiply(mask, 1 - nose_mask)
+                mask = np.multiply(mask, 255 - nose_mask)
                 # Apply to each channel
                 cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
                 for channel in range(ff.shape[2]):
@@ -243,7 +243,7 @@ def main():
                     xi, yi = int(inverse_scale_x*x + ox1), int(512-inverse_scale_y*y+oy1)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                #cv2.imwrite("./results/{}.png".format(idx), ff)
+                cv2.imwrite("./results/out_{}.png".format(idx), ff)
                 out.write(ff)
                 idx += 1
             else:
