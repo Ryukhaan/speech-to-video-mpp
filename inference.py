@@ -223,7 +223,9 @@ def main():
                 # Bottom Face
                 bottom_mask = make_mask(lm[idx][0:16 + 1], ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
                                       apply_dilatation=False)
+                cv2.imwrite("./results/mouth_{}.png".format(idx), 255 * np.uint8(bottom_mask))
                 bottom_mask = bottom_mask > 0
+                cv2.imwrite("./results/mouth_2_{}.png".format(idx), 255 * np.uint8(bottom_mask))
                 #nose = lm[idx][27:35+1]
                 #nose_mask = np.zeros_like(ff)
                 #element = np.ones((3,3), dtype=np.uint8)
