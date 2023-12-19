@@ -51,7 +51,6 @@ def make_mask(points, ff, ix, iy, ox, oy, apply_dilatation=True, idx=0):
     fill_mask = np.zeros((h + 2, w + 2), np.uint8)
     cv2.floodFill(mask, fill_mask, (0, 0), 255)
     mask = cv2.bitwise_not(mask)
-    cv2.imwrite(f"./results/mask_{idx}.png", mask)
     # Dilate to have less incoherence
     if apply_dilatation:
         element = np.ones((3, 3), dtype=np.uint8)
@@ -226,9 +225,6 @@ def main():
                 # Bottom Face
                 bottom_mask = make_mask(lm[idx][0:16 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
                                       apply_dilatation=False, idx=4)
-                cv2.imwrite("./results/mouth_{}.png".format(idx), 255 * np.uint8(bottom_mask))
-                bottom_mask = bottom_mask > 0
-                cv2.imwrite("./results/mouth_2_{}.png".format(idx), np.uint8(bottom_mask))
                 #nose = lm[idx][27:35+1]
                 #nose_mask = np.zeros_like(ff)
                 #element = np.ones((3,3), dtype=np.uint8)
@@ -261,7 +257,7 @@ def main():
 
                 # Bottom Face - All others
                 mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
-
+                mask = np.flipud(mask)
                 # Apply to each channel
                 #cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
 
@@ -269,9 +265,9 @@ def main():
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(pp[:,:,channel], mask)
                     ff[:,:,channel] = ff_masked + pp_masked
-                cv2.imwrite("./results/full_mask{}.png".format(idx), 255*np.uint8(mask))
-                cv2.imwrite("./results/nose_{}.png".format(idx), 255 * np.uint8(removal_mask))
-                cv2.imwrite("./results/mouth_{}.png".format(idx), 255 * np.uint8(bottom_mask))
+                #cv2.imwrite("./results/full_mask{}.png".format(idx), 255*np.uint8(mask))
+                #cv2.imwrite("./results/nose_{}.png".format(idx), 255 * np.uint8(removal_mask))
+                #cv2.imwrite("./results/mouth_{}.png".format(idx), 255 * np.uint8(bottom_mask))
                 # Visual debug
                 #ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
                 #cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
