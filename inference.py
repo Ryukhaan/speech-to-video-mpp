@@ -93,7 +93,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    #mel_chunks = mel_chunks[:6] # Change here length of inference video
+    mel_chunks = mel_chunks[:6] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -260,11 +260,11 @@ def main():
                 #mask = np.flipud(mask)
                 # Apply to each channel
                 #cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
-
+                restored_img = ff.copy()
                 for channel in range(ff.shape[2]):
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(pp[:,:,channel], mask)
-                    ff[:,:,channel] = ff_masked + pp_masked
+                    restored_img[:,:,channel] = ff_masked + pp_masked
                 #cv2.imwrite("./results/full_mask{}.png".format(idx), 255*np.uint8(mask))
                 #cv2.imwrite("./results/nose_{}.png".format(idx), 255 * np.uint8(removal_mask))
                 #cv2.imwrite("./results/mouth_{}.png".format(idx), 255 * np.uint8(bottom_mask))
@@ -287,7 +287,13 @@ def main():
                 #    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 #assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 #cv2.imwrite("./results/out_{}.png".format(idx), ff)
-                out.write(ff)
+
+                img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, mask, 10)
+                pp = np.uint8(cv2.resize(np.clip(img, 0, 255), (width, height)))
+                pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False,
+                                                                  possion_blending=True)
+                cv2.imwrite("./results/out_{}.png".format(idx), pp)
+                out.write(pp)
                 idx += 1
             else:
                 tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
