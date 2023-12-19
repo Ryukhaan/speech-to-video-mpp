@@ -181,8 +181,8 @@ def main():
                 #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
 
                 mask = np.zeros_like(ff)
-                inverse_scale_x = (x2 - x1) / np.array(preprocessor.frames_pil[idx]).shape[1]
-                inverse_scale_y = (y2 - y1) / np.array(preprocessor.frames_pil[idx]).shape[0]
+                inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
+                inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 #dst_pts = lm[idx][-19:-1]
                 #for j, (x,y) in enumerate(lm[idx]):
                 #    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
