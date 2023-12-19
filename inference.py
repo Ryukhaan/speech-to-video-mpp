@@ -181,8 +181,8 @@ def main():
                 #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
 
                 mask = np.zeros_like(ff)
-                inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
-                inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
+                inverse_scale_x = (x2 - x1) / np.array(preprocessor.frames_pil[idx]).shape[1]
+                inverse_scale_y = (y2 - y1) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 #dst_pts = lm[idx][-19:-1]
                 #for j, (x,y) in enumerate(lm[idx]):
                 #    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
@@ -238,10 +238,10 @@ def main():
                 cv2.circle(ff, (x2, y2), 3, (255, 0, 255), 2)
                 mouth = lm[idx][48:]
                 for j, (x, y) in enumerate(mouth):
-                    xi, yi = int(x), int(y)
+                    xi, yi = int(inverse_scale_x*x), int(inverse_scale_y*y)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 for j, (x, y) in enumerate(bottom_face):
-                    xi, yi = int(x), int(y)
+                    xi, yi = int(inverse_scale_x*x), int(inverse_scale_y*y)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 cv2.imwrite("./results/out_{}.png".format(idx), ff)
