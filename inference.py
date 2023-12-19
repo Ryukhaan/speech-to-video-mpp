@@ -43,14 +43,15 @@ def make_mask(points, ff, ix, iy, ox, oy, apply_dilatation=True, idx=0):
         xi, yi = int(ix * x + ox), int(512 - iy * y + oy)
         xj, yj = int(ix * points[j - 1][0] + ox), int(512 - iy * points[j - 1][1] + oy)
         cv2.line(mask, (xj, yj), (xi, yi), (255, 0, 0), 3)
-        cv2.circle(mask, (xi, yi), 3, (0,255,0), 5)
+        #cv2.circle(mask, (xi, yi), 3, (0,255,0), 5)
     # Imfill nose mask
-    cv2.imwrite(f"./results/mask_{idx}.png", mask)
+    #cv2.imwrite(f"./results/mask_{idx}.png", mask)
     mask = mask[:, :, 0].astype(np.uint8)
     h, w = mask.shape[:2]
     fill_mask = np.zeros((h + 2, w + 2), np.uint8)
     cv2.floodFill(mask, fill_mask, (0, 0), 255)
     mask = cv2.bitwise_not(mask)
+    cv2.imwrite(f"./results/mask_{idx}.png", mask)
     # Dilate to have less incoherence
     if apply_dilatation:
         element = np.ones((3, 3), dtype=np.uint8)
