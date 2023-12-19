@@ -218,7 +218,7 @@ def main():
                 eye2 = make_mask(lm[idx][42:47 + 1], ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
                                         apply_dilatation=True)
 
-                removal_mask = 255 * np.uint8(np.logical_or.reduce((nose_mask, eye1, eye2)))
+                removal_mask = np.logical_or.reduce((nose_mask, eye1, eye2))
 
                 # Bottom Face
                 bottom_mask = make_mask(lm[idx][0:16 + 1], ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
