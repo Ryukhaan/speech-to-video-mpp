@@ -228,11 +228,14 @@ def main():
                     ff[:,:,channel] = ff_masked + pp_masked
 
                 # Visual debug
-                #ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
-                #cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
-                #cv2.circle(ff, (ox2, oy2), 3, (0,0,255), 1)
+                ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
+                cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
+                cv2.circle(ff, (ox2, oy2), 3, (0,0,255), 1)
 
                 # Draw detected mouth landmarks
+                ff = cv2.rectangle(ff, (x1, y1), (x2, y2), (0, 255, 0))
+                cv2.circle(ff, (x1, y1), 3, (255, 255, 0), 1)
+                cv2.circle(ff, (x2, y2), 3, (255, 0, 255), 1)
                 mouth = lm[idx][48:]
                 for j, (x,y) in enumerate(mouth):
                     xi, yi = int(inverse_scale_x*x + x1), int(inverse_scale_y*y+y1)
