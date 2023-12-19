@@ -238,10 +238,10 @@ def main():
                 cv2.circle(ff, (x2, y2), 3, (255, 0, 255), 2)
                 mouth = lm[idx][48:]
                 for j, (x, y) in enumerate(mouth):
-                    xi, yi = int(inverse_scale_x*x), int(inverse_scale_y*y)
+                    xi, yi = int(x), int(y)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 for j, (x, y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x), int(inverse_scale_y*y)
+                    xi, yi = int(x), int(y)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 cv2.imwrite("./results/out_{}.png".format(idx), ff)
