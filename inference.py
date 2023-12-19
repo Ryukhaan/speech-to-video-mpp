@@ -236,12 +236,13 @@ def main():
                 ff = cv2.rectangle(ff, (x1, y1), (x2, y2), (0, 255, 0))
                 cv2.circle(ff, (x1, y1), 3, (255, 255, 0), 2)
                 cv2.circle(ff, (x2, y2), 3, (255, 0, 255), 2)
+                dx, dy = lm[idx][0]
                 mouth = lm[idx][48:]
                 for j, (x, y) in enumerate(mouth):
-                    xi, yi = int(inverse_scale_x*x+x1), int(inverse_scale_y*y+y1)
+                    xi, yi = int(inverse_scale_x*x+x1-dx), int(inverse_scale_y*y+y1-dy)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 for j, (x, y) in enumerate(bottom_face):
-                    xi, yi = int(inverse_scale_x*x+x1), int(inverse_scale_y*y+y1)
+                    xi, yi = int(inverse_scale_x*x+x1-dx), int(inverse_scale_y*y+y1-dy)
                     cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 cv2.imwrite("./results/out_{}.png".format(idx), ff)
