@@ -254,7 +254,7 @@ def main():
                 #cv2.imwrite("./results/mouth_{}.png".format(idx), mask)
 
                 # Bottom Face - All others
-                mask = np.multiply(bottom_mask, 255 - removal_mask)
+                mask = np.multiply(bottom_mask, 1 - removal_mask)
 
                 # Apply to each channel
                 #cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
