@@ -36,7 +36,7 @@ args = options()
 
 import preprocessing.facing as preprocessing
 
-def make_mask(points, ff, ix, iy, ox, oy, apply_dilatation=True):
+def make_mask(points, ff, ix, iy, ox, oy, apply_dilatation=True, idx=0):
     mask = np.zeros_like(ff)
     # Create Nose Mask
     for j, (x, y) in enumerate(points):
@@ -45,7 +45,7 @@ def make_mask(points, ff, ix, iy, ox, oy, apply_dilatation=True):
         cv2.line(mask, (xj, yj), (xi, yi), (255, 0, 0), 3)
         cv2.circle(mask, (xi, yi), 3, (0,255,0), 5)
     # Imfill nose mask
-    cv2.imwrite("./results/mask_{}.png", mask)
+    cv2.imwrite(f"./results/mask_{idx}.png", mask)
     mask = mask[:, :, 0].astype(np.uint8)
     h, w = mask.shape[:2]
     fill_mask = np.zeros((h + 2, w + 2), np.uint8)
@@ -212,19 +212,19 @@ def main():
 
                 # Nose
                 nose_mask = make_mask(lm[idx][27:35+1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                      apply_dilatation=True)
+                                      apply_dilatation=True, idx=1)
                 # Right Eye
                 eye1 = make_mask(lm[idx][36:41 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                        apply_dilatation=True)
+                                        apply_dilatation=True, idx=2)
                 # Left Eye
                 eye2 = make_mask(lm[idx][42:47 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                        apply_dilatation=True)
+                                        apply_dilatation=True, idx=3)
 
                 removal_mask = np.logical_or.reduce((nose_mask, eye1, eye2))
 
                 # Bottom Face
                 bottom_mask = make_mask(lm[idx][0:16 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                      apply_dilatation=False)
+                                      apply_dilatation=False, idx=4)
                 cv2.imwrite("./results/mouth_{}.png".format(idx), 255 * np.uint8(bottom_mask))
                 bottom_mask = bottom_mask > 0
                 cv2.imwrite("./results/mouth_2_{}.png".format(idx), np.uint8(bottom_mask))
