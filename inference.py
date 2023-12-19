@@ -40,8 +40,8 @@ def make_mask(points, ff, ix, iy, ox, oy, apply_dilatation=True, idx=0):
     mask = np.zeros_like(ff)
     # Create Nose Mask
     for j, (x, y) in enumerate(points):
-        xi, yi = int(ix * x + ox), 512-int(512 - iy * y + oy)
-        xj, yj = int(ix * points[j - 1][0] + ox), 512-int(512- iy * points[j - 1][1] + oy)
+        xi, yi = int(ix * x + ox), int(iy * y + oy)
+        xj, yj = int(ix * points[j - 1][0] + ox), int(iy * points[j - 1][1] + oy)
         cv2.line(mask, (xj, yj), (xi, yi), (255, 0, 0), 3)
         #cv2.circle(mask, (xi, yi), 3, (0,255,0), 5)
     # Imfill nose mask
