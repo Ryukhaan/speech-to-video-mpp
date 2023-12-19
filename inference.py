@@ -72,7 +72,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    mel_chunks = mel_chunks[:12] # Change here length of inference video
+    mel_chunks = mel_chunks[:6] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -217,25 +217,27 @@ def main():
                 fill_mask = np.zeros((h + 2, w + 2), np.uint8)
                 cv2.floodFill(mask, fill_mask, (0, 0), 255)
                 mask = cv2.bitwise_not(mask)
+                cv2.imwrite("./results/mouth_{}.png".format(idx), mask)
 
                 # Remove nose from bottom face
                 mask = np.multiply(mask, 255 - nose_mask)
                 # Apply to each channel
-                cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
+                cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
+
                 for channel in range(ff.shape[2]):
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(pp[:,:,channel], mask>0)
                     ff[:,:,channel] = ff_masked + pp_masked
-
+                cv2.imwrite("./results/full_mask{}.png".format(idx), mask)
                 # Visual debug
-                ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
-                cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
-                cv2.circle(ff, (ox2, oy2), 3, (0,0,255), 1)
+                #ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
+                #cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
+                #cv2.circle(ff, (ox2, oy2), 3, (0,0,255), 1)
 
                 # Draw detected mouth landmarks
-                ff = cv2.rectangle(ff, (x1, y1), (x2, y2), (0, 255, 0))
-                cv2.circle(ff, (x1, y1), 3, (255, 255, 0), 2)
-                cv2.circle(ff, (x2, y2), 3, (255, 0, 255), 2)
+                #ff = cv2.rectangle(ff, (x1, y1), (x2, y2), (0, 255, 0))
+                #cv2.circle(ff, (x1, y1), 3, (255, 255, 0), 2)
+                #cv2.circle(ff, (x2, y2), 3, (255, 0, 255), 2)
                 dx, dy = lm[idx][0]
                 mouth = lm[idx][48:]
                 for j, (x, y) in enumerate(mouth):
