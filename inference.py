@@ -93,7 +93,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    mel_chunks = mel_chunks[:6] # Change here length of inference video
+    #mel_chunks = mel_chunks[:6] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -265,7 +265,7 @@ def main():
                     ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(pp[:,:,channel], mask)
                     ff[:,:,channel] = ff_masked + pp_masked
-                cv2.imwrite("./results/full_mask{}.png".format(idx), 255*np.uint8(mask))
+                #cv2.imwrite("./results/full_mask{}.png".format(idx), 255*np.uint8(mask))
                 #cv2.imwrite("./results/nose_{}.png".format(idx), 255 * np.uint8(removal_mask))
                 #cv2.imwrite("./results/mouth_{}.png".format(idx), 255 * np.uint8(bottom_mask))
                 # Visual debug
@@ -286,7 +286,7 @@ def main():
                 #    xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
                 #    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
                 #assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                cv2.imwrite("./results/out_{}.png".format(idx), ff)
+                #cv2.imwrite("./results/out_{}.png".format(idx), ff)
                 out.write(ff)
                 idx += 1
             else:
