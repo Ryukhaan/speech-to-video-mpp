@@ -160,7 +160,7 @@ class Phone_Encoder(nn.Module):
         self.num_heads = 8
         self.num_layers = 6
         self.d_ff = 2048
-        self.max_seq_length = 100
+        self.max_seq_length = 200
         self.dropout = 0.1
         self.model = Transformer(self.src_vocab_size,
                                  self.tgt_vocab_size,
