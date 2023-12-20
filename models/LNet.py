@@ -155,16 +155,15 @@ class LNet(nn.Module):
             #cropped = torch.reshape(cropped, (-1, 5, 3, 256, 256))
             #ref = torch.reshape(ref, (-1, 5, 3, 256, 256))
             audio_feat = audio_sequences
-            print(phones_sequences.shape)
             phones_feat = self.phone_encoder(phones_sequences)
             phones_feat = phones_feat.view((B, 5, -1))
-            print(phones_feat.shape, audio_feat.shape)
             audio_phones_feat = torch.cat([audio_feat, phones_feat], axis=2)
             #for n in range(5):
 
 
             for n in range(cropped.shape[1]):
                 vis_feat = self.encoder(cropped[:,3*n:3*(n+1),:,:], ref[:,3*n:3*(n+1),:,:])
+                print(vis_feat.shape, audio_phones_feat.shape, phones_feat.shape)
                 _outputs = self.decoder(vis_feat, audio_phones_feat)
 
             if input_dim_size > 4:
