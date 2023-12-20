@@ -151,6 +151,7 @@ class LNet(nn.Module):
         #cropped, ref = torch.split(face_sequences, 3, dim=1) #dim=1
         cropped, ref = torch.split(face_sequences, 3, dim=1)
         full_outputs = []
+        print(cropped.shape)
         if len(cropped.shape) == 5:
             #cropped = torch.reshape(cropped, (-1, 5, 3, 256, 256))
             #ref = torch.reshape(ref, (-1, 5, 3, 256, 256))

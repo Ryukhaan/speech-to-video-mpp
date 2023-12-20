@@ -309,7 +309,6 @@ class Dataset(object):
             masked_window = np.concatenate(masked_window, axis=0)
             stabilized_window = np.concatenate(stabilized_window, axis=0)
             x = np.concatenate([masked_window, stabilized_window], axis=0)
-            print(x.shape)
             y = window.copy()
             y = torch.FloatTensor(y)
 
