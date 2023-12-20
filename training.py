@@ -302,12 +302,11 @@ class Dataset(object):
             except Exception as e:
                 continue
 
-            print(nframes.shape)
             window = self.prepare_window(nframes)
             self.imgs = np.asarray(self.imgs)
             stabilized_window = self.prepare_window(self.imgs)
             self.imgs_masked = self.imgs.copy()
-            self.imgs_masked[:, img_size // 2:] = 0
+            #self.imgs_masked[:, img_size // 2:] = 0
             print(self.imgs_masked.shape)
             masked_window = self.prepare_window(self.imgs_masked)
             print(masked_window.shape, stabilized_window.shape)
