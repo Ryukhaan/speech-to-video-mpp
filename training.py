@@ -313,7 +313,7 @@ class Dataset(object):
             y = torch.FloatTensor(y)
 
             codes = torch.FloatTensor(codes)
-            phones = torch.FloatTensor(phones)
+            phones = torch.IntTensor(phones)
             x = torch.FloatTensor(x)
             return x, codes, phones, y
 

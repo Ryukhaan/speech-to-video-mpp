@@ -132,6 +132,7 @@ class Transformer(nn.Module):
         return src_mask, tgt_mask
 
     def forward(self, src, tgt=None):
+        src
         src_mask = (src != 0).unsqueeze(1).unsqueeze(2)
         #src_mask, tgt_mask = self.generate_mask(src, tgt)
         src_embedded = self.dropout(self.positional_encoding(self.encoder_embedding(src)))
