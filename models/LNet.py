@@ -163,7 +163,7 @@ class LNet(nn.Module):
 
             for n in range(cropped.shape[1]):
                 vis_feat = self.encoder(cropped[:,3*n:3*(n+1),:,:], ref[:,3*n:3*(n+1),:,:])
-                print(vis_feat.shape, audio_phones_feat.shape, phones_feat.shape)
+                print(vis_feat.shape, audio_feat.shape, phones_feat.shape)
                 _outputs = self.decoder(vis_feat, audio_phones_feat)
 
                 if input_dim_size > 4:
