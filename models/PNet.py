@@ -157,7 +157,7 @@ class Phone_Encoder(nn.Module):
         self.tgt_vocab_size = 5000
         self.d_model = 512
         self.num_heads = 8
-        self.num_layers = 4
+        self.num_layers = 2
         self.d_ff = 2048
         self.max_seq_length = 200
         self.dropout = 0.1
