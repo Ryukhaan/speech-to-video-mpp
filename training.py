@@ -313,7 +313,7 @@ class Dataset(object):
 
             codes = torch.FloatTensor(codes)
             phones = torch.FloatTensor(phones)
-
+            x = torch.FloatTensor(x)
             return x, codes, phones, y
 
     def save_preprocess(self):
