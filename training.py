@@ -111,7 +111,7 @@ class Dataset(object):
     def get_segmented_window(self, start_frame):
         assert lnet_T == 5
         if start_frame < 1: return None
-        return [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in self.full_frames[start_frame-2:start_frame+lnet_T-2]]
+        return [Image.fromarray(cv2.resize(frame ,(256 ,256, 3))) for frame in self.full_frames[start_frame-2:start_frame+lnet_T-2]]
 
 
     def get_segmented_codes(self, index, start_frame):
