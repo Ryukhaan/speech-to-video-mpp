@@ -166,11 +166,11 @@ class LNet(nn.Module):
                 print(vis_feat.shape, audio_phones_feat.shape, phones_feat.shape)
                 _outputs = self.decoder(vis_feat, audio_phones_feat)
 
-            if input_dim_size > 4:
-                _outputs = torch.split(_outputs, B, dim=0)
-                outputs = torch.stack(_outputs, dim=2)
-            else:
-                outputs = _outputs
+                if input_dim_size > 4:
+                    _outputs = torch.split(_outputs, B, dim=0)
+                    outputs = torch.stack(_outputs, dim=2)
+                else:
+                    outputs = _outputs
             full_outputs.append(outputs)
         return full_outputs
 
