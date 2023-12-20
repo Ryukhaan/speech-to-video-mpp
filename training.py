@@ -515,9 +515,9 @@ if __name__ == "__main__":
     print(len(filenames), len(train_list), len(val_list))
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
-    train_dataset.save_preprocess()
+    #train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
-    test_dataset.save_preprocess()
+    #test_dataset.save_preprocess()
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
