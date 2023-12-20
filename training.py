@@ -173,7 +173,7 @@ class Dataset(object):
     def prepare_window(self, window):
         # Convert to 3 x T x H x W
         x = np.asarray(window) / 255.
-        x = np.transpose(x, (3, 0, 1, 2))
+        #x = np.transpose(x, (3, 0, 1, 2))
         return x
 
     def landmarks_estimate(self, nframes, save=False, start_frame=0):
@@ -307,9 +307,7 @@ class Dataset(object):
             stabilized_window = self.prepare_window(self.imgs)
             self.imgs_masked = self.imgs.copy()
             #self.imgs_masked[:, img_size // 2:] = 0
-            print(self.imgs_masked.shape)
             masked_window = self.prepare_window(self.imgs_masked)
-            print(masked_window.shape, stabilized_window.shape)
             masked_window = np.concatenate(masked_window, axis=0)
             stabilized_window = np.concatenate(stabilized_window, axis=0)
             x = np.concatenate([masked_window, stabilized_window], axis=0)
