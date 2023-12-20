@@ -155,7 +155,7 @@ class Phone_Encoder(nn.Module):
         super().__init__()
         self.src_vocab_size = 5000
         self.tgt_vocab_size = 5000
-        self.d_model = 512
+        self.d_model = 128
         self.num_heads = 8
         self.num_layers = 2
         self.d_ff = 2048
