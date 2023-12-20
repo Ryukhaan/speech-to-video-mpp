@@ -344,7 +344,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             phone = phone.to(device)
             y = y.to(device)
 
-            pred = model(x, code, phone)
+            pred = model(code, phone, x)
             loss = loss_func(pred, y)
             loss.backward()
             optimizer.step()
