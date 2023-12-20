@@ -166,6 +166,7 @@ class Dataset(object):
         m_fps = int(1. / 25 * 1000)
         #print(start_frame, milliseconds, self.phones_per_ms.shape)
         phones = self.phones_per_ms[100 + m_fps*(start_frame-2) : 100 + m_fps*(start_frame-2+lnet_T) ]
+        phones = phones.reshape((5,-1))
         return phones
 
     def prepare_window(self, window):
