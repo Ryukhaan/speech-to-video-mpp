@@ -111,7 +111,8 @@ class Dataset(object):
     def get_segmented_window(self, start_frame):
         assert lnet_T == 5
         if start_frame < 1: return None
-        return self.full_frames[start_frame-2:start_frame+lnet_T-2]
+        return [cv2.resize(frame, (96,96)) for frame in \
+            self.full_frames[start_frame-2:start_frame+lnet_T-2]]
 
 
     def get_segmented_codes(self, index, start_frame):
@@ -301,8 +302,9 @@ class Dataset(object):
             except Exception as e:
                 continue
 
+            print(nframes.shape)
             window = self.prepare_window(nframes)
-            self.imgs = np.asarray([cv2.resize(img, (96,96)) for img in self.imgs])
+            self.imgs = np.asarray(self.imgs)
             stabilized_window = self.prepare_window(self.imgs)
             self.imgs_masked = self.imgs.copy()
             self.imgs_masked[:, img_size // 2:] = 0
