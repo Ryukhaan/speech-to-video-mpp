@@ -209,7 +209,7 @@ class Dataset(object):
             print(self.lm.shape)
             self.lm = self.lm[start_frame:2*start_frame+lnet_T+1]
             print(self.lm.shape)
-            self.lm = self.lm.reshape([len(lnet_T), -1, 2])
+            self.lm = self.lm.reshape([lnet_T, -1, 2])
 
     def face_3dmm_extraction(self, save=False, start_frame=0):
         torch.cuda.empty_cache()
