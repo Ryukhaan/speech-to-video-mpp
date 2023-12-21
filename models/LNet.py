@@ -155,6 +155,7 @@ class LNet(nn.Module):
         #ref = torch.reshape(ref, (-1, 5, 3, 256, 256))
         audio_feat = audio_sequences.unsqueeze(2).unsqueeze(3)
         phones_feat = self.phone_encoder(phones_sequences)
+        print(phones_feat.shape)
         #phones_feat = phones_feat.view(B, 5, -1)
         phones_feat = phones_feat.unsqueeze(2).unsqueeze(3)
         print(audio_feat.shape, phones_feat.shape)
