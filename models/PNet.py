@@ -137,12 +137,13 @@ class Transformer(nn.Module):
         src_mask = (src != 0).unsqueeze(1).unsqueeze(2)
         #src_mask, tgt_mask = self.generate_mask(src, tgt)
         src_embedded = self.dropout(self.positional_encoding(self.encoder_embedding(src)))
-        #tgt_embedded = self.dropout(self.positional_encoding(self.decoder_embedding(tgt)))
+        tgt_embedded = self.dropout(self.positional_encoding(self.decoder_embedding(tgt)))
 
         enc_output = src_embedded
         for enc_layer in self.encoder_layers:
             enc_output = enc_layer(enc_output, src_mask)
-
+        enc_output = torch.flatten(enc_output, start_dim=1)
+        enc_output = self.fc(enc_output)
         #dec_output = tgt_embedded
         #for dec_layer in self.decoder_layers:
         #    dec_output = dec_layer(dec_output, enc_output, src_mask, tgt_mask)
@@ -156,7 +157,7 @@ class Phone_Encoder(nn.Module):
         #TODO Modify value according to melspectogram
         super().__init__()
         self.src_vocab_size = 5000
-        self.tgt_vocab_size = 5000
+        self.tgt_vocab_size = 256
         self.d_model = 64
         self.num_heads = 8
         self.num_layers = 2
