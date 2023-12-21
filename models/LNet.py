@@ -38,6 +38,7 @@ class Visual_Encoder(nn.Module):
             ca_layer = getattr(self, 'ca'+str(i))
             x_maskGT, x_ref = model_inp(x_maskGT), model_ref(x_ref)
             x_maskGT = ca_layer(x_maskGT, x_ref)
+            print("size_i", x_maskGT.shape)
             if i < self.layers - 1:
                 out.append(x_maskGT)
             else:           
