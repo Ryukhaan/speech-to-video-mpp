@@ -123,7 +123,7 @@ class LNetLoss(torch.nn.Module):
         super(LNetLoss, self).__init__()
 
     def forward(self, y_pred, y_true):
-
+        print(y_pred.shape, y_true.shape)
         y_pred = torchvision.transforms.Resize((384, 384))(y_pred)
         y_true = torchvision.transforms.Resize((384, 384))(y_true)
         L1 = torch.nn.L1Loss()
