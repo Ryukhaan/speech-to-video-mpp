@@ -123,7 +123,7 @@ class Transformer(nn.Module):
         self.decoder_layers = nn.ModuleList([DecoderLayer(d_model, num_heads, d_ff, dropout) for _ in range(num_layers)])
 
         self.fc = nn.Linear(d_model, tgt_vocab_size)
-        self.enc_fc = nn.Linear(2560, tgt_vocab_size)
+        self.enc_fc = nn.Linear(2560, d_model)
         self.dropout = nn.Dropout(dropout)
 
     def generate_mask(self, src, tgt):
@@ -158,8 +158,8 @@ class Phone_Encoder(nn.Module):
         #TODO Modify value according to melspectogram
         super().__init__()
         self.src_vocab_size = 5000
-        self.tgt_vocab_size = 256
-        self.d_model = 64
+        self.tgt_vocab_size = 5000
+        self.d_model = 256
         self.num_heads = 8
         self.num_layers = 2
         self.d_ff = 512
