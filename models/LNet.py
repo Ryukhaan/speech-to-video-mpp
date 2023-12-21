@@ -37,7 +37,6 @@ class Visual_Encoder(nn.Module):
             ca_layer = getattr(self, 'ca'+str(i))
             x_maskGT, x_ref = model_inp(x_maskGT), model_ref(x_ref)
             x_maskGT = ca_layer(x_maskGT, x_ref)
-            print("size_i", x_maskGT.shape)
             if i < self.layers - 1:
                 out.append(x_maskGT)
             else:           
@@ -143,7 +142,7 @@ class LNet(nn.Module):
     #     return outputs
 
     def forward(self, audio_sequences, phones_sequences, face_sequences):
-        print(audio_sequences.shape, phones_sequences.shape, face_sequences.shape)
+        #print(audio_sequences.shape, phones_sequences.shape, face_sequences.shape)
         B = audio_sequences.size(0)
         input_dim_size = len(face_sequences.size())
         if input_dim_size > 4:

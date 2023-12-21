@@ -447,7 +447,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
             codes = codes.to(device)
             phones = phones.to(device)
             for i in range(lnet_T):
-                pred = model(x, codes, phones)
+                pred = model(x[:,i,:], codes, phones)
                 y = y.to(device)
 
             loss = loss(pred, y)
