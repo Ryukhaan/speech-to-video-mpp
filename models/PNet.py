@@ -169,7 +169,7 @@ class Phone_Encoder(nn.Module):
         #                          self.d_model,
         #                          self.d_ff,
         #                          dropout=self.dropout)
-        Transformer(self.src_vocab_size,
+        self.model = Transformer(self.src_vocab_size,
                                  self.tgt_vocab_size,
                                  self.d_model,
                                  self.num_heads,
