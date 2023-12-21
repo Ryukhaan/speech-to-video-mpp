@@ -120,7 +120,7 @@ class LNet(nn.Module):
             )
 
     def forward(self, audio_sequences, face_sequences):
-        print("Here")
+        #print("Here")
         B = audio_sequences.size(0)
         input_dim_size = len(face_sequences.size())
         if input_dim_size > 4:
@@ -129,7 +129,7 @@ class LNet(nn.Module):
         cropped, ref = torch.split(face_sequences, 3, dim=1)
         vis_feat = self.encoder(cropped, ref)
         audio_feat = self.audio_encoder(audio_sequences)
-        print([f.shape for f in vis_feat], audio_feat.shape)
+        #print([f.shape for f in vis_feat], audio_feat.shape)
         _outputs = self.decoder(vis_feat, audio_feat)
 
         if input_dim_size > 4:
