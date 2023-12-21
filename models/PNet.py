@@ -157,17 +157,17 @@ class Phone_Encoder(nn.Module):
         super().__init__()
         self.src_vocab_size = 5000
         self.tgt_vocab_size = 5000
-        self.d_model = 128
+        self.d_model = 64
         self.num_heads = 8
         self.num_layers = 2
-        self.d_ff = 2048
+        self.d_ff = 512
         self.max_seq_length = 200
         self.dropout = 0.1
-        self.model = mTransformer(self.d_model,
+        self.model = mTransformer(self.max_seq_length,
                                   self.num_layers,
                                   self.num_heads,
+                                  self.d_model,
                                   self.d_ff,
-                                  self.mlp_dim,
                                   dropout=self.dropout)
         #Transformer(self.src_vocab_size,
                      #            self.tgt_vocab_size,
