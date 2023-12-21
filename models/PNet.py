@@ -123,6 +123,7 @@ class Transformer(nn.Module):
         self.decoder_layers = nn.ModuleList([DecoderLayer(d_model, num_heads, d_ff, dropout) for _ in range(num_layers)])
 
         self.fc = nn.Linear(d_model, tgt_vocab_size)
+        self.enc_fc = nn.Linear(12800, tgt_vocab_size)
         self.dropout = nn.Dropout(dropout)
 
     def generate_mask(self, src, tgt):
@@ -143,7 +144,7 @@ class Transformer(nn.Module):
         for enc_layer in self.encoder_layers:
             enc_output = enc_layer(enc_output, src_mask)
         enc_output = torch.flatten(enc_output, start_dim=1)
-        enc_output = self.fc(enc_output)
+        enc_output = self.enc_fc(enc_output)
         #dec_output = tgt_embedded
         #for dec_layer in self.decoder_layers:
         #    dec_output = dec_layer(dec_output, enc_output, src_mask, tgt_mask)
