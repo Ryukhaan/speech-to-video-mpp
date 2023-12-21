@@ -341,16 +341,18 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
         for step, (x, code, phone, y) in prog_bar:
-            print(x.shape, code.shape, phone.shape, y.shape)
+            mask_x, stab_x = torch.split(x, 15, dim=1)
             model.train()
             optimizer.zero_grad()
 
-            x = x.to(device)
+            mask_x = mask_x.to(device)
+            stab_x = stab_x.to(device)
             code = code.to(device)
             phone = phone.to(device)
             y = y.to(device)
             for i in range(lnet_T):
-                pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x[:,5*i:5*(i+1),:,:])
+                x = torch.cat((mask_x[:,3*i:3*(i+1),:,:], stab_x[:,3*i:3*(i+1),:,:]))
+                pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x)
                 loss = loss_func(pred, y)
             loss.backward()
             optimizer.step()
