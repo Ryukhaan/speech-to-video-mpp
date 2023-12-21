@@ -32,7 +32,6 @@ class Visual_Encoder(nn.Module):
         x_maskGT, x_ref = self.first_inp(maskGT), self.first_ref(ref)
         out=[x_maskGT]
         for i in range(self.layers):
-            print(i)
             model_ref = getattr(self, 'ref_down'+str(i))
             model_inp = getattr(self, 'inp_down'+str(i))
             ca_layer = getattr(self, 'ca'+str(i))
@@ -43,7 +42,6 @@ class Visual_Encoder(nn.Module):
                 out.append(x_maskGT)
             else:           
                 out.append(torch.cat([x_maskGT, x_ref], dim=1)) # concat ref features !
-        print(out.shape)
         return out
 
 
@@ -165,9 +163,7 @@ class LNet(nn.Module):
 
 
             for n in range(cropped.shape[1]):
-                print(cropped[:,3*n:3*(n+1),:,:].shape)
                 vis_feat = self.encoder(cropped[:,3*n:3*(n+1),:,:], ref[:,3*n:3*(n+1),:,:])
-                print("Vis:", vis_feat[0].shape, audio_feat.shape, phones_feat.shape)
                 _outputs = self.decoder(vis_feat, audio_phones_feat)
 
                 if input_dim_size > 4:
