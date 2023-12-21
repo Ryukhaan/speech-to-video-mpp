@@ -113,7 +113,7 @@ class Dataset(object):
         if start_frame < 1: return None
         #return np.asarray([cv2.resize(frame, (96,96)) for frame in \
         #    self.full_frames[start_frame-2:start_frame+lnet_T-2]])
-        return
+        return self.full_frames[start_frame-2:start_frame+lnet_T-2]
 
     def get_segmented_codes(self, index, start_frame):
         assert lnet_T == 5
