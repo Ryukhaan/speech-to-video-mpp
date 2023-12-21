@@ -350,7 +350,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             phone = phone.to(device)
             y = y.to(device)
             for i in range(lnet_T):
-                pred = model(code, phone, x)
+                pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x[:,3*i:3*(i+1),:,:])
                 loss = loss_func(pred, y)
             loss.backward()
             optimizer.step()
