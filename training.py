@@ -173,7 +173,10 @@ class Dataset(object):
     def prepare_window(self, window):
         # Convert to 3 x T x H x W
         x = np.asarray(window) / 255.
-        x = np.transpose(x, (3, 0, 1, 2))
+        try:
+            x = np.transpose(x, (3, 0, 1, 2))
+        except ValueError:
+            print("Err", x.shape)
         return x
 
     def landmarks_estimate(self, nframes, save=False, start_frame=0):
