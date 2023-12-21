@@ -439,16 +439,16 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     loss = losses.LNetLoss()
     while 1:
         for step, (x, codes, phones, y) in enumerate(test_data_loader):
-
+            print(x.shape, codes.shape, phones.shape, y.shape)
             model.eval()
 
             # Transform data to CUDA device
             x = x.to(device)
             codes = codes.to(device)
             phones = phones.to(device)
-
-            pred = model(x, codes, phones)
-            y = y.to(device)
+            for i in range(lnet_T):
+                pred = model(x, codes, phones)
+                y = y.to(device)
 
             loss = loss(pred, y)
             losses.append(loss.item())
