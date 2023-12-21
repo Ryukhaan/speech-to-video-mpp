@@ -341,6 +341,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
         for step, (x, code, phone, y) in prog_bar:
+            print(x.shape, code.shape, phone.shape, y.shape)
             model.train()
             optimizer.zero_grad()
 
@@ -348,9 +349,9 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             code = code.to(device)
             phone = phone.to(device)
             y = y.to(device)
-
-            pred = model(code, phone, x)
-            loss = loss_func(pred, y)
+            for i in range(lnet_T):
+                pred = model(code, phone, x)
+                loss = loss_func(pred, y)
             loss.backward()
             optimizer.step()
 
@@ -439,7 +440,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     loss = losses.LNetLoss()
     while 1:
         for step, (x, codes, phones, y) in enumerate(test_data_loader):
-            print(x.shape, codes.shape, phones.shape, y.shape)
+
             model.eval()
 
             # Transform data to CUDA device
