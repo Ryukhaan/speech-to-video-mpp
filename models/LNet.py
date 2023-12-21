@@ -32,6 +32,7 @@ class Visual_Encoder(nn.Module):
         x_maskGT, x_ref = self.first_inp(maskGT), self.first_ref(ref)
         out=[x_maskGT]
         for i in range(self.layers):
+            print(i)
             model_ref = getattr(self, 'ref_down'+str(i))
             model_inp = getattr(self, 'inp_down'+str(i))
             ca_layer = getattr(self, 'ca'+str(i))
@@ -41,6 +42,7 @@ class Visual_Encoder(nn.Module):
                 out.append(x_maskGT)
             else:           
                 out.append(torch.cat([x_maskGT, x_ref], dim=1)) # concat ref features !
+        print(out.shape)
         return out
 
 
