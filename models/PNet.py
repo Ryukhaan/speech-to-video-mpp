@@ -137,7 +137,7 @@ class Transformer(nn.Module):
         src_mask = (src != 0).unsqueeze(1).unsqueeze(2)
         #src_mask, tgt_mask = self.generate_mask(src, tgt)
         src_embedded = self.dropout(self.positional_encoding(self.encoder_embedding(src)))
-        tgt_embedded = self.dropout(self.positional_encoding(self.decoder_embedding(tgt)))
+        #tgt_embedded = self.dropout(self.positional_encoding(self.decoder_embedding(tgt)))
 
         enc_output = src_embedded
         for enc_layer in self.encoder_layers:
