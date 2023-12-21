@@ -163,20 +163,20 @@ class Phone_Encoder(nn.Module):
         self.d_ff = 512
         self.max_seq_length = 200
         self.dropout = 0.1
-        self.model = mTransformer(self.max_seq_length,
-                                  self.num_layers,
-                                  self.num_heads,
-                                  self.d_model,
-                                  self.d_ff,
-                                  dropout=self.dropout)
-        #Transformer(self.src_vocab_size,
-                     #            self.tgt_vocab_size,
-                     #            self.d_model,
-                     #            self.num_heads,
-                     #            self.num_layers,
-                     #            self.d_ff,
-                     #            self.max_seq_length,
-                     #            self.dropout)
+        #self.model = mTransformer(self.max_seq_length,
+        #                          self.num_layers,
+        #                          self.num_heads,
+        #                          self.d_model,
+        #                          self.d_ff,
+        #                          dropout=self.dropout)
+        Transformer(self.src_vocab_size,
+                                 self.tgt_vocab_size,
+                                 self.d_model,
+                                 self.num_heads,
+                                 self.num_layers,
+                                 self.d_ff,
+                                 self.max_seq_length,
+                                 self.dropout)
 
     def forward(self, x):
         return self.model(x)
