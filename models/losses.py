@@ -121,6 +121,7 @@ class VGGPerceptualLoss(torch.nn.Module):
 class LNetLoss(torch.nn.Module):
     def __init__(self):
         super(LNetLoss, self).__init__()
+        self.lip_sync_loss = LipSyncLoss()
 
     def forward(self, y_pred, y_true):
         y_pred = torchvision.transforms.Resize((384, 384))(y_pred)
@@ -132,7 +133,7 @@ class LNetLoss(torch.nn.Module):
         lp_val = L_perceptual(y_pred, y_true)
 
         # L_sync = 0.0
-        lsync_val = LipSyncLoss(y_pred, y_true)
+        lsync_val = self.lip_sync_loss(y_pred, y_true)
 
         lambda_1 = .5
         lambda_p = 1.
