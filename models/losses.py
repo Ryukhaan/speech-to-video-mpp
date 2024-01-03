@@ -42,7 +42,7 @@ class ArcFaceLoss(torch.nn.Module):
         torch.cuda.empty_cache()
         net_recon = load_face3d_net(self.face3d_net_path, self.device)
         lm3d_std = load_lm3d(self.lm3d)
-        print(y_pred.shape)
+
         _, C, W, H = y_pred.shape
 
         lm_idx = lm[idx].reshape([-1, 2])
