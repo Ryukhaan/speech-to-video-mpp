@@ -349,12 +349,11 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             stab_x = stab_x.to(device)
             code = code.to(device)
             phone = phone.to(device)
-            print("True shape", y.shape)
             y = y.to(device)
             for i in range(lnet_T):
                 x = torch.cat((mask_x[:,3*i:3*(i+1),:,:], stab_x[:,3*i:3*(i+1),:,:]), dim=1)
                 pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x)
-                loss = loss_func(pred, y)
+                loss = loss_func(pred, y[:,:,i,:,:])
             loss.backward()
             optimizer.step()
 
