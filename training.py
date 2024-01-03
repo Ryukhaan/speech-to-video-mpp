@@ -350,10 +350,12 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             code = code.to(device)
             phone = phone.to(device)
             y = y.to(device)
+            loss_list = []
             for i in range(lnet_T):
                 x = torch.cat((mask_x[:,3*i:3*(i+1),:,:], stab_x[:,3*i:3*(i+1),:,:]), dim=1)
                 pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x)
-                loss = loss_func(pred, y[:,:,i,:,:])
+                loss_list.append(loss_func(pred, y[:,:,i,:,:]))
+            loss = torch.nn.sum(loss_list)
             loss.backward()
             optimizer.step()
 

@@ -123,7 +123,6 @@ class LNetLoss(torch.nn.Module):
         super(LNetLoss, self).__init__()
 
     def forward(self, y_pred, y_true):
-        print(y_pred.shape, y_true.shape)
         y_pred = torchvision.transforms.Resize((384, 384))(y_pred)
         y_true = torchvision.transforms.Resize((384, 384))(y_true)
         L1 = torch.nn.L1Loss()
@@ -138,4 +137,5 @@ class LNetLoss(torch.nn.Module):
         lambda_1 = .5
         lambda_p = 1.
         lambda_sync = 0.3
+        print(l1_val, lp_val, lsync_val)
         return lambda_1 * l1_val + lambda_p * lp_val + lambda_sync * lsync_val
