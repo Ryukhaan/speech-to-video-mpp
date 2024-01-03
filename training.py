@@ -349,6 +349,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             stab_x = stab_x.to(device)
             code = code.to(device)
             phone = phone.to(device)
+            print("True shape", y.shape)
             y = y.to(device)
             for i in range(lnet_T):
                 x = torch.cat((mask_x[:,3*i:3*(i+1),:,:], stab_x[:,3*i:3*(i+1),:,:]), dim=1)
