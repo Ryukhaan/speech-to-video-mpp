@@ -6,11 +6,11 @@ import numpy
 from models.syncnet import SyncNet_color
 
 class LipSyncLoss(torch.nn.Module):
-    def __init__(self, device, net):
+    def __init__(self, device):
         super(LipSyncLoss, self).__init__()
         self.device = device
         self.l2_loss = torch.nn.MSELoss()
-        self.net = net
+        self.net = None
         self.number_of_frames = 5
         self.p_sync = torch.nn.CosineSimilarity()
         self.log_loss = nn.BCELoss()
@@ -121,7 +121,9 @@ class VGGPerceptualLoss(torch.nn.Module):
 class LNetLoss(torch.nn.Module):
     def __init__(self):
         super(LNetLoss, self).__init__()
-        self.lip_sync_loss = LipSyncLoss()
+        self.device = torch.device("cuda" if use_cuda else "cpu")
+        self.lip_sync_loss = LipSyncLoss(device=device)
+        self.lip_sync_loss.load_network("./checkpoints/lipsync_expert.pth")
 
     def forward(self, y_pred, y_true):
         y_pred = torchvision.transforms.Resize((384, 384))(y_pred)
