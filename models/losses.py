@@ -123,7 +123,7 @@ class LNetLoss(torch.nn.Module):
         super(LNetLoss, self).__init__()
         use_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda" if use_cuda else "cpu")
-        self.lip_sync_loss = LipSyncLoss(device=device)
+        self.lip_sync_loss = LipSyncLoss(device=self.device)
         self.lip_sync_loss.load_network("./checkpoints/lipsync_expert.pth")
 
     def forward(self, y_pred, y_true):
