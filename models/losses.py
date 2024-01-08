@@ -24,8 +24,8 @@ class LipSyncLoss(torch.nn.Module):
         loss = self.log_loss(d.unsqueeze(1), y)
         return loss
 
-    def forward(self, y_pred, y_true):
-        audio_emb, video_emb = self.net(y_pred)
+    def forward(self, audio, y_pred, y_true):
+        audio_emb, video_emb = self.net(audio, y_pred)
         p = self.cosine_loss(video_emb, audio_emb, y_true)
         return torch.nn.mean(-torch.log(p))
 
@@ -126,20 +126,26 @@ class LNetLoss(torch.nn.Module):
         self.lip_sync_loss = LipSyncLoss(device=self.device)
         self.lip_sync_loss.load_network("./checkpoints/lipsync_expert.pth")
 
-    def forward(self, y_pred, y_true):
-        y_pred = torchvision.transforms.Resize((384, 384))(y_pred)
-        y_true = torchvision.transforms.Resize((384, 384))(y_true)
-        L1 = torch.nn.L1Loss()
-        l1_val = L1(y_pred, y_true)
-
-        L_perceptual = VGGPerceptualLoss()
-        lp_val = L_perceptual(y_pred, y_true)
-
-        # L_sync = 0.0
-        lsync_val = self.lip_sync_loss(y_pred, y_true)
-
+    def forward(self, face_pred, face_true, audio_seq, T=5):
         lambda_1 = .5
         lambda_p = 1.
         lambda_sync = 0.3
+
+        y_pred = torchvision.transforms.Resize((384, 384))(face_pred)
+        y_true = torchvision.transforms.Resize((384, 384))(face_true)
+
+        L1 = torch.nn.L1Loss()
+        L_perceptual = VGGPerceptualLoss()
+        l1_ = []
+        lp_ = []
+        for i in range(T):
+            l1_.append(L1(y_pred[:,:,i,:,:], y_true[:,:,i,:,:]))
+            lp_.append(L_perceptual(y_pred[:,:,i,:,:], y_true[:,:,i,:,:]))
+        l1_val = torch.sum(l1_)
+        lp_val = torch.sum(lp_)
+        #lp_val = L_perceptual(y_pred, y_true)
+
+        # L_sync = 0.0
+        lsync_val = self.lip_sync_loss(audio_seq, y_pred, y_true)
         print(l1_val, lp_val, lsync_val)
         return lambda_1 * l1_val + lambda_p * lp_val + lambda_sync * lsync_val
