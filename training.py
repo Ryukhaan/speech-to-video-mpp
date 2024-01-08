@@ -320,7 +320,7 @@ class Dataset(object):
             codes = torch.FloatTensor(codes)
             phones = torch.IntTensor(phones)
             x = torch.FloatTensor(x)
-            return x, codes, phones, y
+            return x, codes, phones, audio, y
 
     def save_preprocess(self):
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
@@ -340,7 +340,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     while global_epoch < nepochs:
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
-        for step, (x, code, phone, y) in prog_bar:
+        for step, (x, code, phone, audio, y) in prog_bar:
             mask_x, stab_x = torch.split(x, 15, dim=1)
             model.train()
             optimizer.zero_grad()
@@ -350,14 +350,15 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             code = code.to(device)
             phone = phone.to(device)
             y = y.to(device)
-            loss_list = []
+            pred_list = []
             # Iterate through T=5 frames
-            #for i in range(lnet_T):
-            #    x = torch.cat((mask_x[:,3*i:3*(i+1),:,:], stab_x[:,3*i:3*(i+1),:,:]), dim=1)
-            #    pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x)
-            #    loss_list.append(loss_func(pred, y[:,:,i,:,:]))
-            pred = model(code, phone, x)
-            loss = loss_func(pred, y)
+            for i in range(lnet_T):
+                x = torch.cat((mask_x[:,3*i:3*(i+1),:,:], stab_x[:,3*i:3*(i+1),:,:]), dim=1)
+                pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x)
+                loss_list.append(loss_func(pred, y[:,:,i,:,:]))
+                pred_list.append(pred)
+            #pred = model(code, phone, x)
+            loss = loss_func(pred, y, audio)
             loss.backward()
             optimizer.step()
 
