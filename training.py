@@ -1,6 +1,7 @@
 import glob
 from os.path import dirname, join, basename, isfile
 
+
 import json
 import gc
 import torch
@@ -53,7 +54,7 @@ from futils.alignment_stit import crop_faces, calc_alignment_coefficients, paste
 from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, train_options, split_coeff, \
                                   trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint
 from futils.inference_utils import load_model as fu_load_model
-from futils import hparams
+from futils import hparams, audio
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -169,6 +170,15 @@ class Dataset(object):
         #print(start_frame, milliseconds, self.phones_per_ms.shape)
         phones = self.phones_per_ms[100 + m_fps*(start_frame-2) : 100 + m_fps*(start_frame-2+lnet_T) ]
         return phones
+
+    def crop_audio_window(self, spec, start_frame):
+        # num_frames = (T x hop_size * fps) / sample_rate
+        start_frame_num = self.get_frame_id(start_frame)
+        start_idx = int(80. * (start_frame_num / float(hparams.fps)))
+
+        end_idx = start_idx + lnet_T
+
+        return spec[start_idx: end_idx, :]
 
     def prepare_window(self, window):
         # Convert to 3 x T x H x W
@@ -294,6 +304,16 @@ class Dataset(object):
             codes  = self.get_segmented_codes(idx, start_frame)
             phones = self.get_segmented_phones(idx, start_frame)
 
+            try:
+                wavpath = join(vidname, "audio.wav")
+                wav = audio.load_wav(wavpath, hparams.sample_rate)
+
+                orig_mel = audio.melspectrogram(wav).T
+            except Exception as e:
+                continue
+
+            mel = self.crop_audio_window(orig_mel.copy(), img_name)
+
             if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
                 continue
             try:
@@ -320,7 +340,8 @@ class Dataset(object):
             codes = torch.FloatTensor(codes)
             phones = torch.IntTensor(phones)
             x = torch.FloatTensor(x)
-            return x, codes, phones, audio, y
+            mel = torch.FloatTensor(mel.T).unsqueeze(0)
+            return x, codes, phones, mel, y
 
     def save_preprocess(self):
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
