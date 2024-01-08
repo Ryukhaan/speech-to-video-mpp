@@ -302,8 +302,10 @@ class Dataset(object):
 
             nframes = self.get_segmented_window(start_frame)
             codes  = self.get_segmented_codes(idx, start_frame)
-            phones = self.get_segmented_phones(idx, start_frame)
-
+            try:
+                phones = self.get_segmented_phones(idx, start_frame)
+            except Exception as e:
+                continue
             try:
                 wavpath = join(vidname, "audio.wav")
                 wav = audio.load_wav(wavpath, hparams.sample_rate)
@@ -376,9 +378,10 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             for i in range(lnet_T):
                 x = torch.cat((mask_x[:,3*i:3*(i+1),:,:], stab_x[:,3*i:3*(i+1),:,:]), dim=1)
                 pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x)
-                loss_list.append(loss_func(pred, y[:,:,i,:,:]))
+                #loss_list.append(loss_func(pred, y[:,:,i,:,:]))
                 pred_list.append(pred)
             #pred = model(code, phone, x)
+            pred = torch.cat(pred_list, dim=3)
             loss = loss_func(pred, y, audio)
             loss.backward()
             optimizer.step()
