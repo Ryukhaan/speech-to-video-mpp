@@ -131,12 +131,13 @@ class LNetLoss(torch.nn.Module):
         lambda_1 = .5
         lambda_p = 1.
         lambda_sync = 0.3
+        B, T, C, Hin, Win = face_pred.shape
         H, W = 96, 96
         resizer = torchvision.transforms.Resize((H, W))
-        y_pred = torch.zeros((face_pred.shape[0], face_pred.shape[1], face_pred.shape[2], H,W))
-        y_true = torch.zeros((face_true.shape[0], face_true.shape[1], face_true.shape[2], H,W))
+        y_pred = torch.zeros((B, T, C, H, W))
+        y_true = torch.zeros((B, C, T, H, W))
+
         for i in range(T):
-        #    print( resizer(face_pred[:,i, : ,:, :]).shape)
             y_pred[:,i,:,:,:] = resizer(face_pred[:,i, : ,:, :])
             y_true[:, :, i, :, :] = resizer(face_true[:, :, i, :, :])
         L1 = torch.nn.L1Loss()
@@ -144,14 +145,13 @@ class LNetLoss(torch.nn.Module):
         l1_ = 0.
         lp_ = 0.
         for i in range(T):
-            #print("Pred", y_pred[:,i,:,:,:].shape, y_true[:,:,i,:,:].shape)
             l1_ += L1(y_pred[:,i,:,:,:], y_true[:,:,i,:,:])
             lp_ += L_perceptual(y_pred[:,i,:,:,:], y_true[:,:,i,:,:])
         l1_val = l1_ / T
         lp_val = lp_ / T
-        #lp_val = L_perceptual(y_pred, y_true)
+
 
         # L_sync = 0.0
-        lsync_val = self.lip_sync_loss(audio_seq, y_pred[:,:,:,:,W/2:], y_true[:,:,:,:,W/2:])
+        lsync_val = self.lip_sync_loss(audio_seq, y_pred[:,:,:,:,W//2:], y_true[:,:,:,:,W//2:])
         print(l1_val, lp_val, lsync_val)
         return lambda_1 * l1_val + lambda_p * lp_val + lambda_sync * lsync_val
