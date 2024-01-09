@@ -189,7 +189,7 @@ class Dataset(object):
         try:
             x = np.transpose(x, (3, 0, 1, 2))
         except ValueError as err:
-            print("Err", x.shape)
+            #print("Err", x.shape)
             return err
         return x
 
