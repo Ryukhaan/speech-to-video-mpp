@@ -315,6 +315,7 @@ class Dataset(object):
             try:
                 #wavpath = join(vidname, "audio.wav")
                 wavpath = vidname.split('.')[0] + '.wav'
+                print("sample", hparams.sample_rate)
                 wav = audio.load_wav(wavpath, hparams.sample_rate)
                 orig_mel = audio.melspectrogram(wav).T
             except Exception as e:
