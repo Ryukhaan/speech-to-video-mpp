@@ -27,7 +27,7 @@ class LipSyncLoss(torch.nn.Module):
 
     def forward(self, audio, y_pred, y_true):
         audio_emb, video_emb = self.net(audio, y_pred)
-        p = self.cosine_loss(video_emb, audio_emb, y_true)
+        p = self.cosine_loss(audio_emb, video_emb, y_true)
         return torch.nn.mean(-torch.log(p))
 
 class ArcFaceLoss(torch.nn.Module):
