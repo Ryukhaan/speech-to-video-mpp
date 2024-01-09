@@ -337,10 +337,7 @@ class Dataset(object):
                 #print("Hack", vidname, start_frame)
                 continue
 
-            try:
-                window = self.prepare_window(nframes)
-            except ValueError as e:
-                continue
+            window = self.prepare_window(nframes)
             self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
             stabilized_window = self.prepare_window(self.imgs)
             self.imgs_masked = self.imgs.copy()
