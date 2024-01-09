@@ -133,6 +133,7 @@ class LNetLoss(torch.nn.Module):
 
 
         resizer = torchvision.transforms.Resize((384, 384))
+        print(face_true.shape, face_pred.shape)
         y_pred = resizer(face_pred)
         y_true = resizer(face_true)
         #for i in range(T):
