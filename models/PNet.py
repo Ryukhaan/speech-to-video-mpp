@@ -144,9 +144,9 @@ class Transformer(nn.Module):
         for enc_layer in self.encoder_layers:
             enc_output = enc_layer(enc_output, src_mask)
         enc_output = torch.flatten(enc_output, start_dim=1)
-        print(enc_output.shape)
+        #print(enc_output.shape)
         enc_output = self.enc_fc(enc_output)
-        print(enc_output.shape)
+        #print(enc_output.shape)
         #dec_output = tgt_embedded
         #for dec_layer in self.decoder_layers:
         #    dec_output = dec_layer(dec_output, enc_output, src_mask, tgt_mask)
