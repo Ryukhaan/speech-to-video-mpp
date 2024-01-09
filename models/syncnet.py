@@ -93,9 +93,9 @@ class SyncNet_color(nn.Module):
             Conv2d(512, 512, kernel_size=1, stride=1, padding=0),)
 
     def forward(self, audio_sequences, face_sequences): # audio_sequences := (B, dim, T)
-
+        print(audio_sequences.shape)
         face_embedding = self.face_encoder(face_sequences.view(-1, 15, 384, 384))
-        audio_embedding = self.audio_encoder(audio_sequences.squeeze(1).unsqueeze(3))
+        audio_embedding = self.audio_encoder(audio_sequences)
 
         audio_embedding = audio_embedding.view(audio_embedding.size(0), -1)
         face_embedding = face_embedding.view(face_embedding.size(0), -1)
