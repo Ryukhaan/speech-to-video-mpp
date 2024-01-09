@@ -132,14 +132,14 @@ class LNetLoss(torch.nn.Module):
         lambda_p = 1.
         lambda_sync = 0.3
         B, T, C, Hin, Win = face_pred.shape
-        H, W = face_true.shape[-2], face_true.shape[-1]
+        H, W = face_true.shape[-2]//2, face_true.shape[-1]//2
         resizer = torchvision.transforms.Resize((H, W))
         y_pred = torch.zeros((B, T, C, H, W))
         y_true = torch.zeros((B, C, T, H, W))
 
         for i in range(T):
             y_pred[:,i,:,:,:] = resizer(face_pred[:,i, : ,:, :])
-            #y_true[:, :, i, :, :] = resizer(face_true[:, :, i, :, :])
+            y_true[:, :, i, :, :] = resizer(face_true[:, :, i, :, :])
         L1 = torch.nn.L1Loss()
         L_perceptual = VGGPerceptualLoss()
         l1_ = 0.
