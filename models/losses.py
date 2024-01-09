@@ -136,6 +136,7 @@ class LNetLoss(torch.nn.Module):
         y_pred = face_pred
         y_true = face_true
         for i in range(T):
+            print( resizer(face_pred[:,i, : ,:, :]).shape)
             y_pred[:,i,:,:,:] = resizer(face_pred[:,i, : ,:, :])
             y_true[:, i, :, :, :] = resizer(face_true[:, :, i, :, :])
         #y_pred = torch.cat(y_pred, dim=1)
