@@ -176,7 +176,7 @@ class Dataset(object):
 
         #basefile = self.all_videos[index].split('.')[0]
         #start_frame_num = self.get_frame_id(start_frame)
-
+        print(hparams.fps)
         start_idx = int(80. * (start_frame / float(hparams.fps)))
 
         end_idx = start_idx + lnet_T
