@@ -136,8 +136,8 @@ class LNetLoss(torch.nn.Module):
         y_true = face_true
         for i in range(T):
             print("Pred", y_pred.shape, y_true.shape)
-            y_pred[:, i, :, :,:] = torchvision.transforms.Resize((384,384), y_pred[:,i,:,:,:])
-            y_true[:, i, :, :, :] = torchvision.transforms.Resize((384, 384), y_true[:, i, :, :, :])
+            torchvision.transforms.Resize((384,384), y_pred[:,i,:,:,:])
+            torchvision.transforms.Resize((384, 384), y_true[:, i, :, :, :])
         L1 = torch.nn.L1Loss()
         L_perceptual = VGGPerceptualLoss()
         l1_ = []
