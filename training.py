@@ -173,8 +173,11 @@ class Dataset(object):
 
     def crop_audio_window(self, spec, start_frame):
         # num_frames = (T x hop_size * fps) / sample_rate
-        start_frame_num = self.get_frame_id(start_frame)
-        start_idx = int(80. * (start_frame_num / float(hparams.fps)))
+
+        #basefile = self.all_videos[index].split('.')[0]
+        #start_frame_num = self.get_frame_id(start_frame)
+
+        start_idx = int(80. * (start_frame / float(hparams.fps)))
 
         end_idx = start_idx + lnet_T
 
@@ -309,15 +312,15 @@ class Dataset(object):
                 continue
 
             try:
-                wavpath = join(vidname, "audio.wav")
+                #wavpath = join(vidname, "audio.wav")
+                wavpath = vidname.split('.')[0] + '.wav'
                 wav = audio.load_wav(wavpath, hparams.sample_rate)
-
                 orig_mel = audio.melspectrogram(wav).T
             except Exception as e:
                 print("Wav", vidname, start_frame)
                 continue
 
-            mel = self.crop_audio_window(orig_mel.copy(), img_name)
+            mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
             if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
                 print("Landmarks", vidname, start_frame)
