@@ -26,6 +26,7 @@ class LipSyncLoss(torch.nn.Module):
 
     def forward(self, audio, y_pred, y_true):
         audio_emb, video_emb = self.net(audio, y_pred)
+        #video_emb = video_emb.view(video_emb.size(0), 512, 4)
         p = self.cosine_loss(audio_emb, video_emb, y_true)
         return torch.nn.mean(-torch.log(p))
 
@@ -131,7 +132,7 @@ class LNetLoss(torch.nn.Module):
         lambda_p = 1.
         lambda_sync = 0.3
         B, T, C, Hin, Win = face_pred.shape
-        H, W = Hin, Win
+        H, W = Hin, Win//2
         resizer = torchvision.transforms.Resize((H, W))
         y_pred = torch.zeros((B, T, C, H, W))
         y_true = torch.zeros((B, C, T, H, W))
