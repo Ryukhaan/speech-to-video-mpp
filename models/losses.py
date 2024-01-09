@@ -139,8 +139,6 @@ class LNetLoss(torch.nn.Module):
         #    print( resizer(face_pred[:,i, : ,:, :]).shape)
             y_pred[:,i,:,:,:] = resizer(face_pred[:,i, : ,:, :])
             y_true[:, :, i, :, :] = resizer(face_true[:, :, i, :, :])
-        #y_pred = torch.cat(y_pred, dim=1)
-        #y_true = torch.cat(y_true, dim=2)
         L1 = torch.nn.L1Loss()
         L_perceptual = VGGPerceptualLoss()
         l1_ = []
@@ -148,7 +146,7 @@ class LNetLoss(torch.nn.Module):
         for i in range(T):
             print("Pred", y_pred.shape, y_true.shape)
             l1_.append(L1(y_pred[:,i,:,:,:], y_true[:,i,:,:,:,:]))
-            lp_.append(L_perceptual(y_pred[:,i,:,:,:], y_true[:,i,:,:,:]))
+            lp_.append(L_perceptual(y_pred[:,:,i,:,:], y_true[:,:,i,:,:]))
         l1_val = torch.sum(l1_)
         lp_val = torch.sum(lp_)
         #lp_val = L_perceptual(y_pred, y_true)
