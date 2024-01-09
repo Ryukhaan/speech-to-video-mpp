@@ -144,7 +144,7 @@ class LNetLoss(torch.nn.Module):
         l1_ = []
         lp_ = []
         for i in range(T):
-            print("Pred", y_pred.shape, y_true.shape)
+            print("Pred", y_pred[:,i,:,:,:].shape, y_true[:,:,i,:,:].shape)
             l1_.append(L1(y_pred[:,i,:,:,:], y_true[:,:,i,:,:,:]))
             lp_.append(L_perceptual(y_pred[:,i,:,:,:], y_true[:,:,i,:,:]))
         l1_val = torch.sum(l1_)
