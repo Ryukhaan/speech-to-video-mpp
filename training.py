@@ -173,13 +173,13 @@ class Dataset(object):
 
     def crop_audio_window(self, spec, start_frame):
         # num_frames = (T x hop_size * fps) / sample_rate
-
+        syncnet_mel_step_size = 16
         #basefile = self.all_videos[index].split('.')[0]
         #start_frame_num = self.get_frame_id(start_frame)
         print(hparams.fps)
         start_idx = int(80. * (start_frame / float(hparams.fps)))
 
-        end_idx = start_idx + lnet_T
+        end_idx = start_idx + syncnet_mel_step_size
 
         return spec[start_idx: end_idx, :]
 
