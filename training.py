@@ -188,8 +188,9 @@ class Dataset(object):
         x = np.asarray(window) / 255.
         try:
             x = np.transpose(x, (3, 0, 1, 2))
-        except ValueError:
+        except ValueError as err:
             print("Err", x.shape)
+            return err
         return x
 
     def landmarks_estimate(self, nframes, save=False, start_frame=0):
@@ -337,7 +338,10 @@ class Dataset(object):
                 print("Hack", vidname, start_frame)
                 continue
 
-            window = self.prepare_window(nframes)
+            try:
+                window = self.prepare_window(nframes)
+            except ValueError as e:
+                continue
             self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
             stabilized_window = self.prepare_window(self.imgs)
             self.imgs_masked = self.imgs.copy()
