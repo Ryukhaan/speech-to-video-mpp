@@ -187,7 +187,7 @@ class Dataset(object):
         # Convert to 3 x T x H x W
         x = np.asarray(window) / 255.
         try:
-            x = np.transpose(x, (3, 0, 1, 2))
+            x = np.transpose(x, (0, 3, 1, 2))
         except ValueError as err:
             #print("Err", x.shape)
             return err
