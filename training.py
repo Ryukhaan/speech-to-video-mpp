@@ -176,7 +176,6 @@ class Dataset(object):
         syncnet_mel_step_size = 16
         #basefile = self.all_videos[index].split('.')[0]
         #start_frame_num = self.get_frame_id(start_frame)
-        print(hparams.fps)
         start_idx = int(80. * (start_frame / float(hparams.fps)))
 
         end_idx = start_idx + syncnet_mel_step_size
@@ -315,7 +314,6 @@ class Dataset(object):
             try:
                 #wavpath = join(vidname, "audio.wav")
                 wavpath = vidname.split('.')[0] + '.wav'
-                print("sample", hparams.sample_rate)
                 wav = audio.load_wav(wavpath, hparams.sample_rate)
                 orig_mel = audio.melspectrogram(wav).T
             except Exception as e:
