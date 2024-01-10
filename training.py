@@ -185,10 +185,10 @@ class Dataset(object):
     def prepare_window(self, window):
         # Convert to 3 x T x H x W
         x = np.asarray(window) / 255.
+        print(x.shape)
         try:
             x = np.transpose(x, (3, 0, 1, 2))
         except ValueError as err:
-            #print("Err", x.shape)
             return err
         return x
 
@@ -343,7 +343,7 @@ class Dataset(object):
             self.imgs_masked = self.imgs.copy()
             #self.imgs_masked[:, img_size // 2:] = 0
             masked_window = self.prepare_window(self.imgs_masked)
-            print(masked_window.shape, self.imgs.shape)
+            #print(masked_window.shape, self.imgs.shape)
             masked_window = np.concatenate(masked_window, axis=0)
             stabilized_window = np.concatenate(stabilized_window, axis=0)
             x = np.concatenate([masked_window, stabilized_window], axis=0)
