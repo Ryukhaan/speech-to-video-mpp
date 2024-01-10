@@ -338,6 +338,7 @@ class Dataset(object):
                 continue
 
             window = self.prepare_window(nframes)
+            print(window.shape)
             if window.shape[0] != 5: continue
             self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
             stabilized_window = self.prepare_window(self.imgs)
@@ -587,7 +588,7 @@ if __name__ == "__main__":
     checkpoint_path = "checkpoints/Lnet.pth"
     if checkpoint_path is not None:
         load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
-
+    checkpoint_path = "checkpoints/Pnet.pth"
     train(device, model, train_data_loader, test_data_loader, optimizer,
           checkpoint_dir=checkpoint_dir,
           checkpoint_interval=hparams.syncnet_checkpoint_interval,
