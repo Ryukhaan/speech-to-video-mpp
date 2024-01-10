@@ -583,6 +583,7 @@ if __name__ == "__main__":
                            lr=hparams.syncnet_lr)
 
     print(checkpoint_dir, checkpoint_path)
+    checkpoint_path = "checkpoints/Lnet.pth"
     if checkpoint_path is not None:
         load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
