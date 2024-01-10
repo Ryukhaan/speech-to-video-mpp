@@ -345,10 +345,15 @@ class Dataset(object):
             self.imgs_masked = self.imgs.copy()
 
             #self.imgs_masked[:, img_size // 2:] = 0
-            masked_window = self.prepare_window(self.imgs_masked)
+            try:
+                masked_window = self.prepare_window(self.imgs_masked)
+
             #print(masked_window.shape)
             #print(masked_window.shape, self.imgs.shape)
-            masked_window = np.concatenate(masked_window, axis=0)
+                masked_window = np.concatenate(masked_window, axis=0)
+            except Exception as err:
+                print(type(masked_window), masked_window)
+                continue
             stabilized_window = np.concatenate(stabilized_window, axis=0)
             x = np.concatenate([masked_window, stabilized_window], axis=0)
             y = window.copy()
