@@ -582,6 +582,7 @@ if __name__ == "__main__":
     optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
                            lr=hparams.syncnet_lr)
 
+    print(checkpoint_dir, checkpoint_path)
     if checkpoint_path is not None:
         load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
