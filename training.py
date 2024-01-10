@@ -345,6 +345,7 @@ class Dataset(object):
             self.imgs_masked = self.imgs.copy()
             #self.imgs_masked[:, img_size // 2:] = 0
             masked_window = self.prepare_window(self.imgs_masked)
+            print(masked_window.shape)
             #print(masked_window.shape, self.imgs.shape)
             masked_window = np.concatenate(masked_window, axis=0)
             stabilized_window = np.concatenate(stabilized_window, axis=0)
