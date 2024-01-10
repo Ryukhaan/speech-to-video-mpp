@@ -301,7 +301,7 @@ class Dataset(object):
             vidname = self.all_videos[idx]
             frames = self.read_video(idx)
             # Sure that nframe if >= 2 and lower than N - 3
-            start_frame = np.random.randint(2, len(frames) - 3)
+            start_frame = np.random.randint(3, len(frames) - 4)
 
             nframes = self.get_segmented_window(start_frame)
             codes  = self.get_segmented_codes(idx, start_frame)
