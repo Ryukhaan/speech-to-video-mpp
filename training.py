@@ -185,7 +185,7 @@ class Dataset(object):
     def prepare_window(self, window):
         # Convert to 3 x T x H x W
         x = np.asarray(window) / 255.
-        print(x.shape)
+        #print(x.shape)
         try:
             x = np.transpose(x, (3, 0, 1, 2))
         except ValueError as err:
@@ -338,6 +338,7 @@ class Dataset(object):
                 continue
 
             window = self.prepare_window(nframes)
+            if window.shape[0] != 5: continue
             self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
             stabilized_window = self.prepare_window(self.imgs)
             self.imgs_masked = self.imgs.copy()
