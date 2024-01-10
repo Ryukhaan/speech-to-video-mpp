@@ -337,15 +337,16 @@ class Dataset(object):
                 #print("Hack", vidname, start_frame)
                 continue
 
+            if len(self.imgs.shape) <= 3: continue
             window = self.prepare_window(nframes)
             if window.shape[1] != 5: continue
             self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
             stabilized_window = self.prepare_window(self.imgs)
             self.imgs_masked = self.imgs.copy()
-            print(self.imgs_masked.shape)
+
             #self.imgs_masked[:, img_size // 2:] = 0
             masked_window = self.prepare_window(self.imgs_masked)
-            print(masked_window.shape)
+            #print(masked_window.shape)
             #print(masked_window.shape, self.imgs.shape)
             masked_window = np.concatenate(masked_window, axis=0)
             stabilized_window = np.concatenate(stabilized_window, axis=0)
