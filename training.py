@@ -338,7 +338,7 @@ class Dataset(object):
                 continue
 
             window = self.prepare_window(nframes)
-            print(window.shape)
+            print(window.shape[1], window.shape)
             if window.shape[1] != 5: continue
             self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
             stabilized_window = self.prepare_window(self.imgs)
