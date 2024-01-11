@@ -296,6 +296,7 @@ class Dataset(object):
 
     def __getitem__(self, idx):
         img_size = 384
+        size = torch.Size([30, 96, 96])
         while True:
             idx = np.random.randint(0, len(self.all_videos) - 1)
             vidname = self.all_videos[idx]
@@ -363,8 +364,7 @@ class Dataset(object):
             phones = torch.IntTensor(phones)
             x = torch.FloatTensor(x)
             mel = torch.FloatTensor(mel.T).unsqueeze(0)
-            print(x.shape)
-            assert x.shape == [30,96,96]
+            assert x.shape == size
             return x, codes, phones, mel, y
 
     def save_preprocess(self):
