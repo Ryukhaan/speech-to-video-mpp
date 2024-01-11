@@ -364,7 +364,8 @@ class Dataset(object):
             phones = torch.IntTensor(phones)
             x = torch.FloatTensor(x)
             mel = torch.FloatTensor(mel.T).unsqueeze(0)
-            assert x.shape == size
+            if x.shape != size:
+                continue
             return x, codes, phones, mel, y
 
     def save_preprocess(self):
