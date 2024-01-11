@@ -289,12 +289,13 @@ def main():
                 #cv2.imwrite("./results/out_{}.png".format(idx), ff)
 
                 height, width = ff.shape[:2]
-                restored_img = cv2.resize(restored_img, (760,1280))
+                #restored_img = cv2.resize(restored_img, (760,1280))
                 #img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, mask, 10)
                 #pp = np.uint8(cv2.resize(np.clip(img, 0, 255), (width, height)))
-                pp, orig_faces, enhanced_faces = enhancer.process(restored_img, xf, bbox=c, face_enhance=False,
-                                                                  possion_blending=True)
-                cv2.imwrite("./results/out_{}.png".format(idx), pp)
+                #pp, orig_faces, enhanced_faces = enhancer.process(restored_img, xf, bbox=c, face_enhance=False,
+                #                                                  possion_blending=True)
+                if idx <= 10:
+                    cv2.imwrite("./results/out_{}.png".format(idx), restored_img)
                 out.write(pp)
                 idx += 1
             else:
