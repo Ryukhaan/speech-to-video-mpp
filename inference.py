@@ -63,7 +63,7 @@ def main():
     torch.cuda.empty_cache()
     print('[Info] Using {} for inference.'.format(device))
     preprocessor = preprocessing.Preprocessor(args)
-    preprocessor.reading_video(limit=200)
+    preprocessor.reading_video()
     preprocessor.landmarks_estimate()
     preprocessor.face_3dmm_extraction()
     preprocessor.hack_3dmm_expression()
