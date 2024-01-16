@@ -63,7 +63,7 @@ def main():
     torch.cuda.empty_cache()
     print('[Info] Using {} for inference.'.format(device))
     preprocessor = preprocessing.Preprocessor(args)
-    preprocessor.reading_video()
+    preprocessor.reading_video(limit=200)
     preprocessor.landmarks_estimate()
     preprocessor.face_3dmm_extraction()
     preprocessor.hack_3dmm_expression()
@@ -110,7 +110,7 @@ def main():
                                model='GPEN-BFR-2048', use_sr=True)
 
     imgs_enhanced = []
-    for idx in tqdm(range(len(imgs)-1800), desc='[Step 5] Reference Enhancement'):
+    for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
         img = imgs[idx]
         #pred, _, _ = enhancer.process(img, aligned=True)
         pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False) #True

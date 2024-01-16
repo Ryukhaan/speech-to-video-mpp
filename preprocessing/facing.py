@@ -40,7 +40,7 @@ class Preprocessor():
         self.args = args
         self.base_name = self.args.face.split('/')[-1]
         self.full_frames = []
-    def reading_video(self):
+    def reading_video(self, limit=0):
 
         # Image or Video ?
         if os.path.isfile(self.args.face) and self.args.face.split('.')[-1] in ['jpg', 'png', 'jpeg']:
@@ -69,6 +69,8 @@ class Preprocessor():
                 if y2 == -1: y2 = frame.shape[0]
                 frame = frame[y1:y2, x1:x2]
                 self.full_frames.append(frame)
+                if 0 < limit < len(self.full_frames):
+                    break
         print ("[Step 0] Number of frames available for inference:  " +str(len(self.full_frames)))
 
     def landmarks_estimate(self):
