@@ -110,7 +110,7 @@ def main():
                                model='GPEN-BFR-2048', use_sr=True)
 
     imgs_enhanced = []
-    for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
+    for idx in tqdm(range(len(imgs)-1800), desc='[Step 5] Reference Enhancement'):
         img = imgs[idx]
         #pred, _, _ = enhancer.process(img, aligned=True)
         pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False) #True
