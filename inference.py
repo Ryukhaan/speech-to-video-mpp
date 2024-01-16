@@ -176,7 +176,7 @@ def main():
             ff = xf.copy()
             ff[y1:y2, x1:x2] = p
             pf = xf.copy()
-            if args.cropped_images:
+            if args.cropped_image:
                 inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
                 inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
 
