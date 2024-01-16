@@ -222,7 +222,7 @@ def main():
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
             print(pp.shape, xf.shape, c)
-            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True,
+            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, face_enhance=True,
                                                               possion_blending=False)
             # delta+=1
             # if args.cropped_image:
