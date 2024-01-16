@@ -198,7 +198,12 @@ def main():
 
                 # Bottom Face - All others
                 mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
-                pf = np.multiply(pf, np.logical_not(mask)) + np.multiply(ff, mask)
+
+                for channel in range(ff.shape[2]):
+                    ff_masked = np.multiply(pf[:,:,channel], np.logical_not(mask))
+                    pp_masked = np.multiply(ff[:,:,channel], mask)
+                    pf[:,:,channel] = ff_masked + pp_masked
+
                 ff = pf.copy()
 
             # month region enhancement by GFPGAN
