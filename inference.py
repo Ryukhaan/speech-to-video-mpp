@@ -222,9 +222,9 @@ def main():
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             xf = cv2.resize(xf, (0,0), fx=2, fy=2)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
-            print(pp.shape, xf.shape, c)
+            #print(pp.shape, xf.shape, c)
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True,
-                                                              possion_blending=False)
+                                                              possion_blending=True)
 
             if idx <= 10:
                 cv2.imwrite("./results/out_{}.png".format(idx), pp)
