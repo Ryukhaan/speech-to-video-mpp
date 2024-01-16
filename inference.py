@@ -172,10 +172,35 @@ def main():
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
             y1, y2, x1, x2 = c
             p = cv2.resize(p.astype(np.uint8), (x2 - x1, y2 - y1))
-            
-            ff = xf.copy() 
+
+            ff = xf.copy()
             ff[y1:y2, x1:x2] = p
-            
+            pf = xf.copy()
+            if args.cropped_images:
+                inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
+                inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
+
+                # Nose
+                nose_mask = make_mask(lm[idx][27:35 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                      apply_dilatation=True, idx=1)
+                # Right Eye
+                eye1 = make_mask(lm[idx][36:41 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                 apply_dilatation=True, idx=2)
+                # Left Eye
+                eye2 = make_mask(lm[idx][42:47 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                 apply_dilatation=True, idx=3)
+
+                removal_mask = np.logical_or.reduce((nose_mask, eye1, eye2))
+
+                # Bottom Face
+                bottom_mask = make_mask(lm[idx][0:16 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                        apply_dilatation=False, idx=4)
+
+                # Bottom Face - All others
+                mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
+                pf = np.multiply(pf, np.logical_not(mask)) + np.multiply(ff, mask)
+                ff = pf.copy()
+
             # month region enhancement by GFPGAN
             cropped_faces, restored_faces, restored_img = restorer.enhance(
                 ff, has_aligned=False, only_center_face=True, paste_back=True)
@@ -191,117 +216,61 @@ def main():
             restored_img, ff, full_mask = [cv2.resize(x, (512, 512)) for x in (restored_img, ff, np.float32(mouse_mask))]
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
-
-            delta+=1
-            if args.cropped_image:
-                #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
-                tmp_xf = cv2.resize(xf, (0,0), fx=2, fy=2)
-                pp, orig_face, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
-                pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
-                ff = xf.copy()
-                #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
-
-                mask = np.zeros_like(ff)
-                inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
-                inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
-                #dst_pts = lm[idx][-19:-1]
-                #for j, (x,y) in enumerate(lm[idx]):
-                #    xi, yi = int(inverse_scale_x * x + ox1), int(inverse_scale_y * y + oy1)
-                #    cv2.circle(mask, (xi,yi), 3, (0,255,0), 1)
-                #    cv2.putText(mask, str(j), (xi+5,yi), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,0,255), 1, cv2.LINE_AA)
-
-                # Nose
-                nose_mask = make_mask(lm[idx][27:35+1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                      apply_dilatation=True, idx=1)
-                # Right Eye
-                eye1 = make_mask(lm[idx][36:41 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                        apply_dilatation=True, idx=2)
-                # Left Eye
-                eye2 = make_mask(lm[idx][42:47 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                        apply_dilatation=True, idx=3)
-
-                removal_mask = np.logical_or.reduce((nose_mask, eye1, eye2))
-
-                # Bottom Face
-                bottom_mask = make_mask(lm[idx][0:16 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                      apply_dilatation=False, idx=4)
-                #nose = lm[idx][27:35+1]
-                #nose_mask = np.zeros_like(ff)
-                #element = np.ones((3,3), dtype=np.uint8)
-                # Create Nose Mask
-                #for j, (x,y) in enumerate(nose):
-                 #   xi, yi = int(inverse_scale_x*x + ox1), int(inverse_scale_y*y + oy1)
-                 #   xj, yj = int(inverse_scale_x*nose[j-1][0] + ox1), int(inverse_scale_y*nose[j-1][1] + oy1)
-                #    cv2.line(nose_mask, (xj, yj), (xi, yi), (255,0,0), 3)
-                # Imfill nose mask
-                #nose_mask = nose_mask[:,:,0].astype(np.uint8)
-                #h, w = nose_mask.shape[:2]
-                #fill_mask = np.zeros((h + 2, w + 2), np.uint8)
-                #cv2.floodFill(nose_mask, fill_mask, (0, 0), 255)
-                #nose_mask = cv2.bitwise_not(nose_mask)
-                # Dilate to have less incoherence
-                #nose_mask = cv2.dilate(nose_mask, element, iterations=10)
-
-                # Draw bottom face
-                #bottom_face = lm[idx][0:16 + 1]
-                #for j, (x,y) in enumerate(bottom_face):
-                #    xi, yi = int(inverse_scale_x*x + ox1), int(inverse_scale_y*y + oy1)
-                #    xj, yj = int(inverse_scale_x*bottom_face[j - 1][0] + ox1), int(inverse_scale_y*bottom_face[j - 1][1] + oy1)
-                #    cv2.line(mask, (xj, yj), (xi,yi), (255,0,0), 2)
-                # Imfilled bottom fase
-                #mask = mask[:, :, 0].astype(np.uint8)
-                #fill_mask = np.zeros((h + 2, w + 2), np.uint8)
-                #cv2.floodFill(mask, fill_mask, (0, 0), 255)
-                #mask = cv2.bitwise_not(mask)
-                #cv2.imwrite("./results/mouth_{}.png".format(idx), mask)
-
-                # Bottom Face - All others
-                mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
-                #mask = np.flipud(mask)
-                # Apply to each channel
-                #cv2.imwrite("./results/nose_{}.png".format(idx), nose_mask)
-                restored_img = ff.copy()
-                for channel in range(ff.shape[2]):
-                    ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
-                    pp_masked = np.multiply(pp[:,:,channel], mask)
-                    restored_img[:,:,channel] = ff_masked + pp_masked
-                #cv2.imwrite("./results/full_mask{}.png".format(idx), 255*np.uint8(mask))
-                #cv2.imwrite("./results/nose_{}.png".format(idx), 255 * np.uint8(removal_mask))
-                #cv2.imwrite("./results/mouth_{}.png".format(idx), 255 * np.uint8(bottom_mask))
-                # Visual debug
-                #ff = cv2.rectangle(ff, (ox1, oy1), (ox2, oy2), (255,0,0))
-                #cv2.circle(ff, (ox1, oy1), 3, (0,255,0), 1)
-                #cv2.circle(ff, (ox2, oy2), 3, (0,0,255), 1)
-
-                # Draw detected mouth landmarks
-                #ff = cv2.rectangle(ff, (x1, y1), (x2, y2), (0, 255, 0))
-                #cv2.circle(ff, (x1, y1), 3, (255, 255, 0), 2)
-                #cv2.circle(ff, (x2, y2), 3, (255, 0, 255), 2)
-
-                #mouth = lm[idx][48:]
-                #for j, (x, y) in enumerate(mouth):
-                #    xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
-                #    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
-                #for j, (x, y) in enumerate(bottom_face):
-                #    xi, yi = int(inverse_scale_x*x+ox1), int(inverse_scale_y*y+oy1)
-                #    cv2.circle(ff, (xi, yi), 3, (255, 0, 0), 1)
-                #assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
-                #cv2.imwrite("./results/out_{}.png".format(idx), ff)
-
-                height, width = ff.shape[:2]
-                #restored_img = cv2.resize(restored_img, (760,1280))
-                #img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, mask, 10)
-                #pp = np.uint8(cv2.resize(np.clip(img, 0, 255), (width, height)))
-                #pp, orig_faces, enhanced_faces = enhancer.process(restored_img, xf, bbox=c, face_enhance=False,
-                #                                                  possion_blending=True)
-                if idx <= 10:
-                    cv2.imwrite("./results/out_{}.png".format(idx), restored_img)
-                out.write(pp)
-                idx += 1
-            else:
-                tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
-                pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
-                out.write(pp)
+            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True,
+                                                              possion_blending=True)
+            # delta+=1
+            # if args.cropped_image:
+            #     #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
+            #     tmp_xf = cv2.resize(xf, (0,0), fx=2, fy=2)
+            #     pp, orig_face, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
+            #     pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
+            #     ff = xf.copy()
+            #     #ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
+            #
+            #     mask = np.zeros_like(ff)
+            #     inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
+            #     inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
+            #
+            #     # Nose
+            #     nose_mask = make_mask(lm[idx][27:35+1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+            #                           apply_dilatation=True, idx=1)
+            #     # Right Eye
+            #     eye1 = make_mask(lm[idx][36:41 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+            #                             apply_dilatation=True, idx=2)
+            #     # Left Eye
+            #     eye2 = make_mask(lm[idx][42:47 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+            #                             apply_dilatation=True, idx=3)
+            #
+            #     removal_mask = np.logical_or.reduce((nose_mask, eye1, eye2))
+            #
+            #     # Bottom Face
+            #     bottom_mask = make_mask(lm[idx][0:16 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+            #                           apply_dilatation=False, idx=4)
+            #
+            #     # Bottom Face - All others
+            #     mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
+            #
+            #     restored_img = ff.copy()
+            #     for channel in range(ff.shape[2]):
+            #         ff_masked = np.multiply(ff[:,:,channel], np.logical_not(mask))
+            #         pp_masked = np.multiply(pp[:,:,channel], mask)
+            #         restored_img[:,:,channel] = ff_masked + pp_masked
+            #
+            #     height, width = ff.shape[:2]
+            #     #restored_img = cv2.resize(restored_img, (760,1280))
+            #     #img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, mask, 10)
+            #     #pp = np.uint8(cv2.resize(np.clip(img, 0, 255), (width, height)))
+            #     #pp, orig_faces, enhanced_faces = enhancer.process(restored_img, xf, bbox=c, face_enhance=False,
+            #     #                                                  possion_blending=True)
+            #     if idx <= 10:
+            #         cv2.imwrite("./results/out_{}.png".format(idx), restored_img)
+            #     out.write(pp)
+            #     idx += 1
+            # else:
+            #     tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
+            #     pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
+            #
+            out.write(pp)
     out.release()
     
     if not os.path.isdir(os.path.dirname(args.outfile)):
