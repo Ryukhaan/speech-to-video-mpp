@@ -223,8 +223,11 @@ def main():
             xf = cv2.resize(xf, (0,0), fx=2, fy=2)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
             #print(pp.shape, xf.shape, c)
-            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True,
+            if args.cropped_image:
+                pp, orig_faces, enhanced_faces = enhancer.process_withmask(pp, xf, mask=mask, face_enhance=True,
                                                               possion_blending=True)
+            else:
+                pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
 
             #if idx <= 10:
             #    cv2.imwrite("./results/out_{}.png".format(idx), pp)
