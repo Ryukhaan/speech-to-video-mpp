@@ -232,7 +232,7 @@ def main():
                                                                            mm=mm)
             else:
                 pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
-
+            print(pp.shape, 2*frame_w, 2*frame_h)
             #if idx <= 10:
             #    cv2.imwrite("./results/out_{}.png".format(idx), pp)
             #    cv2.imwrite("./results/mask_{}.png".format(idx), mask)
