@@ -123,11 +123,12 @@ def main():
     torch.cuda.empty_cache()
 
     frame_h, frame_w = full_frames[0].shape[:-1]
-    if not args.cropped_image:
-        out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps, (2*frame_w, 2*frame_h))
-    else:
-        out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
-                              (frame_w, frame_h))
+    #if not args.cropped_image:
+    #    out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps, (2*frame_w, 2*frame_h))
+    #else:
+    #    out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
+     #                         (frame_w, frame_h))
+    out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_w, frame_h))
     if args.up_face != 'original':
         instance = GANimationModel()
         instance.initialize()
@@ -232,11 +233,12 @@ def main():
                                                                            face_enhance=True,
                                                                            possion_blending=True,
                                                                            mm=mm)
+                pp = cv2.resize(pp, (frame_w, frame_h))
             else:
                 pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
             #print(pp.shape, 2*frame_w, 2*frame_h)
             if idx <= 10:
-                print(pp.shape, 2*frame_h, 2*frame_w)
+                #print(pp.shape, 2*frame_h, 2*frame_w)
                 cv2.imwrite("./results/out/{}.png".format(idx), pp)
             idx += 1
             out.write(pp)
