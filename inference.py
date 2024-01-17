@@ -228,7 +228,16 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
             #print(pp.shape, xf.shape, c)
             if args.cropped_image:
-                mm = [255,   255,   255,   255,   255,   255,   255,   255,   255,  255, 255, 255, 255, 0, 0, 0, 0, 0, 255]
+                '''
+                                        0: 'background' 1: 'skin'   2: 'nose'
+                                        3: 'eye_g'  4: 'l_eye'  5: 'r_eye'
+                                        6: 'l_brow' 7: 'r_brow' 8: 'l_ear'
+                                        9: 'r_ear'  10: 'mouth' 11: 'u_lip'
+                                        12: 'l_lip' 13: 'hair'  14: 'hat'
+                                        15: 'ear_r' 16: 'neck_l'    17: 'neck'
+                                        18: 'cloth'
+                '''
+                mm = [255,   0,   255,   255,   255,   255,   255,   255,   255,  255, 255, 255, 255, 0, 0, 0, 0, 0, 255]
                 pp, orig_faces, enhanced_faces = enhancer.process_withmask(pp, xf, mask=mask,
                                                                            face_enhance=True,
                                                                            possion_blending=True,
