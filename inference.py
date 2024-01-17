@@ -198,8 +198,8 @@ def main():
 
                 # Bottom Face - All others
                 mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
+                mask = cv2.dilate(mask, np.array([[1,1,1],[1,1,1],[1,1,1]], dtype=np.uint8), iterations=100)
 
-                mask = cv2.dilate(mask, np.array([[0,0,0],[0,1,0],[1,1,1]], dtype=np.uint8), iterations=200)
                 for channel in range(ff.shape[2]):
                     ff_masked = np.multiply(pf[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(ff[:,:,channel], mask)
@@ -225,7 +225,7 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
             #print(pp.shape, xf.shape, c)
             if args.cropped_image:
-                mm = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]
+                mm = [0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]
                 pp, orig_faces, enhanced_faces = enhancer.process_withmask(pp, xf, mask=mask,
                                                                            face_enhance=True,
                                                                            possion_blending=True,
@@ -235,6 +235,7 @@ def main():
 
             if idx <= 10:
                 cv2.imwrite("./results/out_{}.png".format(idx), pp)
+                cv2.imwrite("./results/mask_{}.png".format(idx), mask)
             else:
                 return
             idx += 1
