@@ -109,12 +109,13 @@ def main():
                                sr_model=None,
                                model='GPEN-BFR-2048', use_sr=True)
 
-    imgs_enhanced = []
-    for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
-        img = imgs[idx]
-        #pred, _, _ = enhancer.process(img, aligned=True)
-        pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False) #True
-        imgs_enhanced.append(pred)
+    imgs_enhanced = preprocessor.enhance_imgs(imgs, ref_enhancer)
+    #imgs_enhanced = []
+    #    for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
+    #        img = imgs[idx]
+    #        # pred, _, _ = enhancer.process(img, aligned=True)
+    #        pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
+    #        imgs_enhanced.append(pred)
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1,oy2,ox1,ox2))
 
     del ref_enhancer

@@ -215,3 +215,17 @@ class Preprocessor():
 
         #del D_Net, model
         torch.cuda.empty_cache()
+
+    def enhance_imgs(self, imgs, ref_enhancer):
+        imgs_enhanced = []
+        if not os.path.isfile('temp/' + self.base_name + '_enhanced.npy') or self.args.re_preprocess:
+            for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
+                img = imgs[idx]
+                # pred, _, _ = enhancer.process(img, aligned=True)
+                pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
+                imgs_enhanced.append(pred)
+            np.save('temp/' + self.base_name + '_enhanced.npy', imgs_enhanced)
+        else:
+            print('[Step 5] Using enhanced images')
+            imgs_enhanced = np.load('temp/' + self.base_name + '_enhanced.npy')
+        return imgs_enhanced
