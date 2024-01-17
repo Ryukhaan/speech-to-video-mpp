@@ -229,8 +229,11 @@ def main():
             else:
                 pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
 
-            #if idx <= 10:
-            #    cv2.imwrite("./results/out_{}.png".format(idx), pp)
+            if idx <= 10:
+                cv2.imwrite("./results/out_{}.png".format(idx), pp)
+            else:
+                return
+            idx += 1
             # delta+=1
             # if args.cropped_image:
             #     #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
