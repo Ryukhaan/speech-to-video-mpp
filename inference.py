@@ -225,8 +225,8 @@ def main():
             #print(pp.shape, xf.shape, c)
             if args.cropped_image:
                 pp, orig_faces, enhanced_faces = enhancer.process_withmask(pp, xf, mask=mask,
-                                                                           face_enhance=False,
-                                                                           possion_blending=True)
+                                                                           face_enhance=True,
+                                                                           possion_blending=False)
             else:
                 pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
 
