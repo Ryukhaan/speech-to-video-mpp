@@ -236,6 +236,7 @@ def main():
                 pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
             #print(pp.shape, 2*frame_w, 2*frame_h)
             if idx <= 10:
+                print(pp.shape, 2*frame_h, 2*frame_w)
                 cv2.imwrite("./results/out/{}.png".format(idx), pp)
             idx += 1
             out.write(pp)
