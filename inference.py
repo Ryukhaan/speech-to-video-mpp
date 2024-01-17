@@ -95,7 +95,7 @@ def main():
 
     #mel_chunks = mel_chunks[:12] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
-    imgs = imgs[:len(mel_chunks)]
+    #imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
     lm = lm[:len(mel_chunks)]
 
@@ -110,6 +110,7 @@ def main():
                                model='GPEN-BFR-2048', use_sr=True)
 
     imgs_enhanced = preprocessor.enhance_imgs(imgs, ref_enhancer)
+    imgs_enhanced = imgs_enhanced[:len(mel_chunks)]
     #imgs_enhanced = []
     #    for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
     #        img = imgs[idx]
