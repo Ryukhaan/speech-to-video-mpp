@@ -199,7 +199,7 @@ def main():
                 # Bottom Face - All others
                 mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
 
-                mask = cv2.dilate(mask, np.array([[0,0,0],[0,1,0],[0,1,0]], dtype=np.uint8), iterations=100)
+                mask = cv2.dilate(mask, np.array([[0,0,0],[0,1,0],[1,1,1]], dtype=np.uint8), iterations=200)
                 for channel in range(ff.shape[2]):
                     ff_masked = np.multiply(pf[:,:,channel], np.logical_not(mask))
                     pp_masked = np.multiply(ff[:,:,channel], mask)
