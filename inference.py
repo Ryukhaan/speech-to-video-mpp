@@ -228,7 +228,7 @@ def main():
                 mm = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]
                 pp, orig_faces, enhanced_faces = enhancer.process_withmask(pp, xf, mask=mask,
                                                                            face_enhance=True,
-                                                                           possion_blending=True,
+                                                                           possion_blending=False,
                                                                            mm=mm)
             else:
                 pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
