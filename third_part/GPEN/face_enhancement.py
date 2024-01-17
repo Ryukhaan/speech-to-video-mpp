@@ -287,10 +287,10 @@ class FaceEnhancement(object):
                 #mask_bbox[y1:y2 - 5, x1:x2] = 1
                 mask_bbox[np.where(mask > 0)] = 1
                 #(512, 512)
-                full_img, ori_img, full_mask = [cv2.resize(x, (512, 512)) for x in
+                full_img, ori_img, full_mask = [cv2.resize(x, (1024, 1024)) for x in
                                                 (full_img, ori_img, np.float32(mask_sharp * mask_bbox))]
             else:
-                full_img, ori_img, full_mask = [cv2.resize(x, (512, 512)) for x in (full_img, ori_img, full_mask)]
+                full_img, ori_img, full_mask = [cv2.resize(x, (1024, 1024)) for x in (full_img, ori_img, full_mask)]
 
             img = Laplacian_Pyramid_Blending_with_mask(full_img, ori_img, full_mask, 6)
             img = np.clip(img, 0, 255)
