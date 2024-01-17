@@ -224,8 +224,9 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
             #print(pp.shape, xf.shape, c)
             if args.cropped_image:
-                pp, orig_faces, enhanced_faces = enhancer.process_withmask(pp, xf, mask=mask, face_enhance=True,
-                                                              possion_blending=True)
+                pp, orig_faces, enhanced_faces = enhancer.process_withmask(pp, xf, mask=mask,
+                                                                           face_enhance=False,
+                                                                           possion_blending=True)
             else:
                 pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
 
