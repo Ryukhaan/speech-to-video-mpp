@@ -192,7 +192,7 @@ class FaceEnhancement(object):
            img = cv2.convertScaleAbs(ori_img * (1 - mask_sharp) + img * mask_sharp)
         return img, orig_faces, enhanced_faces
 
-    def process_withmask(self, img, ori_img, face_enhance=True, mask=None, possion_blending=False):
+    def process_withmask(self, img, ori_img, face_enhance=True, mask=None, possion_blending=False, mm=None):
         orig_faces, enhanced_faces = [], []
 
         # if aligned:
@@ -244,7 +244,8 @@ class FaceEnhancement(object):
             '''
 
             # no ear, no neck, no hair&hat,  only face region
-            mm = [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            if mm is None:
+                mm = [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mask_sharp = self.faceparser.process(ef, mm)[0] / 255.
             tmp_mask = self.mask_postprocess(mask_sharp)
 
