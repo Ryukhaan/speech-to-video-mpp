@@ -292,7 +292,7 @@ class FaceEnhancement(object):
             else:
                 full_img, ori_img, full_mask = [cv2.resize(x, (512, 512)) for x in (full_img, ori_img, full_mask)]
 
-            img = Laplacian_Pyramid_Blending_with_mask(full_img, ori_img, full_mask, 7) #6
+            img = Laplacian_Pyramid_Blending_with_mask(full_img, ori_img, full_mask, 6) #6
             img = np.clip(img, 0, 255)
             img = np.uint8(cv2.resize(img, (width, height)))
         else:
