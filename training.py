@@ -584,7 +584,8 @@ if __name__ == "__main__":
     checkpoint_dir = args.checkpoint_dir
     checkpoint_path = args.checkpoint_path
 
-    if not os.path.exists(checkpoint_dir): os.mkdir(checkpoint_dir)
+    if not os.path.exists(checkpoint_dir):
+        os.mkdir(checkpoint_dir)
 
     filenames = get_image_list(args.data_root, 'train')
     seed = 42
@@ -613,10 +614,14 @@ if __name__ == "__main__":
                            lr=hparams.syncnet_lr)
 
     print(checkpoint_dir, checkpoint_path)
-    checkpoint_path = "checkpoints/Lnet.pth"
-    if checkpoint_path is not None:
-        load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
-    checkpoint_path = "checkpoints/Pnet.pth"
+
+    #checkpoint_path = "checkpoints/Lnet.pth"
+    #if checkpoint_path is not None:
+    #    load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
+    #checkpoint_path = "checkpoints/Pnet.pth"
+    checkpoint_path = 'checkpoints/checkpoint_step000010000.pth'
+    load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
+
     train(device, model, train_data_loader, test_data_loader, optimizer,
           checkpoint_dir=checkpoint_dir,
           checkpoint_interval=hparams.syncnet_checkpoint_interval,
