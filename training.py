@@ -491,21 +491,39 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     eval_steps = 1400
     print('Evaluating for {} steps'.format(eval_steps))
     losses = []
-    loss = losses.LNetLoss()
+    loss_func = losses.LNetLoss()
     while 1:
-        for step, (x, codes, phones, y) in enumerate(test_data_loader):
-
+        prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1)
+        for step, (x, code, phone, audio, y) in prog_bar:
+            mask_x, stab_x = torch.split(x, 15, dim=1)
             model.eval()
 
             # Transform data to CUDA device
-            x = x.to(device)
-            codes = codes.to(device)
-            phones = phones.to(device)
+            mask_x = mask_x.to(device)
+            stab_x = stab_x.to(device)
+            code = code.to(device)
+            phone = phone.to(device)
+            y = y.to(device)
+            pred_list = []
+            # Iterate through T=5 frames
             for i in range(lnet_T):
-                pred = model(x[:,i,:], codes, phones)
-                y = y.to(device)
+                x = torch.cat((mask_x[:, 3 * i:3 * (i + 1), :, :], stab_x[:, 3 * i:3 * (i + 1), :, :]), dim=1)
+                pred = model(code[:, i, :], phone[:, 40 * i:40 * (i + 1)], x)
+                # loss_list.append(loss_func(pred, y[:,:,i,:,:]))
+                pred_list.append(pred.unsqueeze(1))
+            # pred = model(code, phone, x)
+            pred = torch.cat(pred_list, dim=1)
+            loss = loss_func(pred, y, audio)
+            optimizer.step()
 
-            loss = loss(pred, y)
+            #x = x.to(device)
+            #codes = codes.to(device)
+            #phones = phones.to(device)
+            #for i in range(lnet_T):
+            #    pred = model(x[:,i,:], codes, phones)
+            #    y = y.to(device)
+
+            #loss = loss(pred, y)
             losses.append(loss.item())
 
             if step > eval_steps: break
