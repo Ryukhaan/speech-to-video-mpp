@@ -103,68 +103,43 @@ class LNet(nn.Module):
 
         self.phone_encoder = Phone_Encoder()
         self.audio_fn = torch.nn.Linear(480, 256)
-        # self.audio_encoder = nn.Sequential(
-        #     Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
-        #     Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
-        #     Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
-        #
-        #     Conv2d(32, 64, kernel_size=3, stride=(3, 1), padding=1),
-        #     Conv2d(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
-        #     Conv2d(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
-        #
-        #     Conv2d(64, 128, kernel_size=3, stride=3, padding=1),
-        #     Conv2d(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
-        #     Conv2d(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
-        #
-        #     Conv2d(128, 256, kernel_size=3, stride=(3, 2), padding=1),
-        #     Conv2d(256, 256, kernel_size=3, stride=1, padding=1, residual=True),
-        #
-        #     Conv2d(256, 512, kernel_size=3, stride=1, padding=0),
-        #     Conv2d(512, descriptor_nc, kernel_size=1, stride=1, padding=0),
-        #     )
+        self.audio_encoder = nn.Sequential(
+            Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
+            Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
+            Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
 
-    # def forward(self, audio_sequences, face_sequences):
-    #     B = audio_sequences.size(0)
-    #     input_dim_size = len(face_sequences.size())
-    #     if input_dim_size > 4:
-    #         audio_sequences = torch.cat([audio_sequences[:, i] for i in range(audio_sequences.size(1))], dim=0)
-    #         face_sequences = torch.cat([face_sequences[:, :, i] for i in range(face_sequences.size(2))], dim=0)
-    #     cropped, ref = torch.split(face_sequences, 3, dim=1)
-    #
-    #     vis_feat = self.encoder(cropped, ref)
-    #     audio_feat = self.audio_encoder(audio_sequences)
-    #     _outputs = self.decoder(vis_feat, audio_feat)
-    #
-    #     if input_dim_size > 4:
-    #         _outputs = torch.split(_outputs, B, dim=0)
-    #         outputs = torch.stack(_outputs, dim=2)
-    #     else:
-    #         outputs = _outputs
-    #     return outputs
+            Conv2d(32, 64, kernel_size=3, stride=(3, 1), padding=1),
+            Conv2d(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
+            Conv2d(64, 64, kernel_size=3, stride=1, padding=1, residual=True),
 
-    def forward(self, audio_sequences, phones_sequences, face_sequences):
+            Conv2d(64, 128, kernel_size=3, stride=3, padding=1),
+            Conv2d(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
+            Conv2d(128, 128, kernel_size=3, stride=1, padding=1, residual=True),
+
+            Conv2d(128, 256, kernel_size=3, stride=(3, 2), padding=1),
+            Conv2d(256, 256, kernel_size=3, stride=1, padding=1, residual=True),
+
+            Conv2d(256, 512, kernel_size=3, stride=1, padding=0),
+            Conv2d(512, descriptor_nc, kernel_size=1, stride=1, padding=0),
+            )
+
+    def forward(self, audio_sequences, face_sequences):
         B = audio_sequences.size(0)
         input_dim_size = len(face_sequences.size())
         if input_dim_size > 4:
+            audio_sequences = torch.cat([audio_sequences[:, i] for i in range(audio_sequences.size(1))], dim=0)
             face_sequences = torch.cat([face_sequences[:, :, i] for i in range(face_sequences.size(2))], dim=0)
-
         cropped, ref = torch.split(face_sequences, 3, dim=1)
 
-        audio_feat = self.audio_fn(audio_sequences)
-        audio_feat = audio_feat.unsqueeze(2).unsqueeze(3)
-        phones_feat = self.phone_encoder(phones_sequences)
-
-        phones_feat = phones_feat.unsqueeze(2).unsqueeze(3)
-
-        audio_phones_feat = torch.cat([audio_feat, phones_feat], axis=1)
-
         vis_feat = self.encoder(cropped, ref)
-        _outputs = self.decoder(vis_feat, audio_phones_feat)
+        audio_feat = self.audio_encoder(audio_sequences)
+        _outputs = self.decoder(vis_feat, audio_feat)
 
         if input_dim_size > 4:
-             _outputs = torch.split(_outputs, B, dim=0)
-             outputs = torch.stack(_outputs, dim=2)
+            _outputs = torch.split(_outputs, B, dim=0)
+            outputs = torch.stack(_outputs, dim=2)
         else:
             outputs = _outputs
         return outputs
+
 
