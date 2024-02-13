@@ -171,11 +171,11 @@ class LoraLoss(torch.nn.Module):
         lambda_sync = 0.3
 
         print(face_pred.shape, face_true.shape)
-        B, C, T, Hin, Win = face_true.shape
-        H, W = Hin, Win
+        B, C, T, Hin, Win = face_pred.shape
+        _, _, _, H, W =  face_true.shape
         resizer = torchvision.transforms.Resize((H, W))
 
-        y_pred = face_pred.view(-1, C, H, W)
+        y_pred = face_pred.view(-1, C, Hin, Win)
         y_true = face_true.view(-1, C, H, W)
 
         y_pred = resizer(y_pred)
