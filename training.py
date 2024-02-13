@@ -629,11 +629,8 @@ if __name__ == "__main__":
     print([n for n, _ in model.decoder.named_children()])
     lora_model = get_peft_model(model.decoder, config)
     print_trainable_parameters(lora_model)
-
-    print("LNet", model.decoder)
     exit()
     model = model.to(device)
-    print('total trainable params {}'.format(sum(p.numel() for p in model.parameters() if p.requires_grad)))
 
     optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
                            lr=hparams.syncnet_lr)
