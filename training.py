@@ -181,6 +181,21 @@ class Dataset(object):
         end_idx = start_idx + syncnet_mel_step_size
         return spec[start_idx: end_idx, :]
 
+    def get_segmented_mels(self, spec, start_frame):
+        mels = []
+        syncnet_mel_step_size = 16
+        assert lnet_T == 5
+        #start_frame_num = self.get_frame_id(start_frame) + 1 # 0-indexing ---> 1-indexing
+        if start_frame - 2 < 0: return None
+        for i in range(start_frame, start_frame + lnet_T):
+            m = self.crop_audio_window(spec, i - 2)
+            if m.shape[0] != syncnet_mel_step_size:
+                return None
+            mels.append(m.T)
+
+        mels = np.asarray(mels)
+
+        return mels
     def prepare_window(self, window):
         # Convert to 3 x T x H x W
         x = np.asarray(window) / 255.
@@ -306,6 +321,8 @@ class Dataset(object):
             orig_mel = audio.melspectrogram(wav).T
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
+            indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
+
             self.landmarks_estimate(nframes, save=False, start_frame=start_frame)
             self.face_3dmm_extraction(save=False, start_frame=start_frame)
             self.hack_3dmm_expression(save=False, start_frame=start_frame)
@@ -328,8 +345,8 @@ class Dataset(object):
             #phones = torch.IntTensor(phones)
             x = torch.FloatTensor(x)
             mel = torch.FloatTensor(mel.T).unsqueeze(0)
-
-            return x, mel, y
+            indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
+            return x, indiv_mels, mel, y
 
     def save_preprocess(self):
         self.D_Net, self.model = load_model(self.args, device)
@@ -351,7 +368,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     while global_epoch < nepochs:
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
-        for step, (x, audio, y) in prog_bar:
+        for step, (x, indiv_mel, mel, y) in prog_bar:
             #mask_x, stab_x = torch.split(x, 15, dim=1)
             model.train()
 
@@ -359,15 +376,15 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             preds = []
             x = x.to(device)
-            audio = audio.to(device)
+            indiv_mel = indiv_mel.to(device)
             y = y.to(device)
             #for timestep in range(lnet_T):
             #    xi = x[:,:,timestep,:,:].squeeze(0)
             #    preds.append(model(audio, xi))
             #preds = np.cat(preds, dim=0).to(device)
-            pred = model(audio, x)
+            pred = model(indiv_mel, x)
 
-            loss = loss_func(pred, y, audio)
+            loss = loss_func(pred, y, indiv_mel)
             loss.backward()
             optimizer.step()
 
