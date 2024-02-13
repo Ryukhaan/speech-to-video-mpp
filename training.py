@@ -390,9 +390,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             mel = mel.to(device)
             pred = pred.to(device)
-            print(pred.is_cuda, mel.is_cuda, y.is_cuda)
             loss = loss_func(pred, y, mel)
-
+            print(loss.is_cuda)
             loss.backward()
             optimizer.step()
 
