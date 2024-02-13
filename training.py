@@ -357,15 +357,17 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             optimizer.zero_grad()
 
-            #mask_x = mask_x.to(device)
-            #stab_x = stab_x.to(device)
+            preds = []
             x = x.to(device)
             audio = audio.to(device)
             y = y.to(device)
+            for timestep in range(lnet_T):
+                xi = x[:,:,timestep,:,:].squeeze(0)
+                preds.append(model(audio, xi))
+            preds = np.cat(preds, dim=0).to(device)
+            #pred = model(audio, x)
 
-            pred = model(audio, x)
-
-            loss = loss_func(pred, y, audio)
+            loss = loss_func(preds, y, audio)
             loss.backward()
             optimizer.step()
 

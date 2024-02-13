@@ -126,9 +126,9 @@ class LNet(nn.Module):
     def forward(self, audio_sequences, face_sequences):
         B = audio_sequences.size(0)
         input_dim_size = len(face_sequences.size())
-        #if input_dim_size > 4:
-        #    audio_sequences = torch.cat([audio_sequences[:, i] for i in range(audio_sequences.size(1))], dim=0)
-        #    face_sequences = torch.cat([face_sequences[:, :, i] for i in range(face_sequences.size(2))], dim=0)
+        if input_dim_size > 4:
+            audio_sequences = torch.cat([audio_sequences[:, i] for i in range(audio_sequences.size(1))], dim=0)
+            face_sequences = torch.cat([face_sequences[:, :, i] for i in range(face_sequences.size(2))], dim=0)
 
         cropped, ref = torch.split(face_sequences, 3, dim=1)
 
