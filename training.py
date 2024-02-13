@@ -389,7 +389,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             pred = pred.to(device)
             y = y.to(device)
             loss = loss_func(pred, y, mel)
-            loss = loss.to(device)
+
             loss.backward()
             optimizer.step()
 
@@ -586,7 +586,7 @@ if __name__ == "__main__":
 
 
     # Model
-    model = LNet()
+    model = LNet().to(device)
     optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
                            lr=hparams.syncnet_lr)
 
