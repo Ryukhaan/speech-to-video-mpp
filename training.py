@@ -495,7 +495,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
 
 def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch, prefix=''):
     checkpoint_path = join(
-        checkpoint_dir, "{}checkpoint_step{:09d}.pth".format(prefix, global_step))
+        checkpoint_dir, "{}checkpoint_step_lora{:09d}.pth".format(prefix, global_step))
     optimizer_state = optimizer.state_dict() if hparams.save_optimizer_state else None
     torch.save({
         "state_dict": model.state_dict(),
@@ -587,8 +587,8 @@ if __name__ == "__main__":
     model = LNet()
     #print([(n, type(m)) for n, m in model.decoder.named_modules()])
     lora_l_decoder = get_peft_model(model.decoder, config)
+    model.decoder = lora_l_decoder
     print_trainable_parameters(lora_l_decoder)
-    exit()
     model = model.to(device)
 
     optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
@@ -600,7 +600,7 @@ if __name__ == "__main__":
     #if checkpoint_path is not None:
     #    load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
     #checkpoint_path = "checkpoints/Pnet.pth"
-    checkpoint_path = 'checkpoints/checkpoint_step000010000.pth'
+    checkpoint_path = 'checkpoints/LNet.pth'
     load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
     train(device, model, train_data_loader, test_data_loader, optimizer,
