@@ -160,7 +160,7 @@ def crop_faces(IMAGE_SIZE, files, scale, center_sigma=0.0, xy_sigma=0.0, use_fa=
         # detector = dlib.get_frontal_face_detector()
 
     cs, xs, ys = [], [], []
-    for lm, pil in tqdm(files):
+    for lm, pil in files: #remove tqdm
         c, x, y = compute_transform(lm, predictor, detector=detector,
                                     scale=scale, fa=fa)
         cs.append(c)

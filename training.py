@@ -477,7 +477,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     losses = []
     loss_func = losses.LNetLoss()
     while 1:
-        prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1)
+        prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1, leave=True)
         for step, (x, indiv_mel, mel, y) in prog_bar:
             model.eval()
 
