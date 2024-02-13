@@ -310,21 +310,15 @@ class Dataset(object):
             self.face_3dmm_extraction(save=False, start_frame=start_frame)
             self.hack_3dmm_expression(save=False, start_frame=start_frame)
 
-            #if len(self.imgs.shape) <= 3: continue
-            #print(self.imgs.shape)
             window = self.prepare_window(nframes)
             if window.shape[1] != 5: continue
 
             self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
             stabilized_window = self.prepare_window(self.imgs)
-            #stabilized_window[:, window.shape[2] // 2:] = 0.
 
             self.imgs_masked = self.imgs.copy()
             masked_window = self.prepare_window(self.imgs_masked)
             masked_window[:, window.shape[2] // 2:] = 0.
-            #print(stabilized_window.shape, masked_window.shape)
-            #masked_window = np.concatenate(masked_window, axis=0)
-            #stabilized_window = np.concatenate(stabilized_window, axis=0)
 
             x = np.concatenate([masked_window, stabilized_window], axis=0)
             y = window.copy()
@@ -334,7 +328,7 @@ class Dataset(object):
             #phones = torch.IntTensor(phones)
             x = torch.FloatTensor(x)
             mel = torch.FloatTensor(mel.T).unsqueeze(0)
-
+            print(mel.shape)
             return x, mel, y
 
     def save_preprocess(self):
