@@ -157,9 +157,9 @@ class LNetLoss(torch.nn.Module):
         #print(l1_val, lp_val, lsync_val)
         return lambda_1 * l1_val + lambda_p * lp_val + lambda_sync * lsync_val
 
-    class LNetLoraLoss(torch.nn.Module):
+    class LoraLoss(torch.nn.Module):
         def __init__(self):
-            super(LNetLoraLoss, self).__init__()
+            super().__init__()
             use_cuda = torch.cuda.is_available()
             self.device = torch.device("cuda" if use_cuda else "cpu")
             self.lip_sync_loss = LipSyncLoss(device=self.device)
