@@ -132,8 +132,8 @@ class LNet(nn.Module):
         #    face_sequences = torch.cat([face_sequences[:, :, i] for i in range(face_sequences.size(2))], dim=0)
         cropped, ref = torch.split(face_sequences, 3, dim=1)
         if len(cropped.size()) > 4:
-            cropped = torch.cat([cropped[:,:,i] for i in range(cropped.size(2))], dim=1)
-            ref = torch.cat([ref[:,:,i] for i in range(ref.size(2))], dim=1)
+            cropped = torch.cat([cropped[:,:,i] for i in range(cropped.size(2))], dim=0)
+            ref = torch.cat([ref[:,:,i] for i in range(ref.size(2))], dim=0)
         print(cropped.shape, ref.shape)
         vis_feat = self.encoder(cropped, ref)
         audio_feat = self.audio_encoder(audio_sequences)
