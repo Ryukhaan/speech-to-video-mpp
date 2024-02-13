@@ -261,7 +261,7 @@ class Dataset(object):
         # Video Image Stabilized
         if not os.path.isfile( self.all_videos[self.idx].split('.')[0] + '_stablized.npy'):
             self.imgs = []
-            for idx in range(len(self.frames_pil)): #desc="[Step 3] Stablize the expression In Video:"):
+            for idx in tqdm(range(len(self.frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
                 if self.args.one_shot:
                     source_img = trans_image(self.frames_pil[0]).unsqueeze(0).to(device)
                     semantic_source_numpy = self.semantic_npy[0:1]
