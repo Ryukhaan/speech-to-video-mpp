@@ -198,7 +198,8 @@ class Dataset(object):
         return mels
 
     def crop_face(self, frames):
-        frames_pil = [(lm, frame) for frame, lm in zip(frames, self.lm)]
+        fr_pil = [Image.fromarray(frame) for frame in frames]
+        frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, self.lm)]
         crops, orig_images, quads = crop_faces(256, frames_pil, scale=1.0, use_fa=True)
         print(crops.shape)
         return crops
