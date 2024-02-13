@@ -311,7 +311,7 @@ class Dataset(object):
             self.hack_3dmm_expression(save=False, start_frame=start_frame)
 
             #if len(self.imgs.shape) <= 3: continue
-            print(self.imgs.shape)
+            #print(self.imgs.shape)
             window = self.prepare_window(nframes)
             if window.shape[1] != 5: continue
 
