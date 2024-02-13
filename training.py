@@ -341,7 +341,7 @@ class Dataset(object):
             self.read_video(idx)
             self.landmarks_estimate(self.full_frames, save=True)
             self.face_3dmm_extraction(save=True)
-            self.hack_3dmm_expression(save=True)
+            #self.hack_3dmm_expression(save=True)
 
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
