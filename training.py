@@ -52,8 +52,9 @@ from third_part.ganimation_replicate.model.ganimation import GANimationModel
 from futils import audio
 from futils.ffhq_preprocess import Croper
 from futils.alignment_stit import crop_faces, calc_alignment_coefficients, paste_image
-from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, train_options, split_coeff, \
-                                  trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint
+from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, train_options, \
+    split_coeff, \
+    trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint, load_model
 from futils.inference_utils import load_model as fu_load_model
 from futils import hparams, audio
 import warnings
@@ -77,6 +78,7 @@ class Dataset(object):
 
     def __init__(self, filenames, device):
         global args
+        self.device = device
         self.args = args
         self.all_videos = filenames #get_image_list(args.data_root, split)
         self.preprocessor = preprocessing.Preprocessor(args=None)
@@ -272,7 +274,7 @@ class Dataset(object):
                 # hacking the new expression
                 coeff[:, :64, :] = expression[None, :64, None].to(device)
                 with torch.no_grad():
-                    output = self.preprocessor.D_Net(source_img, coeff)
+                    output = self.D_Net(source_img, coeff)
                 img_stablized = np.uint8 \
                     ((output['fake_image'].squeeze(0).permute(1 ,2 ,0).cpu().clamp_(-1, 1).numpy() + 1 )/ 2. * 255)
                 self.imgs.append(cv2.cvtColor(img_stablized, cv2.COLOR_RGB2BGR))
@@ -333,6 +335,7 @@ class Dataset(object):
             return x, mel, y
 
     def save_preprocess(self):
+        self.D_Net, self.model = load_model(self.args, device)
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
             self.idx = idx
             self.read_video(idx)
