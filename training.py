@@ -175,22 +175,14 @@ class Dataset(object):
     def crop_audio_window(self, spec, start_frame):
         # num_frames = (T x hop_size * fps) / sample_rate
         syncnet_mel_step_size = 16
-        #basefile = self.all_videos[index].split('.')[0]
-        #start_frame_num = self.get_frame_id(start_frame)
         start_idx = int(80. * (start_frame / float(hparams.fps)))
-
         end_idx = start_idx + syncnet_mel_step_size
-
         return spec[start_idx: end_idx, :]
 
     def prepare_window(self, window):
         # Convert to 3 x T x H x W
         x = np.asarray(window) / 255.
-        #print(x.shape)
-        try:
-            x = np.transpose(x, (3, 0, 1, 2))
-        except ValueError as err:
-            return err
+        x = np.transpose(x, (3, 0, 1, 2))
         return x
 
     def landmarks_estimate(self, nframes, save=False, start_frame=0):
@@ -220,7 +212,6 @@ class Dataset(object):
             if not save:
                 self.lm = self.kp_extractor.extract_keypoint(self.frames_pil)
             else:
-                print("Save")
                 self.lm = self.kp_extractor.extract_keypoint(self.frames_pil, self.all_videos[self.idx].split('.')[0] + '_landmarks.txt')
         else:
             #print('[Step 1] Using saved landmarks.')
@@ -296,86 +287,58 @@ class Dataset(object):
         return len(self.all_videos)
 
     def __getitem__(self, idx):
-        img_size = 384
-        size = torch.Size([30, 96, 96])
         while True:
+            # Get videos index
             idx = np.random.randint(0, len(self.all_videos) - 1)
             vidname = self.all_videos[idx]
+            # Read video
             frames = self.read_video(idx)
             # Sure that nframe if >= 2 and lower than N - 3
             start_frame = np.random.randint(3, len(frames) - 4)
-
             nframes = self.get_segmented_window(start_frame)
-            codes  = self.get_segmented_codes(idx, start_frame)
-            try:
-                phones = self.get_segmented_phones(idx, start_frame)
-            except Exception as e:
-                #print("Phones", vidname, start_frame)
-                continue
 
-            try:
-                #wavpath = join(vidname, "audio.wav")
-                wavpath = vidname.split('.')[0] + '.wav'
-                wav = audio.load_wav(wavpath, hparams.sample_rate)
-                orig_mel = audio.melspectrogram(wav).T
-            except Exception as e:
-                #print("Wav", vidname, start_frame)
-                continue
-
+            # Read wav and get corresponding spectogram
+            wavpath = vidname.split('.')[0] + '.wav'
+            wav = audio.load_wav(wavpath, hparams.sample_rate)
+            orig_mel = audio.melspectrogram(wav).T
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
-            if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
-                #print("Landmarks", vidname, start_frame)
-                continue
-
-            try:
-                self.face_3dmm_extraction(save=False, start_frame=start_frame)
-            except Exception as e:
-                #print("Face3d", vidname, start_frame)
-                continue
-            try:
-                self.hack_3dmm_expression(save=False, start_frame=start_frame)
-            except Exception as e:
-                #print("Hack", vidname, start_frame)
-                continue
+            self.landmarks_estimate(nframes, save=False, start_frame=start_frame)
+            self.face_3dmm_extraction(save=False, start_frame=start_frame)
+            self.hack_3dmm_expression(save=False, start_frame=start_frame)
 
             if len(self.imgs.shape) <= 3: continue
+
             window = self.prepare_window(nframes)
             if window.shape[1] != 5: continue
+
             self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
             stabilized_window = self.prepare_window(self.imgs)
             self.imgs_masked = self.imgs.copy()
 
             #self.imgs_masked[:, img_size // 2:] = 0
-            try:
-                masked_window = self.prepare_window(self.imgs_masked)
-                masked_window = np.concatenate(masked_window, axis=0)
-            except Exception as err:
-                print(type(masked_window), masked_window)
-                continue
-            try:
-                stabilized_window = np.concatenate(stabilized_window, axis=0)
-                x = np.concatenate([masked_window, stabilized_window], axis=0)
-            except Exception as err:
-                continue
+            masked_window = self.prepare_window(self.imgs_masked)
+            masked_window = np.concatenate(masked_window, axis=0)
+
+            stabilized_window = np.concatenate(stabilized_window, axis=0)
+            x = np.concatenate([masked_window, stabilized_window], axis=0)
             y = window.copy()
             y = torch.FloatTensor(y)
 
-            codes = torch.FloatTensor(codes)
-            phones = torch.IntTensor(phones)
+            #codes = torch.FloatTensor(codes)
+            #phones = torch.IntTensor(phones)
             x = torch.FloatTensor(x)
             mel = torch.FloatTensor(mel.T).unsqueeze(0)
-            if x.shape != size:
-                continue
-            return x, codes, phones, mel, y
+
+            return x, mel, y
 
     def save_preprocess(self):
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
             self.idx = idx
             self.read_video(idx)
             self.landmarks_estimate(self.full_frames, save=True)
-            #self.face_3dmm_extraction(save=True)
-            #self.hack_3dmm_expression(save=True)
+            self.face_3dmm_extraction(save=True)
+            self.hack_3dmm_expression(save=True)
 
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
@@ -383,29 +346,25 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
     global global_step, global_epoch
     resumed_step = global_step
-    loss_func = losses.LNetLoss()
+    loss_func = losses.LNetLoraLoss()
+
     while global_epoch < nepochs:
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
-        for step, (x, code, phone, audio, y) in prog_bar:
-            mask_x, stab_x = torch.split(x, 15, dim=1)
+        for step, (x, audio, y) in prog_bar:
+            #mask_x, stab_x = torch.split(x, 15, dim=1)
             model.train()
+
             optimizer.zero_grad()
 
-            mask_x = mask_x.to(device)
-            stab_x = stab_x.to(device)
-            code = code.to(device)
-            phone = phone.to(device)
+            #mask_x = mask_x.to(device)
+            #stab_x = stab_x.to(device)
+            x = x.to(device)
+            audio = audio.to(device)
             y = y.to(device)
-            pred_list = []
-            # Iterate through T=5 frames
-            for i in range(lnet_T):
-                x = torch.cat((mask_x[:,3*i:3*(i+1),:,:], stab_x[:,3*i:3*(i+1),:,:]), dim=1)
-                pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x)
-                #loss_list.append(loss_func(pred, y[:,:,i,:,:]))
-                pred_list.append(pred.unsqueeze(1))
-            #pred = model(code, phone, x)
-            pred = torch.cat(pred_list, dim=1)
+
+            pred = model(audio, x)
+
             loss = loss_func(pred, y, audio)
             loss.backward()
             optimizer.step()
@@ -626,7 +585,7 @@ if __name__ == "__main__":
         bias="none",
     )
     model = LNet()
-    print([(n, type(m)) for n, m in model.decoder.named_modules()])
+    #print([(n, type(m)) for n, m in model.decoder.named_modules()])
     lora_l_decoder = get_peft_model(model.decoder, config)
     print_trainable_parameters(lora_l_decoder)
     exit()
