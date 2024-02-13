@@ -201,7 +201,7 @@ class Dataset(object):
         fr_pil = [Image.fromarray(frame) for frame in frames]
         frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, self.lm)]
         crops, orig_images, quads = crop_faces(256, frames_pil, scale=1.0, use_fa=True)
-        return crops
+        return [np.asarray(crop) for crop in crops]
 
     def prepare_window(self, window):
         # Convert to 3 x T x H x W
@@ -237,13 +237,11 @@ class Dataset(object):
                 self.lm = self.kp_extractor.extract_keypoint(self.frames_pil)
             else:
                 self.lm = self.kp_extractor.extract_keypoint(self.frames_pil, self.all_videos[self.idx].split('.')[0] + '_landmarks.txt')
-            #print(self.lm.shape)
         else:
             #print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt( self.all_videos[self.idx].split('.')[0] +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape(-1, 68, 2)
             self.lm = self.lm[start_frame:start_frame+lnet_T, ...]
-            #self.lm = self.lm.reshape([lnet_T, -1, 2])
 
     def face_3dmm_extraction(self, save=False, start_frame=0):
         torch.cuda.empty_cache()
