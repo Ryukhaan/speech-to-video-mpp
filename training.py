@@ -621,13 +621,13 @@ if __name__ == "__main__":
     config = LoraConfig(
         r=16,
         lora_alpha=16,
-        target_modules=["mlp_gamma", "mlp_beta"],
+        target_modules=["mlp_gamma", "mlp_beta", "mlp_shared"],
         lora_dropout=0.1,
         bias="none",
     )
     model = LNet()
     print([n for n, _ in model.decoder.named_children()])
-    lora_model = get_peft_model(model.decoder, config)
+    lora_l_decoder = get_peft_model(model.decoder, config)
     print_trainable_parameters(lora_model)
     exit()
     model = model.to(device)
