@@ -330,7 +330,8 @@ class Dataset(object):
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
-
+            if indiv_mels is None:
+                continue
             self.landmarks_estimate(nframes, save=False, start_frame=start_frame)
             self.face_3dmm_extraction(save=False, start_frame=start_frame)
             self.hack_3dmm_expression(save=False, start_frame=start_frame)
