@@ -19,12 +19,15 @@ class LipSyncLoss(torch.nn.Module):
         self.net = SyncNet_color()
         checkpoint = torch.load(path)
         self.net.load_state_dict(checkpoint["state_dict"])
+        self.net = self.net(self.device)
     def cosine_loss(self, a, v, y):
         d = nn.functional.cosine_similarity(a, v)
         loss = self.log_loss(d.unsqueeze(1), y)
         return loss
 
     def forward(self, audio, y_pred, y_true):
+        audio = audio.to(self.device)
+        y_pred = y_pred.to(self.device)
         audio_emb, video_emb = self.net(audio, y_pred)
         #video_emb = video_emb.view(video_emb.size(0), 512, 4)
         y = torch.ones(y_pred.size(0), 1).float().to(self.device)
