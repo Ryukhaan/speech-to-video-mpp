@@ -479,36 +479,19 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     loss_func = losses.LNetLoss()
     while 1:
         prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1)
-        for step, (x, code, phone, audio, y) in prog_bar:
-            mask_x, stab_x = torch.split(x, 15, dim=1)
+        for step, (x, indiv_mel, mel, y) in prog_bar:
             model.eval()
 
-            # Transform data to CUDA device
-            mask_x = mask_x.to(device)
-            stab_x = stab_x.to(device)
-            code = code.to(device)
-            phone = phone.to(device)
+            optimizer.zero_grad()
+
+            x = x.to(device)
+            indiv_mel = indiv_mel.to(device)
             y = y.to(device)
-            pred_list = []
-            # Iterate through T=5 frames
-            for i in range(lnet_T):
-                x = torch.cat((mask_x[:, 3 * i:3 * (i + 1), :, :], stab_x[:, 3 * i:3 * (i + 1), :, :]), dim=1)
-                pred = model(code[:, i, :], phone[:, 40 * i:40 * (i + 1)], x)
-                # loss_list.append(loss_func(pred, y[:,:,i,:,:]))
-                pred_list.append(pred.unsqueeze(1))
-            # pred = model(code, phone, x)
-            pred = torch.cat(pred_list, dim=1)
-            loss = loss_func(pred, y, audio)
-            optimizer.step()
+            pred = model(indiv_mel, x)
 
-            #x = x.to(device)
-            #codes = codes.to(device)
-            #phones = phones.to(device)
-            #for i in range(lnet_T):
-            #    pred = model(x[:,i,:], codes, phones)
-            #    y = y.to(device)
+            mel = mel.to(device)
+            loss = loss_func(pred, y, mel)
 
-            #loss = loss(pred, y)
             losses.append(loss.item())
 
             if step > eval_steps: break
@@ -606,7 +589,7 @@ if __name__ == "__main__":
     # Model
     model = LNet()
     optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
-                           lr=hparams.syncnet_lr).to(device)
+                           lr=hparams.syncnet_lr)
 
     print(checkpoint_dir, checkpoint_path)
 
