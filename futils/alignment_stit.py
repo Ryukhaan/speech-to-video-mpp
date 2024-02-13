@@ -188,7 +188,7 @@ def crop_faces(IMAGE_SIZE, files, scale, center_sigma=0.0, xy_sigma=0.0, use_fa=
 def crop_faces_by_quads(IMAGE_SIZE, files, quads):
     orig_images = []
     crops = []
-    for quad, (_, path) in tqdm(zip(quads, files), total=len(quads)):
+    for quad, (_, path) in zip(quads, files): #remove tqdm
         crop = crop_image(path, IMAGE_SIZE, quad.copy())
         orig_image = path # Image.open(path)
         orig_images.append(orig_image)
