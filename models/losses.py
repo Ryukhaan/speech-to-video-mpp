@@ -191,11 +191,11 @@ class LoraLoss(torch.nn.Module):
         L1 = torch.nn.L1Loss()
         L_perceptual = VGGPerceptualLoss()
 
-        l1_val = L1(y_pred, y_true)
-        lp_val = L_perceptual(y_pred, y_true)
+        l1_val = L1(y_pred, y_true).to(self.device)
+        lp_val = L_perceptual(y_pred, y_true).to(self.device)
 
         # L_sync = 0.0
-        lsync_val = self.lip_sync_loss(audio_seq, face_pred)
+        lsync_val = self.lip_sync_loss(audio_seq, face_pred).to(self.device)
 
         # print(l1_val, lp_val, lsync_val)
         return lambda_1 * l1_val + lambda_p * lp_val + lambda_sync * lsync_val
