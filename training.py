@@ -1,6 +1,7 @@
 import glob
 from os.path import dirname, join, basename, isfile
 
+from peft import LoraConfig, get_peft_model
 
 import json
 import gc
@@ -578,6 +579,17 @@ def load_checkpoint(path, model, optimizer, reset_optimizer=False, overwrite_glo
 
     return model
 
+def print_trainable_parameters(model):
+    trainable_params = 0
+    all_param = 0
+    for _, param in model.named_parameters():
+        all_param += param.numel()
+        if param.requires_grad:
+            trainable_params += param.numel()
+    print(
+        f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param:.2f}"
+    )
+
 if __name__ == "__main__":
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
@@ -606,8 +618,20 @@ if __name__ == "__main__":
 
 
     # Model
+    config = LoraConfig(
+        r=16,
+        lora_alpha=16,
+        target_modules=["Linear"],
+        lora_dropout=0.1,
+        bias="none",
+    )
     model = LNet()
+
+    lora_model = get_peft_model(model, config)
+    print_trainable_parameters(lora_model)
+
     print("LNet", model.encoder)
+
     summary(model.encoder, ((1,96,96,15), (1,96,96,15)))
     exit()
     model = model.to(device)
