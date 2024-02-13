@@ -378,20 +378,18 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
         for step, (x, indiv_mel, mel, y) in prog_bar:
-            #mask_x, stab_x = torch.split(x, 15, dim=1)
             model.train()
-
             optimizer.zero_grad()
 
             x = x.to(device)
             indiv_mel = indiv_mel.to(device)
-            y = y.to(device)
-            pred = model(indiv_mel.cuda(), x.cuda())
+            pred = model(indiv_mel, x)
 
             mel = mel.to(device)
             pred = pred.to(device)
+            y = y.to(device)
             loss = loss_func(pred, y, mel)
-
+            loss = loss.to(device)
             loss.backward()
             optimizer.step()
 
