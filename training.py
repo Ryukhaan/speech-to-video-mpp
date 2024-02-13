@@ -626,9 +626,9 @@ if __name__ == "__main__":
         bias="none",
     )
     model = LNet()
-    print([n for n, _ in model.decoder.named_children()])
+    print([(n, type(m)) for n, m in model.decoder.named_modules()])
     lora_l_decoder = get_peft_model(model.decoder, config)
-    print_trainable_parameters(lora_model)
+    print_trainable_parameters(lora_l_decoder)
     exit()
     model = model.to(device)
 
