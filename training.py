@@ -606,7 +606,7 @@ if __name__ == "__main__":
     # Model
     model = LNet()
     optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
-                           lr=hparams.syncnet_lr)
+                           lr=hparams.syncnet_lr).to(device)
 
     print(checkpoint_dir, checkpoint_path)
 
