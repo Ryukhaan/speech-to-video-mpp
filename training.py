@@ -317,14 +317,15 @@ class Dataset(object):
 
             self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
             stabilized_window = self.prepare_window(self.imgs)
+            #stabilized_window[:, window.shape[2] // 2:] = 0.
+
             self.imgs_masked = self.imgs.copy()
-
-
-            self.imgs_masked[:, window.shape[2] // 2:] = 0
             masked_window = self.prepare_window(self.imgs_masked)
-            #masked_window = np.concatenate(masked_window, axis=0)
+            masked_window[:, window.shape[2] // 2:] = 0.
 
+            #masked_window = np.concatenate(masked_window, axis=0)
             #stabilized_window = np.concatenate(stabilized_window, axis=0)
+
             x = np.concatenate([masked_window, stabilized_window], axis=3)
             y = window.copy()
             y = torch.FloatTensor(y)
