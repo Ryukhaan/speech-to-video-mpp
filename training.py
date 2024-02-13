@@ -579,20 +579,7 @@ if __name__ == "__main__":
 
 
     # Model
-    config = LoraConfig(
-        r=16,
-        lora_alpha=16,
-        target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
-        lora_dropout=0.1,
-        bias="none",
-    )
     model = LNet()
-    #print([(n, type(m)) for n, m in model.decoder.named_modules()])
-    lora_l_decoder = get_peft_model(model.decoder, config)
-    model.decoder = lora_l_decoder
-    print_trainable_parameters(lora_l_decoder)
-    model = model.to(device)
-
     optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
                            lr=hparams.syncnet_lr)
 
@@ -604,6 +591,19 @@ if __name__ == "__main__":
     #checkpoint_path = "checkpoints/Pnet.pth"
     checkpoint_path = 'checkpoints/LNet.pth'
     load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
+
+    # Lora Config
+    config = LoraConfig(
+        r=16,
+        lora_alpha=16,
+        target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
+        lora_dropout=0.1,
+        bias="none",
+    )
+    lora_l_decoder = get_peft_model(model.decoder, config)
+    model.decoder = lora_l_decoder
+    print_trainable_parameters(lora_l_decoder)
+    model = model.to(device)
 
     train(device, model, train_data_loader, test_data_loader, optimizer,
           checkpoint_dir=checkpoint_dir,
