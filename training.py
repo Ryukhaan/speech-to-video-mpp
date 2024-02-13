@@ -608,7 +608,7 @@ if __name__ == "__main__":
     # Model
     model = LNet()
     print("LNet", model)
-    return 0
+    exit()
     model = model.to(device)
     print('total trainable params {}'.format(sum(p.numel() for p in model.parameters() if p.requires_grad)))
 
