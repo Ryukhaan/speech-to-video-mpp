@@ -550,6 +550,7 @@ def print_trainable_parameters(model):
     )
 
 if __name__ == "__main__":
+
     use_cuda = torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
     checkpoint_dir = args.checkpoint_dir
@@ -558,7 +559,7 @@ if __name__ == "__main__":
     if not os.path.exists(checkpoint_dir):
         os.mkdir(checkpoint_dir)
 
-    filenames = get_image_list(args.data_root, 'train')
+    filenames = get_image_list(args.data_root, 'train_antoine_lora')
     print(args.data_root, filenames)
     seed = 42
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
