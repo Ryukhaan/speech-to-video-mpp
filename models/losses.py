@@ -170,25 +170,20 @@ class LoraLoss(torch.nn.Module):
         lambda_p = 1.
         lambda_sync = 0.3
 
-        B, T, C, Hin, Win = face_pred.shape
+        B, C, Hin, Win = face_pred.shape
         H, W = Hin, Win
         resizer = torchvision.transforms.Resize((H, W))
-        y_pred = torch.zeros((B, T, C, H, W))
-        y_true = torch.zeros((B, C, T, H, W))
+        y_pred = torch.zeros((B, C, H, W))
+        y_true = torch.zeros((B, C, H, W))
 
-        for i in range(T):
-            y_pred[:, i, :, :, :] = resizer(face_pred[:, i, :, :, :])
-            y_true[:, :, i, :, :] = resizer(face_true[:, :, i, :, :])
+        y_pred = resizer(face_pred)
+        y_true  = resizer(face_true)
 
         L1 = torch.nn.L1Loss()
         L_perceptual = VGGPerceptualLoss()
-        l1_ = 0.
-        lp_ = 0.
-        for i in range(T):
-            l1_ += L1(y_pred[:, i, :, :, :], y_true[:, :, i, :, :])
-            lp_ += L_perceptual(y_pred[:, i, :, :, :], y_true[:, :, i, :, :])
-        l1_val = l1_ / T
-        lp_val = lp_ / T
+
+        l1_val = L1(y_pred, y_true)
+        lp_val = L_perceptual(y_pred, y_true)
 
         # L_sync = 0.0
         lsync_val = self.lip_sync_loss(audio_seq, y_pred.view(-1, T * C, H, W), y_true)
