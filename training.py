@@ -621,7 +621,7 @@ if __name__ == "__main__":
     config = LoraConfig(
         r=16,
         lora_alpha=16,
-        target_modules=["res0", "res0", "res2"],
+        target_modules=["mlp_gamma", "mlp_beta", "mlp_shared"],
         lora_dropout=0.1,
         bias="none",
     )
