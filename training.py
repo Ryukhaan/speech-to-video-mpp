@@ -218,8 +218,8 @@ class Dataset(object):
         else:
             #print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt( self.all_videos[self.idx].split('.')[0] +'_landmarks.txt').astype(np.float32)
-            self.lm = self.lm[start_frame:start_frame+2*lnet_T]
-            self.lm = self.lm.reshape([lnet_T, -1, 2])
+            #self.lm = self.lm[start_frame:start_frame+2*lnet_T]
+            #self.lm = self.lm.reshape([lnet_T, -1, 2])
 
     def face_3dmm_extraction(self, save=False, start_frame=0):
         torch.cuda.empty_cache()
@@ -228,7 +228,7 @@ class Dataset(object):
                 self.net_recon = load_face3d_net(self.args.face3d_net_path, device)
             lm3d_std = load_lm3d('checkpoints/BFM')
             video_coeffs = []
-            for idx in range(len(self.frames_pil)):#, desc="[Step 2] 3DMM Extraction In Video:"):
+            for idx in tqdm(range(len(self.frames_pil)), desc="[Step 2] 3DMM Extraction In Video:"):
                 frame = self.frames_pil[idx]
                 W, H = frame.size
                 lm_idx = self.lm[idx].reshape([-1, 2])
@@ -254,7 +254,8 @@ class Dataset(object):
                 np.save( self.all_videos[self.idx].split('.')[0] +'_coeffs.npy', self.semantic_npy)
         else:
             self.semantic_npy = np.load(self.all_videos[self.idx].split('.')[0] + "_coeffs.npy").astype(np.float32)
-            self.semantic_npy = self.semantic_npy[start_frame:start_frame+lnet_T]
+            #self.semantic_npy = self.semantic_npy[start_frame:start_frame+lnet_T]
+
     def hack_3dmm_expression(self, save=False, start_frame=0):
         expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
 
@@ -284,7 +285,7 @@ class Dataset(object):
             torch.cuda.empty_cache()
         else:
             self.imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
-            self.imgs = self.imgs[start_frame:start_frame+lnet_T]
+            #self.imgs = self.imgs[start_frame:start_frame+lnet_T]
     def __len__(self):
         return len(self.all_videos)
 
