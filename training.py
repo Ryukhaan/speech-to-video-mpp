@@ -621,7 +621,7 @@ if __name__ == "__main__":
     config = LoraConfig(
         r=16,
         lora_alpha=16,
-        target_modules=["Linear"],
+        target_modules=["ca0", "ca1", "ca2"],
         lora_dropout=0.1,
         bias="none",
     )
