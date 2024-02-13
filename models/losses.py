@@ -171,14 +171,15 @@ class LoraLoss(torch.nn.Module):
         lambda_sync = 0.3
 
         print(face_pred.shape, face_true.shape)
-        B, C, T, Hin, Win = face_pred.shape
+        B, C, T, Hin, Win = face_true.shape
         H, W = Hin, Win
         resizer = torchvision.transforms.Resize((H, W))
-        #y_pred = torch.zeros((B, C, H, W))
-        #y_true = torch.zeros((B, C, H, W))
 
-        y_pred = resizer(face_pred)
-        y_true  = resizer(face_true)
+        y_pred = face_pred.view(-1, C, H, W)
+        y_true = face_true.view(-1, C, H, W)
+
+        y_pred = resizer(y_pred)
+        y_true  = resizer(y_true)
 
         L1 = torch.nn.L1Loss()
         L_perceptual = VGGPerceptualLoss()
