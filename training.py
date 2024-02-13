@@ -91,6 +91,14 @@ class Dataset(object):
 
         #self.D_Net, self.model = fu_load_model(self.args, device)
         self.idx = 0
+        self.reading_videos()
+
+    def reading_videos(self):
+        self.full_frames = []
+        self.time_mark_i = []
+        for i in range(len(self.all_videos)):
+            self.time_mark_i.append(len(self.full_frames))
+            self.read_video(i)
 
     # Weird function
     def get_frame_id(self, frame):
@@ -99,7 +107,7 @@ class Dataset(object):
     def read_video(self, index):
         video_stream = cv2.VideoCapture(self.all_videos[index])
         self.fps = video_stream.get(cv2.CAP_PROP_FPS)
-        self.full_frames = []
+        #self.full_frames = []
         while True:
             still_reading, frame = video_stream.read()
             if not still_reading:
@@ -309,54 +317,102 @@ class Dataset(object):
             self.imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
             self.imgs = self.imgs[start_frame:start_frame+lnet_T]
     def __len__(self):
-        return len(self.all_videos)
+        return len(self.full_frames) - 4 - 5 * (len(self.time_mark_i)-1)
+        #return len(self.all_videos)
 
     def __getitem__(self, idx):
-        while True:
-            # Get videos index
-            idx = np.random.randint(0, len(self.all_videos) - 1)
-            vidname = self.all_videos[idx]
-            # Read video
-            frames = self.read_video(idx)
-            # Sure that nframe if >= 2 and lower than N - 3
-            start_frame = np.random.randint(3, len(frames) - 4)
-            nframes = self.get_segmented_window(start_frame)
+        start_frame = idx
+        for timer in self.time_mark_i:
+            if abs(idx - timer) < 3:
+                start_frame += 5
+        for i in range(len(self.time_mark_i)-1):
+            if idx < self.time_mark_i[i+1]:
+                vid_idx = i
+        start_frame = start_frame + 2
 
+        nframes = self.get_segmented_window(start_frame)
+        vidname = self.all_videos[vid_idx]
 
-            # Read wav and get corresponding spectogram
-            wavpath = vidname.split('.')[0] + '.wav'
-            wav = audio.load_wav(wavpath, hparams.sample_rate)
-            orig_mel = audio.melspectrogram(wav).T
-            mel = self.crop_audio_window(orig_mel.copy(), start_frame)
+        wavpath = vidname.split('.')[0] + '.wav'
+        wav = audio.load_wav(wavpath, hparams.sample_rate)
+        orig_mel = audio.melspectrogram(wav).T
+        mel = self.crop_audio_window(orig_mel.copy(), start_frame)
+        indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
+        if indiv_mels is None:
+            return
 
-            indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
-            if indiv_mels is None:
-                continue
-            self.landmarks_estimate(nframes, save=False, start_frame=start_frame)
-            self.face_3dmm_extraction(save=False, start_frame=start_frame)
-            self.hack_3dmm_expression(save=False, start_frame=start_frame)
+        self.landmarks_estimate(nframes, save=False, start_frame=start_frame)
+        self.face_3dmm_extraction(save=False, start_frame=start_frame)
+        self.hack_3dmm_expression(save=False, start_frame=start_frame)
 
-            nframes = self.crop_face(nframes)
-            window = self.prepare_window(nframes)
-            if window.shape[1] != 5: continue
+        nframes = self.crop_face(nframes)
+        window = self.prepare_window(nframes)
+        if window.shape[1] != 5:
+            return
 
-            self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
-            stabilized_window = self.prepare_window(self.imgs)
+        self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
+        stabilized_window = self.prepare_window(self.imgs)
 
-            self.imgs_masked = self.imgs.copy()
-            masked_window = self.prepare_window(self.imgs_masked)
-            masked_window[:, window.shape[2] // 2:] = 0.
+        self.imgs_masked = self.imgs.copy()
+        masked_window = self.prepare_window(self.imgs_masked)
+        masked_window[:, window.shape[2] // 2:] = 0.
 
-            x = np.concatenate([masked_window, stabilized_window], axis=0)
-            y = window.copy()
-            y = torch.FloatTensor(y)
+        x = np.concatenate([masked_window, stabilized_window], axis=0)
+        y = window.copy()
+        y = torch.FloatTensor(y)
 
-            #codes = torch.FloatTensor(codes)
-            #phones = torch.IntTensor(phones)
-            x = torch.FloatTensor(x)
-            mel = torch.FloatTensor(mel.T).unsqueeze(0)
-            indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
-            return x, indiv_mels, mel, y
+        #codes = torch.FloatTensor(codes)
+        #phones = torch.IntTensor(phones)
+        x = torch.FloatTensor(x)
+        mel = torch.FloatTensor(mel.T).unsqueeze(0)
+        indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
+        return x, indiv_mels, mel, y
+
+        # while True:
+        #     # Get videos index
+        #     idx = np.random.randint(0, len(self.all_videos) - 1)
+        #     vidname = self.all_videos[idx]
+        #     # Read video
+        #     frames = self.read_video(idx)
+        #     # Sure that nframe if >= 2 and lower than N - 3
+        #     start_frame = np.random.randint(3, len(frames) - 4)
+        #     nframes = self.get_segmented_window(start_frame)
+        #
+        #
+        #     # Read wav and get corresponding spectogram
+        #     wavpath = vidname.split('.')[0] + '.wav'
+        #     wav = audio.load_wav(wavpath, hparams.sample_rate)
+        #     orig_mel = audio.melspectrogram(wav).T
+        #     mel = self.crop_audio_window(orig_mel.copy(), start_frame)
+        #
+        #     indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
+        #     if indiv_mels is None:
+        #         continue
+        #     self.landmarks_estimate(nframes, save=False, start_frame=start_frame)
+        #     self.face_3dmm_extraction(save=False, start_frame=start_frame)
+        #     self.hack_3dmm_expression(save=False, start_frame=start_frame)
+        #
+        #     nframes = self.crop_face(nframes)
+        #     window = self.prepare_window(nframes)
+        #     if window.shape[1] != 5: continue
+        #
+        #     self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
+        #     stabilized_window = self.prepare_window(self.imgs)
+        #
+        #     self.imgs_masked = self.imgs.copy()
+        #     masked_window = self.prepare_window(self.imgs_masked)
+        #     masked_window[:, window.shape[2] // 2:] = 0.
+        #
+        #     x = np.concatenate([masked_window, stabilized_window], axis=0)
+        #     y = window.copy()
+        #     y = torch.FloatTensor(y)
+        #
+        #     #codes = torch.FloatTensor(codes)
+        #     #phones = torch.IntTensor(phones)
+        #     x = torch.FloatTensor(x)
+        #     mel = torch.FloatTensor(mel.T).unsqueeze(0)
+        #     indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
+        #     return x, indiv_mels, mel, y
 
     def save_preprocess(self):
         self.D_Net, self.model = load_model(self.args, device)
