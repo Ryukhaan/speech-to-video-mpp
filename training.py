@@ -339,8 +339,8 @@ class Dataset(object):
         orig_mel = audio.melspectrogram(wav).T
         mel = self.crop_audio_window(orig_mel.copy(), start_frame)
         indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
-        if indiv_mels is None:
-            return
+        #if indiv_mels is None:
+        #    return
 
         self.landmarks_estimate(nframes, save=False, start_frame=start_frame)
         self.face_3dmm_extraction(save=False, start_frame=start_frame)
@@ -348,8 +348,8 @@ class Dataset(object):
 
         nframes = self.crop_face(nframes)
         window = self.prepare_window(nframes)
-        if window.shape[1] != 5:
-            return
+        #if window.shape[1] != 5:
+        #    return
 
         self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
         stabilized_window = self.prepare_window(self.imgs)
