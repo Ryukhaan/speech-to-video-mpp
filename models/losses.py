@@ -19,7 +19,7 @@ class LipSyncLoss(torch.nn.Module):
         self.net = SyncNet_color()
         checkpoint = torch.load(path)
         self.net.load_state_dict(checkpoint["state_dict"])
-        self.net = self.net(self.device)
+        self.net = self.net.to(self.device)
     def cosine_loss(self, a, v, y):
         d = nn.functional.cosine_similarity(a, v)
         loss = self.log_loss(d.unsqueeze(1), y)
