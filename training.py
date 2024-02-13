@@ -218,8 +218,8 @@ class Dataset(object):
         else:
             #print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt( self.all_videos[self.idx].split('.')[0] +'_landmarks.txt').astype(np.float32)
-            #self.lm = self.lm[start_frame:start_frame+2*lnet_T]
-            #self.lm = self.lm.reshape([lnet_T, -1, 2])
+            self.lm = self.lm[start_frame:start_frame+2*lnet_T]
+            self.lm = self.lm.reshape([lnet_T, -1, 2])
 
     def face_3dmm_extraction(self, save=False, start_frame=0):
         torch.cuda.empty_cache()
@@ -254,7 +254,7 @@ class Dataset(object):
                 np.save( self.all_videos[self.idx].split('.')[0] +'_coeffs.npy', self.semantic_npy)
         else:
             self.semantic_npy = np.load(self.all_videos[self.idx].split('.')[0] + "_coeffs.npy").astype(np.float32)
-            #self.semantic_npy = self.semantic_npy[start_frame:start_frame+lnet_T]
+            self.semantic_npy = self.semantic_npy[start_frame:start_frame+lnet_T]
 
     def hack_3dmm_expression(self, save=False, start_frame=0):
         expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
@@ -285,7 +285,7 @@ class Dataset(object):
             torch.cuda.empty_cache()
         else:
             self.imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
-            #self.imgs = self.imgs[start_frame:start_frame+lnet_T]
+            self.imgs = self.imgs[start_frame:start_frame+lnet_T]
     def __len__(self):
         return len(self.all_videos)
 
@@ -570,9 +570,9 @@ if __name__ == "__main__":
     print(train_list)
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
-    train_dataset.save_preprocess()
+    #train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
-    test_dataset.save_preprocess()
+    #test_dataset.save_preprocess()
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
