@@ -237,12 +237,13 @@ class Dataset(object):
                 self.lm = self.kp_extractor.extract_keypoint(self.frames_pil)
             else:
                 self.lm = self.kp_extractor.extract_keypoint(self.frames_pil, self.all_videos[self.idx].split('.')[0] + '_landmarks.txt')
-            print(self.lm.shape)
+            #print(self.lm.shape)
         else:
             #print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt( self.all_videos[self.idx].split('.')[0] +'_landmarks.txt').astype(np.float32)
+            print(self.lm.shape)
             self.lm = self.lm[start_frame:start_frame+2*lnet_T]
-            self.lm = self.lm.reshape([lnet_T, -1, 2])
+            #self.lm = self.lm.reshape([lnet_T, -1, 2])
 
     def face_3dmm_extraction(self, save=False, start_frame=0):
         torch.cuda.empty_cache()
@@ -590,9 +591,9 @@ if __name__ == "__main__":
     print(train_list)
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
-    train_dataset.save_preprocess()
+    #train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
-    test_dataset.save_preprocess()
+    #test_dataset.save_preprocess()
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
