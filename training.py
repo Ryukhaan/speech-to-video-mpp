@@ -608,7 +608,7 @@ if __name__ == "__main__":
     # Model
     model = LNet()
     print("LNet", model.encoder)
-    summary(model.encoder, (1,96,96,15))
+    summary(model.encoder, ((1,96,96,15), (1,96,96,15)))
     exit()
     model = model.to(device)
     print('total trainable params {}'.format(sum(p.numel() for p in model.parameters() if p.requires_grad)))
