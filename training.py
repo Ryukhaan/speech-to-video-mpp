@@ -563,12 +563,12 @@ if __name__ == "__main__":
     print(args.data_root, filenames)
     seed = 42
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
-    print(len(filenames), len(train_list), len(val_list))
+    print(train_list)
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
-    #train_dataset.save_preprocess()
+    train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
-    #test_dataset.save_preprocess()
+    test_dataset.save_preprocess()
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
