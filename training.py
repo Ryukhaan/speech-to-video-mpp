@@ -309,8 +309,8 @@ class Dataset(object):
             self.face_3dmm_extraction(save=False, start_frame=start_frame)
             self.hack_3dmm_expression(save=False, start_frame=start_frame)
 
-            if len(self.imgs.shape) <= 3: continue
-
+            #if len(self.imgs.shape) <= 3: continue
+            print(self.imgs.shape)
             window = self.prepare_window(nframes)
             if window.shape[1] != 5: continue
 
@@ -339,9 +339,9 @@ class Dataset(object):
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
             self.idx = idx
             self.read_video(idx)
-            self.landmarks_estimate(self.full_frames, save=True)
-            self.face_3dmm_extraction(save=True)
-            #self.hack_3dmm_expression(save=True)
+            self.landmarks_estimate(self.full_frames, save=False)
+            self.face_3dmm_extraction(save=False)
+            self.hack_3dmm_expression(save=True)
 
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
