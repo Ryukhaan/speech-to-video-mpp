@@ -159,7 +159,7 @@ class LNetLoss(torch.nn.Module):
 
     class LNetLoraLoss(torch.nn.Module):
         def __init__(self):
-            super(LNetLoss, self).__init__()
+            super(LNetLoraLoss, self).__init__()
             use_cuda = torch.cuda.is_available()
             self.device = torch.device("cuda" if use_cuda else "cpu")
             self.lip_sync_loss = LipSyncLoss(device=self.device)
