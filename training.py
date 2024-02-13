@@ -386,12 +386,12 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             x = x.to(device)
             indiv_mel = indiv_mel.to(device)
             y = y.to(device)
-            pred = model(indiv_mel, x)
+            pred = model(indiv_mel.cuda(), x.cuda())
 
             mel = mel.to(device)
             pred = pred.to(device)
             loss = loss_func(pred, y, mel)
-            print(loss.is_cuda)
+
             loss.backward()
             optimizer.step()
 
