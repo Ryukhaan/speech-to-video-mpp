@@ -626,8 +626,8 @@ if __name__ == "__main__":
         bias="none",
     )
     model = LNet()
-    print([n for n, _ in model.named_children()])
-    lora_model = get_peft_model(model, config)
+    print([n for n, _ in model.encoder.named_children()])
+    lora_model = get_peft_model(model.encoder, config)
     print_trainable_parameters(lora_model)
 
     print("LNet", model.encoder)
