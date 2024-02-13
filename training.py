@@ -196,6 +196,12 @@ class Dataset(object):
         mels = np.asarray(mels)
 
         return mels
+
+    def crop_face(self, frames):
+        frames_pil = [(lm, frame) for frame, lm in zip(frames, self.lm)]
+        crops, orig_images, quads = crop_faces(frames_pil, scale=1.0, use_fa=True, image_size=256)
+        return crops
+
     def prepare_window(self, window):
         # Convert to 3 x T x H x W
         x = np.asarray(window) / 255.
@@ -315,6 +321,7 @@ class Dataset(object):
             start_frame = np.random.randint(3, len(frames) - 4)
             nframes = self.get_segmented_window(start_frame)
 
+
             # Read wav and get corresponding spectogram
             wavpath = vidname.split('.')[0] + '.wav'
             wav = audio.load_wav(wavpath, hparams.sample_rate)
@@ -327,6 +334,7 @@ class Dataset(object):
             self.face_3dmm_extraction(save=False, start_frame=start_frame)
             self.hack_3dmm_expression(save=False, start_frame=start_frame)
 
+            nframes = self.crop_face(nframes)
             window = self.prepare_window(nframes)
             if window.shape[1] != 5: continue
 
@@ -374,14 +382,9 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             optimizer.zero_grad()
 
-            preds = []
             x = x.to(device)
             indiv_mel = indiv_mel.to(device)
             y = y.to(device)
-            #for timestep in range(lnet_T):
-            #    xi = x[:,:,timestep,:,:].squeeze(0)
-            #    preds.append(model(audio, xi))
-            #preds = np.cat(preds, dim=0).to(device)
             pred = model(indiv_mel, x)
 
             loss = loss_func(pred, y, indiv_mel)
