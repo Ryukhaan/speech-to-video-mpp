@@ -199,7 +199,7 @@ class Dataset(object):
 
     def crop_face(self, frames):
         frames_pil = [(lm, frame) for frame, lm in zip(frames, self.lm)]
-        crops, orig_images, quads = crop_faces(frames_pil, scale=1.0, use_fa=True, image_size=256)
+        crops, orig_images, quads = crop_faces(256, frames_pil, scale=1.0, use_fa=True)
         return crops
 
     def prepare_window(self, window):
