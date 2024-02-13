@@ -133,7 +133,7 @@ class LNet(nn.Module):
         #if len(cropped.size()) > 4:
         #    cropped = torch.cat([cropped[:,:,i] for i in range(cropped.size(2))], dim=0)
         #    ref = torch.cat([ref[:,:,i] for i in range(ref.size(2))], dim=0)
-
+        print(cropped.shape, ref.shape)
         vis_feat = self.encoder(cropped, ref)
         audio_feat = self.audio_encoder(audio_sequences)
         _outputs = self.decoder(vis_feat, audio_feat)
