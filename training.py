@@ -626,13 +626,11 @@ if __name__ == "__main__":
         bias="none",
     )
     model = LNet()
-
+    print([n for n, _ in model.named_children()])
     lora_model = get_peft_model(model, config)
     print_trainable_parameters(lora_model)
 
     print("LNet", model.encoder)
-
-    summary(model.encoder, ((1,96,96,15), (1,96,96,15)))
     exit()
     model = model.to(device)
     print('total trainable params {}'.format(sum(p.numel() for p in model.parameters() if p.requires_grad)))
