@@ -389,6 +389,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             pred = model(indiv_mel, x)
 
             mel = mel.to(device)
+            pred = pred.to(device)
+
             loss = loss_func(pred, y, mel)
 
             loss.backward()
