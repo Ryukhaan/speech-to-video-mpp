@@ -124,6 +124,7 @@ class LNet(nn.Module):
             )
 
     def forward(self, audio_sequences, face_sequences):
+        print(face_sequences.shape)
         B = audio_sequences.size(0)
         input_dim_size = len(face_sequences.size())
         if input_dim_size > 4:
