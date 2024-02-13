@@ -605,9 +605,11 @@ if __name__ == "__main__":
         #num_workers=8)
 
 
-
     # Model
-    model = LNet().to(device)
+    model = LNet()
+    print("LNet", model)
+    return 0
+    model = model.to(device)
     print('total trainable params {}'.format(sum(p.numel() for p in model.parameters() if p.requires_grad)))
 
     optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],

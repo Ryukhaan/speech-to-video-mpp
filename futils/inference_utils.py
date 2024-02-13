@@ -16,6 +16,8 @@ import torch
 import warnings
 warnings.filterwarnings("ignore")
 
+from torchsummary import summary
+from peft import LoraConfig, get_peft_model
 
 def train_options():
     parser = argparse.ArgumentParser(description='Inference code to lip-sync videos in the wild using Wav2Lip models')
@@ -284,6 +286,13 @@ def load_model(args, device):
 
 def save_checkpoint(path, model):
     torch.save(model.state_dict(), path)
+
+def load_lora_train_model(args, device):
+    D_Net, L_Net, E_Net = load_training_networks(args)
+    print("ENet", E_Net)
+    print("DNet", D_Net)
+    print("LNet", L_Net)
+    return D_Net, L_Net, E_Net
 
 def load_train_model(args, device):
     torch.cuda.empty_cache()

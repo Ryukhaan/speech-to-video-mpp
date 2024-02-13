@@ -101,8 +101,8 @@ class LNet(nn.Module):
         self.encoder = encoder(image_nc, base_nc, max_nc, layer, **kwargs)
         self.decoder = decoder(image_nc, self.descriptor_nc, base_nc, max_nc, layer, num_res_blocks, **kwargs)
 
-        self.phone_encoder = Phone_Encoder()
-        self.audio_fn = torch.nn.Linear(480, 256)
+        #self.phone_encoder = Phone_Encoder()
+        #self.audio_fn = torch.nn.Linear(480, 256)
         self.audio_encoder = nn.Sequential(
             Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
             Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
