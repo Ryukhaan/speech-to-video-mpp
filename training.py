@@ -327,7 +327,7 @@ class Dataset(object):
             #codes = torch.FloatTensor(codes)
             #phones = torch.IntTensor(phones)
             x = torch.FloatTensor(x)
-            mel = torch.FloatTensor(mel.T).unsqueeze(0)
+            mel = torch.FloatTensor(mel.T).unsqueeze(0).unsqueeze(1)
             print(mel.shape)
             return x, mel, y
 
