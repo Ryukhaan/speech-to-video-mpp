@@ -92,6 +92,7 @@ class Dataset(object):
         #self.D_Net, self.model = fu_load_model(self.args, device)
         self.idx = 0
         self.reading_videos()
+        print(len(self.full_frames))
 
     def reading_videos(self):
         self.full_frames = []
