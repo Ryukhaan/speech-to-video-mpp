@@ -438,38 +438,38 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
     while global_epoch < nepochs:
         running_loss = 0.
-        #prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1, leave=True)
-        for idx, vid in enumerate(filenames):
-            train_data_loader.read_video(idx)
-            prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader.full_frames) + 1, leave=True)
-            for step, (x, indiv_mel, mel, y) in prog_bar:
-                model.train()
-                optimizer.zero_grad()
+        prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1, leave=True)
+        #for idx, vid in enumerate(filenames):
+        #    train_data_loader.read_video(idx)
+        #    prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader.full_frames) + 1, leave=True)
+        for step, (x, indiv_mel, mel, y) in prog_bar:
+            model.train()
+            optimizer.zero_grad()
 
-                x = x.to(device)
-                indiv_mel = indiv_mel.to(device)
-                pred = model(indiv_mel, x)
+            x = x.to(device)
+            indiv_mel = indiv_mel.to(device)
+            pred = model(indiv_mel, x)
 
-                mel = mel.to(device)
-                pred = pred.to(device)
-                y = y.to(device)
-                loss = loss_func(pred, y, mel)
+            mel = mel.to(device)
+            pred = pred.to(device)
+            y = y.to(device)
+            loss = loss_func(pred, y, mel)
 
-                loss.backward()
-                optimizer.step()
+            loss.backward()
+            optimizer.step()
 
-                global_step += 1
-                cur_session_steps = global_step - resumed_step
-                running_loss += loss.item()
-                if global_step == 1 or global_step % checkpoint_interval == 0:
-                    save_checkpoint(
-                        model, optimizer, global_step, checkpoint_dir, global_epoch)
+            global_step += 1
+            cur_session_steps = global_step - resumed_step
+            running_loss += loss.item()
+            if global_step == 1 or global_step % checkpoint_interval == 0:
+                save_checkpoint(
+                    model, optimizer, global_step, checkpoint_dir, global_epoch)
 
-                if global_step % hparams.syncnet_eval_interval == 0:
-                    with torch.no_grad():
-                        eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
+            if global_step % hparams.syncnet_eval_interval == 0:
+                with torch.no_grad():
+                    eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
 
-                prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
+            prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
 
         global_epoch += 1
 def datagen(frames, mels, full_frames, frames_pil, cox):
@@ -638,8 +638,10 @@ if __name__ == "__main__":
     print(train_list)
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
+    train_dataset.read_video(0)
     #train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
+    test_dataset.read_video(0)
     #test_dataset.save_preprocess()
 
     train_data_loader = data_utils.DataLoader(
