@@ -89,17 +89,6 @@ class Dataset(object):
         self.dictionary.insert(0, 'spn')
         self.kp_extractor = None
 
-        #self.D_Net, self.model = fu_load_model(self.args, device)
-        #self.idx = 0
-        #self.reading_videos()
-        #print(len(self.full_frames))
-
-    def reading_videos(self):
-        self.full_frames = []
-        self.time_mark_i = []
-        for i in range(len(self.all_videos)):
-            self.time_mark_i.append(len(self.full_frames))
-            self.read_video(i)
 
     # Weird function
     def get_frame_id(self, frame):
@@ -322,7 +311,7 @@ class Dataset(object):
             self.imgs = self.imgs[start_frame:start_frame+lnet_T]
     def __len__(self):
         #return len(self.full_frames) - 4 - 5 * (len(self.time_mark_i)-1)
-        return len(self.all_videos)
+        return len(self.full_frames)
 
     def __getitem__(self, idx):
         if 2 <= idx <= len(self.full_frames) - 2:
