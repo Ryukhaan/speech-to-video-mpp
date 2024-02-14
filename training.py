@@ -664,6 +664,7 @@ if __name__ == "__main__":
         target_modules=["conv"],
         lora_dropout=0.1
     )
+    print(model.audio_encoder)
     lora_l_decoder = get_peft_model(model.decoder, decoder_config)
     lora_ae_encode = get_peft_model(model.audio_encoder, audio_enc_config)
     model.decoder = lora_l_decoder
