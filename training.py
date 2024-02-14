@@ -661,7 +661,7 @@ if __name__ == "__main__":
     audio_enc_config = LoraConfig(
         r=2,
         lora_alpha=2,
-        target_modules=["conv"],
+        target_modules=["conv_block.0"],
         lora_dropout=0.1
     )
     print(model.audio_encoder)
