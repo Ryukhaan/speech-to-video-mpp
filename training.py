@@ -90,9 +90,9 @@ class Dataset(object):
         self.kp_extractor = None
 
         #self.D_Net, self.model = fu_load_model(self.args, device)
-        self.idx = 0
-        self.reading_videos()
-        print(len(self.full_frames))
+        #self.idx = 0
+        #self.reading_videos()
+        #print(len(self.full_frames))
 
     def reading_videos(self):
         self.full_frames = []
@@ -106,6 +106,8 @@ class Dataset(object):
         return int(basename(frame).split('.')[0])
 
     def read_video(self, index):
+        self.vid_idx = index
+        self.full_frames = []
         video_stream = cv2.VideoCapture(self.all_videos[index])
         self.fps = video_stream.get(cv2.CAP_PROP_FPS)
         #self.full_frames = []
@@ -318,23 +320,16 @@ class Dataset(object):
             self.imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
             self.imgs = self.imgs[start_frame:start_frame+lnet_T]
     def __len__(self):
-        return len(self.full_frames) - 4 - 5 * (len(self.time_mark_i)-1)
-        #return len(self.all_videos)
+        #return len(self.full_frames) - 4 - 5 * (len(self.time_mark_i)-1)
+        return len(self.all_videos)
 
     def __getitem__(self, idx):
+        if 2 <= idx <= len(self.full_frames) - 2:
+            idx = np.random.randint(2, len(self.full_frames) - 3)
         start_frame = idx
-        for timer in self.time_mark_i:
-            if abs(idx - timer) < 3:
-                start_frame = 5
-                break
-        vid_idx = 0
-        for i in range(len(self.time_mark_i)-1):
-            if idx < self.time_mark_i[i+1]:
-                vid_idx = i
-        start_frame = start_frame + 2
 
         nframes = self.get_segmented_window(start_frame)
-        vidname = self.all_videos[vid_idx]
+        vidname = self.all_videos[self.vid_idx]
 
         wavpath = vidname.split('.')[0] + '.wav'
         wav = audio.load_wav(wavpath, hparams.sample_rate)
@@ -344,7 +339,7 @@ class Dataset(object):
         if indiv_mels is None:
             start_frame = 5
             nframes = self.get_segmented_window(start_frame)
-            vidname = self.all_videos[vid_idx]
+            vidname = self.all_videos[self.vid_idx]
             wavpath = vidname.split('.')[0] + '.wav'
             wav = audio.load_wav(wavpath, hparams.sample_rate)
             orig_mel = audio.melspectrogram(wav).T
@@ -443,35 +438,38 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
     while global_epoch < nepochs:
         running_loss = 0.
-        prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1, leave=True)
-        for step, (x, indiv_mel, mel, y) in prog_bar:
-            model.train()
-            optimizer.zero_grad()
+        #prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1, leave=True)
+        for idx, vid in enumerate(train_data_loader.all_videos):
+            train_data_loader.read_video(idx)
+            prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader.full_frames) + 1, leave=True)
+            for step, (x, indiv_mel, mel, y) in prog_bar:
+                model.train()
+                optimizer.zero_grad()
 
-            x = x.to(device)
-            indiv_mel = indiv_mel.to(device)
-            pred = model(indiv_mel, x)
+                x = x.to(device)
+                indiv_mel = indiv_mel.to(device)
+                pred = model(indiv_mel, x)
 
-            mel = mel.to(device)
-            pred = pred.to(device)
-            y = y.to(device)
-            loss = loss_func(pred, y, mel)
+                mel = mel.to(device)
+                pred = pred.to(device)
+                y = y.to(device)
+                loss = loss_func(pred, y, mel)
 
-            loss.backward()
-            optimizer.step()
+                loss.backward()
+                optimizer.step()
 
-            global_step += 1
-            cur_session_steps = global_step - resumed_step
-            running_loss += loss.item()
-            if global_step == 1 or global_step % checkpoint_interval == 0:
-                save_checkpoint(
-                    model, optimizer, global_step, checkpoint_dir, global_epoch)
+                global_step += 1
+                cur_session_steps = global_step - resumed_step
+                running_loss += loss.item()
+                if global_step == 1 or global_step % checkpoint_interval == 0:
+                    save_checkpoint(
+                        model, optimizer, global_step, checkpoint_dir, global_epoch)
 
-            if global_step % hparams.syncnet_eval_interval == 0:
-                with torch.no_grad():
-                    eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
+                if global_step % hparams.syncnet_eval_interval == 0:
+                    with torch.no_grad():
+                        eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
 
-            prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
+                prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
 
         global_epoch += 1
 def datagen(frames, mels, full_frames, frames_pil, cox):
