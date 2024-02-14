@@ -106,6 +106,7 @@ class Dataset(object):
         return int(basename(frame).split('.')[0])
 
     def read_video(self, index):
+        self.idx = index
         self.vid_idx = index
         self.full_frames = []
         video_stream = cv2.VideoCapture(self.all_videos[index])
