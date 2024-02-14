@@ -327,14 +327,7 @@ class Dataset(object):
         mel = self.crop_audio_window(orig_mel.copy(), start_frame)
         indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
         if indiv_mels is None:
-            start_frame = 5
-            nframes = self.get_segmented_window(start_frame)
-            vidname = self.all_videos[self.vid_idx]
-            wavpath = vidname.split('.')[0] + '.wav'
-            wav = audio.load_wav(wavpath, hparams.sample_rate)
-            orig_mel = audio.melspectrogram(wav).T
-            mel = self.crop_audio_window(orig_mel.copy(), start_frame)
-            indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
+            return None, None, None, None
 
         self.landmarks_estimate(nframes, save=False, start_frame=start_frame)
         self.face_3dmm_extraction(save=False, start_frame=start_frame)
@@ -433,6 +426,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         #    train_data_loader.read_video(idx)
         #    prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader.full_frames) + 1, leave=True)
         for step, (x, indiv_mel, mel, y) in prog_bar:
+            if x is None: continue
             model.train()
             optimizer.zero_grad()
 
