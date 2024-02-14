@@ -324,7 +324,8 @@ class Dataset(object):
         start_frame = idx
         for timer in self.time_mark_i:
             if abs(idx - timer) < 3:
-                start_frame += 5
+                start_frame = 5
+                break
         vid_idx = 0
         for i in range(len(self.time_mark_i)-1):
             if idx < self.time_mark_i[i+1]:
