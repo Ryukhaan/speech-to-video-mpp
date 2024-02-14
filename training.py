@@ -657,16 +657,24 @@ if __name__ == "__main__":
     load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
     # Lora Config
-    config = LoraConfig(
+    decoder_config = LoraConfig(
         r=16,
         lora_alpha=16,
         target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
         lora_dropout=0.1,
         bias="none",
     )
-    lora_l_decoder = get_peft_model(model.decoder, config)
+    audio_enc_config = LoraConfig(
+        r=2,
+        lora_alpha=2,
+        target_modules=["conv"],
+        lora_dropout=0.1
+    )
+    lora_l_decoder = get_peft_model(model.decoder, decoder_config)
+    lora_ae_encode = get_peft_model(model.audio_encoder, audio_enc_config)
     model.decoder = lora_l_decoder
-    print_trainable_parameters(lora_l_decoder)
+    model.audio_encoder = lora_ae_encode
+    print_trainable_parameters(model)
     model = model.to(device)
 
     train(device, model, train_data_loader, test_data_loader, optimizer,
