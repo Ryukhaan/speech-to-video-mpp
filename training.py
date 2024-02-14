@@ -111,6 +111,7 @@ class Dataset(object):
             if y2 == -1: y2 = frame.shape[0]
             frame = frame[y1:y2, x1:x2]
             self.full_frames.append(frame)
+        print(len(self.full_frames))
         return self.full_frames
 
     def get_segmented_window(self, start_frame):
@@ -310,7 +311,6 @@ class Dataset(object):
             self.imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
             self.imgs = self.imgs[start_frame:start_frame+lnet_T]
     def __len__(self):
-        #return len(self.full_frames) - 4 - 5 * (len(self.time_mark_i)-1)
         return len(self.full_frames)
 
     def __getitem__(self, idx):
