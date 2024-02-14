@@ -430,7 +430,7 @@ class Dataset(object):
 
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
-          checkpoint_dir=None, checkpoint_interval=None, nepochs=None):
+          checkpoint_dir=None, checkpoint_interval=None, nepochs=None, filenames=None):
 
     global global_step, global_epoch
     resumed_step = global_step
@@ -439,7 +439,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     while global_epoch < nepochs:
         running_loss = 0.
         #prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1, leave=True)
-        for idx, vid in enumerate(train_data_loader.all_videos):
+        for idx, vid in enumerate(filenames):
             train_data_loader.read_video(idx)
             prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader.full_frames) + 1, leave=True)
             for step, (x, indiv_mel, mel, y) in prog_bar:
@@ -678,6 +678,7 @@ if __name__ == "__main__":
     model = model.to(device)
 
     train(device, model, train_data_loader, test_data_loader, optimizer,
+          filenames=filenames,
           checkpoint_dir=checkpoint_dir,
           checkpoint_interval=hparams.syncnet_checkpoint_interval,
           nepochs=hparams.nepochs)
