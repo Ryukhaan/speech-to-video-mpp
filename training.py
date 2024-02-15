@@ -670,7 +670,7 @@ if __name__ == "__main__":
         r=2,
         lora_alpha=2,
         target_modules=["conv_block.0"],
-        lora_dropout=0.1
+        lora_dropout=0.0
     )
 
     lora_l_decoder = get_peft_model(model.decoder, decoder_config)
