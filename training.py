@@ -531,7 +531,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     eval_steps = 1400
     print('Evaluating for {} steps'.format(eval_steps))
-    losses = []
+    losses_list = []
     loss_func = losses.LoraLoss(device)
     while 1:
         prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1, leave=True)
@@ -550,11 +550,11 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
             mel = mel.to(device)
             loss = loss_func(pred, y, mel)
 
-            losses.append(loss.item())
+            losses_list.append(loss.item())
 
             if step > eval_steps: break
 
-        averaged_loss = sum(losses) / len(losses)
+        averaged_loss = sum(losses_list) / len(losses_list)
         print(averaged_loss)
 
         return
