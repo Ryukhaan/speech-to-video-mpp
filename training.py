@@ -308,7 +308,7 @@ class Dataset(object):
             self.imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
             self.imgs = self.imgs[start_frame:start_frame+lnet_T]
     def __len__(self):
-        return (len(self.full_frames) - 4) // 5
+        return (len(self.full_frames) - 5) // 5
         #return len(self.full_frames)
 
     def __getitem__(self, idx):
