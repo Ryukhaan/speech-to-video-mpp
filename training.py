@@ -100,7 +100,6 @@ class Dataset(object):
         self.full_frames = []
         video_stream = cv2.VideoCapture(self.all_videos[index])
         self.fps = video_stream.get(cv2.CAP_PROP_FPS)
-        #self.full_frames = []
         while True:
             still_reading, frame = video_stream.read()
             if not still_reading:
@@ -117,8 +116,6 @@ class Dataset(object):
     def get_segmented_window(self, start_frame):
         assert lnet_T == 5
         if start_frame < 1: return None
-        #return np.asarray([cv2.resize(frame, (96,96)) for frame in \
-        #    self.full_frames[start_frame-2:start_frame+lnet_T-2]])
         return self.full_frames[start_frame-2:start_frame+lnet_T-2]
 
     def get_segmented_codes(self, index, start_frame):
@@ -311,13 +308,14 @@ class Dataset(object):
             self.imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
             self.imgs = self.imgs[start_frame:start_frame+lnet_T]
     def __len__(self):
-        return len(self.full_frames)
+        return (len(self.full_frames) - 4) // 5
+        #return len(self.full_frames)
 
     def __getitem__(self, idx):
-        if 2 <= idx <= len(self.full_frames) - 2:
-            idx = np.random.randint(2, len(self.full_frames) - 3)
-        start_frame = idx
-
+        #if 2 <= idx <= len(self.full_frames) - 2:
+        #    idx = np.random.randint(2, len(self.full_frames) - 3)
+        #start_frame = idx
+        start_frame = 5 * idx + 2
         nframes = self.get_segmented_window(start_frame)
         vidname = self.all_videos[self.vid_idx]
 
@@ -660,10 +658,10 @@ if __name__ == "__main__":
 
     # Lora Config
     decoder_config = LoraConfig(
-        r=16,
-        lora_alpha=16,
+        r=8,
+        lora_alpha=4,
         target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
-        lora_dropout=0.1,
+        lora_dropout=0.0,
         bias="none",
     )
     audio_enc_config = LoraConfig(
