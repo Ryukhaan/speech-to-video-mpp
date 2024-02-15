@@ -626,10 +626,8 @@ if __name__ == "__main__":
         os.mkdir(checkpoint_dir)
 
     filenames = get_image_list(args.data_root, 'train_antoine_lora')
-    print(args.data_root, filenames)
     seed = 0
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
-    print(train_list)
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
     train_dataset.read_video(0)
@@ -674,7 +672,7 @@ if __name__ == "__main__":
         target_modules=["conv_block.0"],
         lora_dropout=0.1
     )
-    print(model.audio_encoder)
+
     lora_l_decoder = get_peft_model(model.decoder, decoder_config)
     lora_ae_encode = get_peft_model(model.audio_encoder, audio_enc_config)
     model.decoder = lora_l_decoder
