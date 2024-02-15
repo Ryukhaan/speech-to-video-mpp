@@ -532,7 +532,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     eval_steps = 1400
     print('Evaluating for {} steps'.format(eval_steps))
     losses = []
-    loss_func = losses.LNetLoss()
+    loss_func = losses.LoraLoss(device)
     while 1:
         prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1, leave=True)
         for step, (x, indiv_mel, mel, y) in prog_bar:
