@@ -31,7 +31,7 @@ class LipSyncLoss(torch.nn.Module):
     def forward(self, audio, y_pred):
         y_pred = y_pred[:, :, :, y_pred.size(3) // 2:]
         y_pred = torch.cat([y_pred[:, :, i] for i in range(self.number_of_frames)], dim=1)
-
+        print(y_pred)
         #audio = audio
         #y_pred = y_pred
         audio_emb, video_emb = self.net(audio, y_pred)
