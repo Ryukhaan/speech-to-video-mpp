@@ -653,6 +653,7 @@ if __name__ == "__main__":
     #if checkpoint_path is not None:
     #    load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
     #checkpoint_path = "checkpoints/Pnet.pth"
+    #load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
     # Lora Config
     decoder_config = LoraConfig(
