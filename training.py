@@ -653,8 +653,6 @@ if __name__ == "__main__":
     #if checkpoint_path is not None:
     #    load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
     #checkpoint_path = "checkpoints/Pnet.pth"
-    checkpoint_path = 'checkpoints/checkpoint_step_lora000273100.pth'
-    load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
     # Lora Config
     decoder_config = LoraConfig(
@@ -676,6 +674,10 @@ if __name__ == "__main__":
     model.decoder = lora_l_decoder
     model.audio_encoder = lora_ae_encode
     print_trainable_parameters(model)
+
+    checkpoint_path = 'checkpoints/checkpoint_step_lora000273100.pth'
+    load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
+
     model = model.to(device)
 
     train(device, model, train_data_loader, test_data_loader, optimizer,
