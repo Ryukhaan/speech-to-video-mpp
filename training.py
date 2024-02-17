@@ -544,7 +544,8 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
             indiv_mel = indiv_mel.to(device)
             y = y.to(device)
             pred = model(indiv_mel, x)
-
+            if pred.shape != torch.Size([2, 3, 5, 96, 96]):
+                continue
             mel = mel.to(device)
             loss = loss_func(pred, y, mel)
 
@@ -676,7 +677,7 @@ if __name__ == "__main__":
     model.audio_encoder = lora_ae_encode
     print_trainable_parameters(model)
 
-    checkpoint_path = 'checkpoints/checkpoint_step_lora000273400.pth'
+    checkpoint_path = 'checkpoints/checkpoint_step_lora000274000.pth'
     load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
     model = model.to(device)
