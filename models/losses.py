@@ -41,14 +41,14 @@ class LipSyncLoss(torch.nn.Module):
 
 
 class PerceptualLoss(torch.nn.Module):
-    def __init__(self, resize=True, conv_index='22'):
+    def __init__(self, device, conv_index='22'):
         super(PerceptualLoss, self).__init__()
         self.vgg_layers = torchvision.models.vgg19().features
         modules = [m for m in self.vgg_layers]
         if conv_index == '22':
-            self.vgg = nn.Sequential(*modules[:8])
+            self.vgg = nn.Sequential(*modules[:8]).to(device)
         elif conv_index == '54':
-            self.vgg = nn.Sequential(*modules[:35])
+            self.vgg = nn.Sequential(*modules[:35]).to(device)
 
         #vgg_mean = (0.485, 0.456, 0.406)
         #vgg_std = (0.229, 0.224, 0.225)
@@ -169,7 +169,7 @@ class LoraLoss(torch.nn.Module):
         self.lip_sync_loss.load_network("./checkpoints/lipsync_expert.pth")
 
         self.L1 = torch.nn.L1Loss()
-        self.L_perceptual = PerceptualLoss() #VGGPerceptualLoss()
+        self.L_perceptual = PerceptualLoss(device) #VGGPerceptualLoss()
         self.lambda_1 = 1.
         self.lambda_p = 1.
         self.lambda_sync = 0.3
