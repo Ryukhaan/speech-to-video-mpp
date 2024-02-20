@@ -216,7 +216,8 @@ def main():
         i += 1
 
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
-    imgs = imgs[:len(mel_chunks)]
+    imgs = imgs[:12]
+    #imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
     lm = lm[:len(mel_chunks)]
 
