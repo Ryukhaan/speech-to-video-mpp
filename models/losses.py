@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import torchvision
 import numpy
-
+import torch.nn.functionnal as F
 from models.syncnet import SyncNet_color
 
 class LipSyncLoss(torch.nn.Module):
@@ -39,52 +39,48 @@ class LipSyncLoss(torch.nn.Module):
         p = self.cosine_loss(audio_emb, video_emb, y)
         return p
 
-class ArcFaceLoss(torch.nn.Module):
-    def __init__(self, device):
-        super(ArcFaceLoss, self).__init__()
-        self.face3d_net_path = 'checkpoints/face3d_pretrain_epoch_20.pth'
-        self.device = device
-        self.lm3d = 'checkpoints/BFM'
-        self.l2_loss = torch.nn.MSELoss()
 
-    def forward(self, y_pred, y_true):
+class PerceptualLoss(torch.nn.Module):
+    def __init__(self, resize=True, conv_index='22'):
+        super(PerceptualLoss, self).__init__()
+        self.vgg_layers = torchvision.models.vgg19().features
+        modules = [m for m in self.vgg_features]
+        if conv_index == '22':
+            self.vgg = nn.Sequential(*modules[:8])
+        elif conv_index == '54':
+            self.vgg = nn.Sequential(*modules[:35])
 
-        torch.cuda.empty_cache()
-        net_recon = load_face3d_net(self.face3d_net_path, self.device)
-        lm3d_std = load_lm3d(self.lm3d)
+        #vgg_mean = (0.485, 0.456, 0.406)
+        #vgg_std = (0.229, 0.224, 0.225)
+        #self.sub_mean = common.MeanShift(rgb_range, vgg_mean, vgg_std)
+        self.vgg.requires_grad = False
+    def forward(self, y_pred: torch.Tensor, y_true: torch.Tensor) -> torch.Tensor:
+        """Compute VGG/Perceptual loss between Super-Resolved and High-Resolution
 
-        _, C, W, H = y_pred.shape
+        Parameters
+        ----------
+        y_pred : torch.Tensor
+            Predicted model output tensor
+        y_true : torch.Tensor
+            Original image tensor
 
-        lm_idx = lm[idx].reshape([-1, 2])
-        if np.mean(lm_idx) == -1:
-            lm_idx = (lm3d_std[:, :2]+1) / 2.
-            lm_idx = np.concatenate([lm_idx[:, :1] * W, lm_idx[:, 1:2] * H], 1)
-        else:
-            lm_idx[:, -1] = H - 1 - lm_idx[:, -1]
+        Returns
+        -------
+        loss : torch.Tensor
+            Perceptual VGG loss between sr and hr
 
-        # Y Predicted
-        d_ypred = y_pred.cpu().detach().numpy()
-        d_ypred = cv2.fromarray(d_ypred)
-        trans_params, im_idx, lm_idx, _ = align_img(d_ypred[0], lm_idx, lm3d_std)
-        trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
-        im_idx_tensor = torch.tensor(np.array(im_idx)/255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
+        """
+
+        def _forward(x):
+            # x = self.sub_mean(x)
+            x = self.vgg(x)
+            return x
+
+        vgg_sr = _forward(y_pred)
         with torch.no_grad():
-            coeffs = split_coeff(net_recon(im_idx_tensor))
-        pred_coeff = {key:coeffs[key].cpu().numpy() for key in coeffs}
-        pred_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'],\
-                                         pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
-        # Y Targets
-        #d_ytrue = y_true.cpu().detach().numpy()
-        #d_ytrue = cv2.fromarray(d_ytrue)
-        #trans_params, im_idx, lm_idx, _ = align_img(d_ytrue[0], lm_idx, lm3d_std)
-        #trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
-        #im_idx_tensor = torch.tensor(np.array(im_idx) / 255., dtype=torch.float32).permute(2, 0, 1).to(self.device).unsqueeze(0)
-        #with torch.no_grad():
-        #    coeffs = split_coeff(net_recon(im_idx_tensor))
-        #true_coeff = {key: coeffs[key].cpu().numpy() for key in coeffs}
-        #true_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'], \
-        #                             pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
-        return self.l2_loss(pred_coeff, y_true)
+            vgg_hr = _forward(y_true.detach())
+        loss = F.mse_loss(vgg_sr, vgg_hr)
+        return loss
 
 class VGGPerceptualLoss(torch.nn.Module):
     def __init__(self, resize=True):
@@ -173,7 +169,7 @@ class LoraLoss(torch.nn.Module):
         self.lip_sync_loss.load_network("./checkpoints/lipsync_expert.pth")
 
         self.L1 = torch.nn.L1Loss()
-        self.L_perceptual = VGGPerceptualLoss()
+        self.L_perceptual = PerceptualLoss() #VGGPerceptualLoss()
         self.lambda_1 = 1.
         self.lambda_p = 1.
         self.lambda_sync = 0.3
