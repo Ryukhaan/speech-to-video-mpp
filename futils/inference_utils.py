@@ -5,7 +5,7 @@ import json
 import os
 from scipy.io import wavfile
 
-from models import load_network, load_DNet, load_training_networks
+from models import load_network, load_lora_network, load_DNet, load_training_networks
 from tqdm import tqdm
 from PIL import Image
 from scipy.spatial import ConvexHull
@@ -282,6 +282,12 @@ def load_model(args, device):
     torch.cuda.empty_cache()
     D_Net = load_DNet(args).to(device)
     model = load_network(args).to(device)
+    return D_Net, model
+
+def load_lora_model(args, device):
+    torch.cuda.empty_cache()
+    D_Net = load_DNet(args).to(device)
+    model = load_lora_network(args).to(device)
     return D_Net, model
 
 def save_checkpoint(path, model):

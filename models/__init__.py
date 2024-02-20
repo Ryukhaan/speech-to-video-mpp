@@ -3,6 +3,8 @@ from models.DNet import DNet
 from models.LNet import LNet
 from models.ENet import ENet
 
+from peft import LoraConfig, get_peft_model
+
 from torchsummary import summary
 
 global_step = 0
@@ -50,6 +52,33 @@ def load_network(args):
     torch.cuda.empty_cache()
     L_net = LNet()
     L_net = load_checkpoint(args.LNet_path, L_net)
+    E_net = ENet(lnet=L_net)
+    model = load_checkpoint(args.ENet_path, E_net)
+    return model.eval()
+
+def load_lora_network(args):
+    torch.cuda.empty_cache()
+
+    L_net = LNet()
+    decoder_config = LoraConfig(
+        r=8,
+        lora_alpha=4,
+        target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
+        lora_dropout=0.0,
+        bias="none",
+    )
+    audio_enc_config = LoraConfig(
+        r=2,
+        lora_alpha=2,
+        target_modules=["conv_block.0"],
+        lora_dropout=0.0
+    )
+    lora_l_decoder = get_peft_model(L_net.decoder, decoder_config)
+    lora_ae_encode = get_peft_model(L_net.audio_encoder, audio_enc_config)
+    L_net.decoder = lora_l_decoder
+    L_net.audio_encoder = lora_ae_encode
+    L_net = load_checkpoint(args.LNet_path, L_net)
+
     E_net = ENet(lnet=L_net)
     model = load_checkpoint(args.ENet_path, E_net)
     return model.eval()
