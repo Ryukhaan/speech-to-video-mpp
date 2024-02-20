@@ -29,9 +29,9 @@ def train_options():
     parser.add_argument('--LNet_path', type=str, default='checkpoints/LNet.pth')
     parser.add_argument('--ENet_path', type=str, default='checkpoints/ENet.pth')
     parser.add_argument('--face3d_net_path', type=str, default='checkpoints/face3d_pretrain_epoch_20.pth')
-    parser.add_argument('--face', type=str, help='Filepath of video/image that contains faces to use', required=True)
-    parser.add_argument('--audio', type=str, help='Filepath of video/audio file to use as raw audio source',
-                        required=True)
+    #parser.add_argument('--face', type=str, help='Filepath of video/image that contains faces to use', required=True)
+    #parser.add_argument('--audio', type=str, help='Filepath of video/audio file to use as raw audio source',
+    #                    required=True)
     parser.add_argument('--exp_img', type=str, help='Expression template. neutral, smile or image path', default=None)
     parser.add_argument('--outfile', type=str, help='Video path to save result')
 
@@ -107,6 +107,10 @@ def options():
     parser.add_argument('--dict_path', default="", help="Path to phones dictionary")
     parser.add_argument('--json_path', default="", help="Path to JSON MFA result")
     parser.add_argument('--sync_path', default="checkpoints/lipsync_expert.pth", help="Path to LipSync Network checkpoints")
+
+    parser.add_argument('--use_lora', default=False, action='store_true',
+                        help="Use LoRA model in inference")
+
     args = parser.parse_args()
     return args
 

@@ -41,6 +41,7 @@ def main():
     gc.collect()
     torch.cuda.empty_cache()
     print('[Info] Using {} for inference.'.format(device))
+    print(args)
     preprocessor = preprocessing.Preprocessor(args)
     preprocessor.reading_video()
     preprocessor.landmarks_estimate()
