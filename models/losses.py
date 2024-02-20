@@ -44,7 +44,7 @@ class PerceptualLoss(torch.nn.Module):
     def __init__(self, resize=True, conv_index='22'):
         super(PerceptualLoss, self).__init__()
         self.vgg_layers = torchvision.models.vgg19().features
-        modules = [m for m in self.vgg_features]
+        modules = [m for m in self.vgg_layers]
         if conv_index == '22':
             self.vgg = nn.Sequential(*modules[:8])
         elif conv_index == '54':
