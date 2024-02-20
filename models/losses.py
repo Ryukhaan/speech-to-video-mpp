@@ -2,7 +2,7 @@ import torch
 from torch import nn
 import torchvision
 import numpy
-import torch.nn.functionnal as F
+import torch.nn.functional as F
 from models.syncnet import SyncNet_color
 
 class LipSyncLoss(torch.nn.Module):
