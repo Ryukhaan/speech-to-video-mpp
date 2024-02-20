@@ -64,6 +64,9 @@ def train_options():
     parser.add_argument('--json_path', default="", help="Path to JSON MFA result")
     parser.add_argument('--sync_path', default="checkpoints/lipsync_expert.pth",
                         help="Path to LipSync Network checkpoints")
+
+    parser.add_argument('--use_lora', default=False, action='store_true',
+                        help="Use LoRA model in inference")
     args = parser.parse_args()
     return args
 

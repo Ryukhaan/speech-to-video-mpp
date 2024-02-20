@@ -29,7 +29,7 @@ from futils.ffhq_preprocess import Croper
 from futils import audio
 from futils.ffhq_preprocess import Croper
 from futils.alignment_stit import crop_faces, calc_alignment_coefficients, paste_image
-from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_model, options, split_coeff, \
+from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_model, load_lora_model, options, split_coeff, \
                                   trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -169,9 +169,10 @@ class Preprocessor():
         del net_recon
         # load DNet, model(LNet and ENet)
         torch.cuda.empty_cache()
-
-        self.D_Net, self.model = load_model(self.args, device)
-
+        if self.args.use_lora:
+            self.D_Net, self.model = load_lora_model(self.args, device)
+        else:
+            self.D_Net, self.model = load_model(self.args, device)
         # Video Image Stabilized
         out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(self.args.tmp_dir),
                               cv2.VideoWriter_fourcc(*'mp4v'), self.fps, (256, 256))
