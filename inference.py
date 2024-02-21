@@ -261,7 +261,7 @@ def main():
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
         img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device)/255. # BGR -> RGB
-        
+        delta = 0
         with torch.no_grad():
             incomplete, reference = torch.split(img_batch, 3, dim=1) 
             pred, low_res = preprocessor.model(mel_batch, img_batch, reference)
@@ -314,22 +314,22 @@ def main():
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
-            delta+=1
-            if args.cropped_image:
+            #delta+=1
+            #if args.cropped_image:
                 #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
-                tmp_xf = cv2.resize(xf, (0,0), fx=2, fy=2)
-                pp, orig_face, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
-                pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
-                ff = xf.copy()
-                ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
-                assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
+            #    tmp_xf = cv2.resize(xf, (0,0), fx=2, fy=2)
+            #    pp, orig_face, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
+            #    pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
+            #    ff = xf.copy()
+            #    ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
+            #    assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 #cv2.imwrite("./results/{}.png".format(delta), pp)
-                out.write(ff)
-            else:
-                tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
-                pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
+            #    out.write(ff)
+            #else:
+            #    tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
+            #    pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
 
-                out.write(pp)
+            #    out.write(pp)
     out.release()
     
     if not os.path.isdir(os.path.dirname(args.outfile)):
