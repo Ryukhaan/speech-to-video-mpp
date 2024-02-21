@@ -315,7 +315,7 @@ def main():
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
-            #delta+=1
+            delta+=1
             #if args.cropped_image:
                 #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
             #    tmp_xf = cv2.resize(xf, (0,0), fx=2, fy=2)
