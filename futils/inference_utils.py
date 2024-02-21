@@ -108,6 +108,8 @@ def options():
     parser.add_argument('--json_path', default="", help="Path to JSON MFA result")
     parser.add_argument('--sync_path', default="checkpoints/lipsync_expert.pth", help="Path to LipSync Network checkpoints")
 
+    parser.add_argument('--resize_factor', default=1.,
+                        help="Resize image for face detection")
     parser.add_argument('--use_lora', default=False, action='store_true',
                         help="Use LoRA model in inference")
 

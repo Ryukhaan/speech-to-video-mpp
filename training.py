@@ -478,7 +478,6 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
     del kp_extractor.detector
 
     oy1,oy2,ox1,ox2 = cox
-    args.resize_factor = 0.5
     face_det_results = face_detect(full_frames, args, jaw_correction=True)
 
     for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames, face_det_results):
