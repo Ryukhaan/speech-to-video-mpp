@@ -90,18 +90,18 @@ class Preprocessor():
         self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
 
         # get the landmark according to the detected face.
-        if not os.path.isfile('temp/ ' + self.base_name +'_landmarks.txt') or self.args.re_preprocess:
+        if not os.path.isfile('temp/' + self.base_name +'_landmarks.txt') or self.args.re_preprocess:
             torch.cuda.empty_cache()
             print('[Step 1] Landmarks Extraction in Video.')
             kp_extractor = KeypointExtractor()
             self.lm = kp_extractor.extract_keypoint(self.frames_pil, './temp/ ' + self.base_name +'_landmarks.txt')
         else:
             print('[Step 1] Using saved landmarks.')
-            self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
+            self.lm = np.loadtxt('temp/' + self.base_name +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
 
     def face_3dmm_extraction(self):
-        if not os.path.isfile('temp/ ' + self.base_name +'_coeffs.npy') \
+        if not os.path.isfile('temp/' + self.base_name +'_coeffs.npy') \
             or self.args.exp_img is not None \
             or self.args.re_preprocess:
             torch.cuda.empty_cache()
@@ -131,7 +131,7 @@ class Preprocessor():
                                              pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
                 video_coeffs.append(pred_coeff)
             self.semantic_npy = np.array(video_coeffs)[: ,0]
-            np.save('temp/ ' + self.base_name +'_coeffs.npy', self.semantic_npy)
+            np.save('temp/' + self.base_name +'_coeffs.npy', self.semantic_npy)
             del net_recon
         else:
             print('[Step 2] Using saved coeffs.')
