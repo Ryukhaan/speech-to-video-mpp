@@ -266,8 +266,7 @@ def main():
             incomplete, reference = torch.split(img_batch, 3, dim=1) 
             pred, low_res = preprocessor.model(mel_batch, img_batch, reference)
             pred = torch.clamp(pred, 0, 1)
-            cv2.imwrite("./results/low_res{}.png".format(delta), pred)
-            delta += 1
+
             if args.up_face in ['sad', 'angry', 'surprise']:
                 tar_aus = exp_aus_dict[args.up_face]
             else:
@@ -288,6 +287,8 @@ def main():
                 pred = pred * mask + cur_gen_faces * (1 - mask) 
         
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
+        cv2.imwrite("./results/low_res{}.png".format(delta), pred)
+        delta += 1
 
         torch.cuda.empty_cache()
         delta = 0
