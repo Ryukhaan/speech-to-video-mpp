@@ -176,7 +176,7 @@ class Preprocessor():
         # Video Image Stabilized
         out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(self.args.tmp_dir),
                               cv2.VideoWriter_fourcc(*'mp4v'), self.fps, (256, 256))
-
+        print(self.base_name)
         if not os.path.isfile('temp/ ' + self.base_name +'_stablized.npy') or self.args.re_preprocess:
             self.imgs = []
             for idx in tqdm(range(len(self.frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
