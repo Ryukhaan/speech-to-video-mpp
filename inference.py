@@ -287,7 +287,7 @@ def main():
                 pred = pred * mask + cur_gen_faces * (1 - mask) 
         
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
-        cv2.imwrite("./results/low_res{}.png".format(delta), pred)
+        cv2.imwrite("./results/low_res{}.png".format(delta), np.uint8(pred))
         delta += 1
 
         torch.cuda.empty_cache()
