@@ -308,14 +308,16 @@ class Dataset(object):
             self.imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
             self.imgs = self.imgs[start_frame:start_frame+lnet_T]
     def __len__(self):
-        return (len(self.full_frames) - 20) // 5
+        return len(self.full_frames) - 4
+        #return (len(self.full_frames) - 20) // 5
         #return len(self.full_frames)
 
     def __getitem__(self, idx):
         #if 2 <= idx <= len(self.full_frames) - 2:
         #    idx = np.random.randint(2, len(self.full_frames) - 3)
         #start_frame = idx
-        start_frame = 5 * idx + 2
+        #start_frame = 5 * idx + 2
+        start_frame = idx + 2
         nframes = self.get_segmented_window(start_frame)
         vidname = self.all_videos[self.vid_idx]
 
@@ -424,10 +426,10 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     global global_step, global_epoch
     resumed_step = global_step
     loss_func = losses.LoraLoss(device)
-
-    while global_epoch < nepochs:
+    prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader) + 1, leave=True)
+    for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch):
+    #while global_epoch < nepochs:
         running_loss = 0.
-        prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1, leave=True)
         #for idx, vid in enumerate(filenames):
         #    train_data_loader.read_video(idx)
         #    prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader.full_frames) + 1, leave=True)
@@ -439,7 +441,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             x = x.to(device)
             indiv_mel = indiv_mel.to(device)
             pred = model(indiv_mel, x)
-
+            if pred.shape != torch.Size([2, 3, 5, 96, 96]):
+                continue
             mel = mel.to(device)
             pred = pred.to(device)
             y = y.to(device)
