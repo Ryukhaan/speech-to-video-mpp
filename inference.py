@@ -261,7 +261,7 @@ def main():
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
         img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device)/255. # BGR -> RGB
-        delta = 0
+
         with torch.no_grad():
             incomplete, reference = torch.split(img_batch, 3, dim=1) 
             pred, low_res = preprocessor.model(mel_batch, img_batch, reference)
@@ -287,13 +287,11 @@ def main():
                 pred = pred * mask + cur_gen_faces * (1 - mask) 
         
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
-        print(pred.shape)
-        cv2.imwrite("./results/low_res{}.png".format(delta), np.uint8(pred))
-        delta += 1
 
         torch.cuda.empty_cache()
         delta = 0
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
+            cv2.imwrite("./results/low_res{}.png".format(delta), np.uint8(p))
             y1, y2, x1, x2 = c
             p = cv2.resize(p.astype(np.uint8), (x2 - x1, y2 - y1))
             
