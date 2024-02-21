@@ -677,8 +677,8 @@ if __name__ == "__main__":
     model.audio_encoder = lora_ae_encode
     print_trainable_parameters(model)
 
-    checkpoint_path = 'checkpoints/checkpoint_step_lora000290000.pth'
-    load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
+    #checkpoint_path = 'checkpoints/checkpoint_step_lora000290000.pth'
+    #load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
     model = model.to(device)
 
