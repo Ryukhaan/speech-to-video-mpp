@@ -540,32 +540,32 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     print('Evaluating for {} steps'.format(eval_steps))
     losses_list = []
     loss_func = losses.LoraLoss(device)
-    while 1:
-        prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1, leave=True)
-        for step, (x, indiv_mel, mel, y) in prog_bar:
-            if x is None:
-                continue
-            model.eval()
+    #while 1:
+    prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1, leave=True)
+    for step, (x, indiv_mel, mel, y) in prog_bar:
+        if x is None:
+            continue
+        model.eval()
 
-            optimizer.zero_grad()
+        optimizer.zero_grad()
 
-            x = x.to(device)
-            indiv_mel = indiv_mel.to(device)
-            y = y.to(device)
-            pred = model(indiv_mel, x)
-            if pred.shape != torch.Size([2, 3, 5, 96, 96]):
-                continue
-            mel = mel.to(device)
-            loss = loss_func(pred, y, mel)
+        x = x.to(device)
+        indiv_mel = indiv_mel.to(device)
+        y = y.to(device)
+        pred = model(indiv_mel, x)
+        if pred.shape != torch.Size([2, 3, 5, 96, 96]):
+            continue
+        mel = mel.to(device)
+        loss = loss_func(pred, y, mel)
 
-            losses_list.append(loss.item())
+        losses_list.append(loss.item())
 
-            if step > eval_steps: break
+        #if step > eval_steps: break
 
-        averaged_loss = sum(losses_list) / len(losses_list)
-        print(averaged_loss)
+    averaged_loss = sum(losses_list) / len(losses_list)
+    print(averaged_loss)
 
-        return averaged_loss
+    return averaged_loss
 
 def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch, prefix=''):
     checkpoint_path = join(
