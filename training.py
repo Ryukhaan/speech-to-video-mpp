@@ -668,7 +668,7 @@ if __name__ == "__main__":
     # Lora Config
     decoder_config = LoraConfig(
         r=16,
-        lora_alpha=16,
+        lora_alpha=8,
         target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
         lora_dropout=0.1,
         bias="none",
@@ -681,11 +681,11 @@ if __name__ == "__main__":
     )
 
     lora_l_decoder = get_peft_model(model.decoder, decoder_config)
-    #lora_ae_encode = get_peft_model(model.audio_encoder, audio_enc_config)
+    lora_ae_encode = get_peft_model(model.audio_encoder, audio_enc_config)
     model.decoder = lora_l_decoder
-    for param in model.audio_encoder.parameters():
-        param.requires_grad = True
-    #model.audio_encoder = lora_ae_encode
+    #for param in model.audio_encoder.parameters():
+    #    param.requires_grad = True
+    model.audio_encoder = lora_ae_encode
     print_trainable_parameters(model)
 
     #checkpoint_path = 'checkpoints/checkpoint_step_lora000290000.pth'
