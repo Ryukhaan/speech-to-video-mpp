@@ -136,17 +136,16 @@ class LoraLoss(torch.nn.Module):
 
         B, C, T, Hin, Win = face_pred.shape
         _, _, _, H, W =  face_true.shape
-        resizer = torchvision.transforms.Resize((Hin, Win),
-                                                interpolation=torchvision.transforms.InterpolationMode.BICUBIC)
-
+        resizer_96 = torchvision.transforms.Resize((Hin, Win))
+        resizer_up = torchvision.transforms.Resize((H, W))
         y_pred = torch.cat([face_pred[:, :, i] for i in range(face_pred.size(2))], dim=0)
         y_true = torch.cat([face_pred[:, :, i] for i in range(face_pred.size(2))], dim=0)
 
-        #y_pred = resizer(y_pred)
-        y_true  = resizer(y_true)
+        y_pred_up = resizer_up(y_pred)
+        y_true_96 = resizer_96(y_true)
 
-        l1_val = torch.nn.L1Loss(reduction='sum')(y_pred, y_true).to(self.device)
-        #lp_val = self.L_perceptual(y_pred, y_true).to(self.device)
-        lsync_val = self.lip_sync_loss(audio_seq, face_pred).to(self.device)
+        l1_val = torch.nn.L1Loss()(y_pred_up, y_true).to(self.device)
+        #lp_val = self.L_perceptual(y_pred, y_true_96).to(self.device)
+        #lsync_val = self.lip_sync_loss(audio_seq, face_pred).to(self.device)
 
         return self.lambda_1 * l1_val #+ self.lambda_sync * lsync_val #+ self.lambda_p * lp_val
