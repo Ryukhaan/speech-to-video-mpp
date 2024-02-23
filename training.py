@@ -464,7 +464,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         #    with torch.no_grad():
         #        eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
 
-            prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
+            prog_bar.set_description('Loss: {} at {}'.format(running_loss / (step + 1), global_step))
         avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
         if avg_eval_loss < best_eval_loss:
             save_checkpoint(
