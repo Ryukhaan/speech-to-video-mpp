@@ -315,21 +315,20 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
             delta+=1
-            #if args.cropped_image:
+            if args.cropped_image:
                 #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
-            #    tmp_xf = cv2.resize(xf, (0,0), fx=2, fy=2)
-            #    pp, orig_face, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
-            #    pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
-            #    ff = xf.copy()
-            #    ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
-            #    assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
+                tmp_xf = cv2.resize(xf, (0,0), fx=2, fy=2)
+                pp, orig_face, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
+                pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
+                ff = xf.copy()
+                ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
+                assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
                 #cv2.imwrite("./results/{}.png".format(delta), pp)
-            #    out.write(ff)
-            #else:
-            #    tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
-            #    pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
-
-            #    out.write(pp)
+                out.write(ff)
+            else:
+                tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
+                pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
+                out.write(pp)
     out.release()
     
     if not os.path.isdir(os.path.dirname(args.outfile)):

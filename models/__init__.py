@@ -61,10 +61,10 @@ def load_lora_network(args):
 
     L_net = LNet()
     decoder_config = LoraConfig(
-        r=8,
-        lora_alpha=4,
+        r=16,
+        lora_alpha=16,
         target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
-        lora_dropout=0.0,
+        lora_dropout=0.1,
         bias="none",
     )
     audio_enc_config = LoraConfig(

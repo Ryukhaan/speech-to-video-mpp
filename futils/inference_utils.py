@@ -304,9 +304,6 @@ def save_checkpoint(path, model):
 
 def load_lora_train_model(args, device):
     D_Net, L_Net, E_Net = load_training_networks(args)
-    print("ENet", E_Net)
-    print("DNet", D_Net)
-    print("LNet", L_Net)
     return D_Net, L_Net, E_Net
 
 def load_train_model(args, device):
