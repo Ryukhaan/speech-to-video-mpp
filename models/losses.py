@@ -126,7 +126,7 @@ class LoraLoss(torch.nn.Module):
         self.lip_sync_loss = LipSyncLoss(device=self.device)
         self.lip_sync_loss.load_network("./checkpoints/lipsync_expert.pth")
 
-        self.L1 = torch.nn.L1Loss()
+        self.L1 = torch.nn.MSELoss()
         self.L_perceptual = PerceptualLoss(device) #VGGPerceptualLoss()
         self.lambda_1 = 1.
         self.lambda_p = 1.
