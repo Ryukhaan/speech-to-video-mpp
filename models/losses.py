@@ -143,7 +143,7 @@ class LoraLoss(torch.nn.Module):
 
         y_pred_up = resizer_up(y_pred)
         y_true_96 = resizer_96(y_true)
-
+        print(y_true.shape, y_pred_up.shape)
         l1_val = torch.nn.L1Loss()(y_pred_up, y_true).to(self.device)
         #lp_val = self.L_perceptual(y_pred, y_true_96).to(self.device)
         #lsync_val = self.lip_sync_loss(audio_seq, face_pred).to(self.device)
