@@ -681,9 +681,11 @@ if __name__ == "__main__":
     )
 
     lora_l_decoder = get_peft_model(model.decoder, decoder_config)
-    lora_ae_encode = get_peft_model(model.audio_encoder, audio_enc_config)
+    #lora_ae_encode = get_peft_model(model.audio_encoder, audio_enc_config)
     model.decoder = lora_l_decoder
-    model.audio_encoder = lora_ae_encode
+    for param in model.audio_encoder.parameters():
+        param.requires_grad = True
+    #model.audio_encoder = lora_ae_encode
     print_trainable_parameters(model)
 
     #checkpoint_path = 'checkpoints/checkpoint_step_lora000290000.pth'
