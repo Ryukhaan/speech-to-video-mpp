@@ -147,7 +147,7 @@ class LNet(nn.Module):
         input_dim_size = len(face_sequences.size())
         if input_dim_size > 4:
             face_sequences = torch.cat([face_sequences[:, :, i] for i in range(face_sequences.size(2))], dim=0)
-
+        print(face_sequences)
         cropped, ref = torch.split(face_sequences, 3, dim=1)
 
         #audio_feat = self.audio_fn(audio_sequences)
