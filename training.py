@@ -397,32 +397,46 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
     global global_step, global_epoch
     resumed_step = global_step
-    loss_func = losses.LNetLoss()
+    loss_func = losses.LoraLoss()
     while global_epoch < nepochs:
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
-        for step, (x, code, phone, audio, y) in prog_bar:
-            mask_x, stab_x = torch.split(x, 15, dim=1)
+        for step, (x, code, phone, mel, y) in prog_bar:
+            # mask_x, stab_x = torch.split(x, 15, dim=1)
+            # model.train()
+            # optimizer.zero_grad()
+            #
+            # mask_x = mask_x.to(device)
+            # stab_x = stab_x.to(device)
+            # code = code.to(device)
+            # phone = phone.to(device)
+            # y = y.to(device)
+            # pred_list = []
+            # # Iterate through T=5 frames
+            # for i in range(lnet_T):
+            #     x = torch.cat((mask_x[:,3*i:3*(i+1),:,:], stab_x[:,3*i:3*(i+1),:,:]), dim=1)
+            #     pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x)
+            #     #loss_list.append(loss_func(pred, y[:,:,i,:,:]))
+            #     pred_list.append(pred.unsqueeze(1))
+            # #pred = model(code, phone, x)
+            # pred = torch.cat(pred_list, dim=1)
+            # loss = loss_func(pred, y, audio)
+            # loss.backward()
+            # optimizer.step()
+
+            if x is None: continue
             model.train()
             optimizer.zero_grad()
 
-            mask_x = mask_x.to(device)
-            stab_x = stab_x.to(device)
-            code = code.to(device)
-            phone = phone.to(device)
+            x = x.to(device)
+            mel = mel.to(device)
+            pred = model(code, phone, x)
+            if pred.shape != torch.Size([2, 3, 5, 96, 96]):
+                continue
+            pred = pred.to(device)
             y = y.to(device)
-            pred_list = []
-            # Iterate through T=5 frames
-            for i in range(lnet_T):
-                x = torch.cat((mask_x[:,3*i:3*(i+1),:,:], stab_x[:,3*i:3*(i+1),:,:]), dim=1)
-                pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x)
-                #loss_list.append(loss_func(pred, y[:,:,i,:,:]))
-                pred_list.append(pred.unsqueeze(1))
-            #pred = model(code, phone, x)
-            pred = torch.cat(pred_list, dim=1)
-            loss = loss_func(pred, y, audio)
-            loss.backward()
-            optimizer.step()
+            loss = loss_func(pred, y, mel)
+
 
             global_step += 1
             cur_session_steps = global_step - resumed_step
