@@ -82,7 +82,7 @@ class LNet(nn.Module):
     def __init__(
         self, 
         image_nc=3, 
-        descriptor_nc=512,
+        descriptor_nc=992,
         layer=3, 
         base_nc=64, 
         max_nc=512,
@@ -101,8 +101,8 @@ class LNet(nn.Module):
         self.encoder = encoder(image_nc, base_nc, max_nc, layer, **kwargs)
         self.decoder = decoder(image_nc, self.descriptor_nc, base_nc, max_nc, layer, num_res_blocks, **kwargs)
 
-        #self.phone_encoder = Phone_Encoder()
-        self.audio_fn = torch.nn.Linear(992, descriptor_nc)
+        # self.phone_encoder = Phone_Encoder()
+        # self.audio_fn = torch.nn.Linear(992, descriptor_nc)
         # self.audio_encoder = nn.Sequential(
         #     Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
         #     Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
@@ -152,8 +152,9 @@ class LNet(nn.Module):
 
         cropped, ref = torch.split(face_sequences, 3, dim=1)
 
-        audio_phones_feat = self.audio_fn(torch.cat([audio_sequences, phones_sequences], axis=1))
-        print(audio_phones_feat.shape)
+        #audio_phones_feat = self.audio_fn(torch.cat([audio_sequences, phones_sequences], axis=1))
+        audio_phones_feat = torch.cat([audio_sequences, phones_sequences], dim=1)
+        #print(audio_phones_feat.shape)
         vis_feat = self.encoder(cropped, ref)
         _outputs = self.decoder(vis_feat, audio_phones_feat)
 
