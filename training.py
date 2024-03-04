@@ -348,7 +348,7 @@ class Dataset(object):
             except Exception as e:
                 print("Error in wav or mel")
                 continue
-            #mel = self.crop_audio_window(orig_mel.copy(), start_frame)
+            mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
             if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
                 continue
@@ -382,13 +382,10 @@ class Dataset(object):
             codes = torch.FloatTensor(codes)
             #phones = phones
             x = torch.FloatTensor(x)
-            #mel = torch.FloatTensor(mel.T).unsqueeze(0)
+            mel = torch.FloatTensor(mel.T).unsqueeze(0)
             indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
-            #print(x.shape)
-            #if x.shape != size:
-            #    continue
-            #print(indiv_mels.shape)
-            return x, codes, phones,indiv_mels, y
+
+            return x, codes, phones, indiv_mels, y
 
     def save_preprocess(self):
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
