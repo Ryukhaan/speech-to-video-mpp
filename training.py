@@ -88,6 +88,7 @@ class Dataset(object):
 
         #self.D_Net, self.model = fu_load_model(self.args, device)
         self.idx = 0
+        self.clip_model = None
 
     # Weird function
     def get_frame_id(self, frame):
