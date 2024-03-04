@@ -339,35 +339,28 @@ class Dataset(object):
             try:
                 phones = self.get_segmented_phones(idx, start_frame)
             except Exception as e:
-            #    print("Phones", vidname, start_frame)
                 continue
 
             try:
-                #wavpath = join(vidname, "audio.wav")
                 wavpath = vidname.split('.')[0] + '.wav'
                 wav = audio.load_wav(wavpath, hparams.sample_rate)
                 orig_mel = audio.melspectrogram(wav).T
                 indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
-
             except Exception as e:
-                #print("Wav", vidname, start_frame)
                 continue
 
-            mel = self.crop_audio_window(orig_mel.copy(), start_frame)
+            #mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
             if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
-                #print("Landmarks", vidname, start_frame)
                 continue
 
             try:
                 self.face_3dmm_extraction(save=False, start_frame=start_frame)
             except Exception as e:
-                #print("Face3d", vidname, start_frame)
                 continue
             try:
                 self.hack_3dmm_expression(save=False, start_frame=start_frame)
             except Exception as e:
-                #print("Hack", vidname, start_frame)
                 continue
 
             if len(self.imgs.shape) <= 3: continue
@@ -401,6 +394,8 @@ class Dataset(object):
             #mel = torch.FloatTensor(mel.T).unsqueeze(0)
             indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
             if x.shape != size:
+                continue
+            if not indiv_mels:
                 continue
             return x, codes, phones,indiv_mels, y
 
