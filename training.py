@@ -194,10 +194,11 @@ class Dataset(object):
         for i in range(lnet_T):
             tmin = (start_frame - 2 + i) * m_fps
             tmax = (start_frame - 2 + i + 1) * m_fps
+            tmp_word = ""
             for (ts, te, word) in self.words:
                 if ts < tmax and te >= tmin:
-                    text_array.append(word)
-
+                    tmp_word.append(word)
+            text_array.append(" ".join(tmp_word))
         with torch.no_grad():
             text_tokens = clip.tokenize(text_array).to(self.device)
             text_features = self.clip_model.encode_text(text_tokens)
