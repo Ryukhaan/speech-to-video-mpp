@@ -382,6 +382,7 @@ class Dataset(object):
             x = torch.FloatTensor(x)
             #mel = torch.FloatTensor(mel.T).unsqueeze(0)
             indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
+            print(x.shape)
             if x.shape != size:
                 continue
             print(indiv_mels.shape)
