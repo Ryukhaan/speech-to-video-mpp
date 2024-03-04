@@ -372,18 +372,7 @@ class Dataset(object):
             masked_window = self.prepare_window(self.imgs_masked)
             masked_window[:, window.shape[2] // 2:] = 0.
             x = np.concatenate([masked_window, stabilized_window], axis=0)
-            #self.imgs_masked[:, img_size // 2:] = 0
-            # try:
-            #     masked_window = self.prepare_window(self.imgs_masked)
-            #     masked_window = np.concatenate(masked_window, axis=0)
-            # except Exception as err:
-            #     print(type(masked_window), masked_window)
-            #     continue
-            # try:
-            #     stabilized_window = np.concatenate(stabilized_window, axis=0)
-            #     x = np.concatenate([masked_window, stabilized_window], axis=0)
-            # except Exception as err:
-            #     continue
+
             y = window.copy()
             y = torch.FloatTensor(y)
 
@@ -394,7 +383,7 @@ class Dataset(object):
             indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
             if x.shape != size:
                 continue
-            #print(indiv_mels.shape)
+            print(indiv_mels.shape)
             return x, codes, phones,indiv_mels, y
 
     def save_preprocess(self):
