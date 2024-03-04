@@ -135,7 +135,6 @@ class Dataset(object):
         if start_frame < 1: return None
         # Get folder and file without ext.
         basefile = self.all_videos[index].split('.')[0]
-        print(basefile)
         with open(basefile + ".json", 'r', encoding='utf-8') as file:
             json_data = json.load(file)
         # Get Phones and words from json
@@ -182,7 +181,7 @@ class Dataset(object):
                 text_array.append(word)
         text_tokens = clip.tokenize(text_array).to(self.device)
         text_features = self.clip_model.encode_text(text_tokens)
-        print(text_features.shape)
+        print(text_array, text_features.shape)
         return text_features
 
     def crop_audio_window(self, spec, start_frame):
