@@ -173,12 +173,12 @@ class Dataset(object):
         m_fps = int(1. / 25 * 1000)
         #print(start_frame, milliseconds, self.phones_per_ms.shape)
         #phones = self.phones_per_ms[100 + m_fps*(start_frame-2) : 100 + m_fps*(start_frame-2+lnet_T) ]
-        Tmin = (start_frame - 2) * m_fps
-        Tmax = (start_frame - 2 + lnet_T + 1) * m_fps
+        tmin = (start_frame - 2) * m_fps
+        tmax = (start_frame - 2 + lnet_T + 1) * m_fps
+        print(tmin, tmax)
         text_array = []
         for (ts, te, word) in self.words:
-            if ts >= Tmin and te < Tmax:
-                print(ts, te, word)
+            if ts >= tmin and te < tmax:
                 text_array.append(word)
         text_tokens = clip.tokenize(text_array).to(self.device)
         text_features = self.clip_model.encode_text(text_tokens)
