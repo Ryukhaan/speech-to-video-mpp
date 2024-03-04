@@ -395,8 +395,7 @@ class Dataset(object):
             indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
             if x.shape != size:
                 continue
-            if not indiv_mels:
-                continue
+            print(indiv_mels.shape)
             return x, codes, phones,indiv_mels, y
 
     def save_preprocess(self):
