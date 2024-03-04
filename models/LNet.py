@@ -85,7 +85,7 @@ class LNet(nn.Module):
         descriptor_nc=512, 
         layer=3, 
         base_nc=64, 
-        max_nc=512, 
+        max_nc=992,
         num_res_blocks=9, 
         use_spect=True,
         encoder=Visual_Encoder,
