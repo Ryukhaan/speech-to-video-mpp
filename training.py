@@ -348,7 +348,8 @@ class Dataset(object):
                 indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
             except Exception as e:
                 continue
-
+            if not indiv_mels:
+                continue
             #mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
             if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
@@ -395,7 +396,7 @@ class Dataset(object):
             indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
             if x.shape != size:
                 continue
-            print(indiv_mels.shape)
+            #print(indiv_mels.shape)
             return x, codes, phones,indiv_mels, y
 
     def save_preprocess(self):
