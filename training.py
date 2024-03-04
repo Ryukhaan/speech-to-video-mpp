@@ -88,7 +88,9 @@ class Dataset(object):
 
         #self.D_Net, self.model = fu_load_model(self.args, device)
         self.idx = 0
-        self.clip_model = None
+        self.clip_model, self.preprocess_clip = clip.load("ViT-B/32", device=device)
+        for param in self.clip_model.parameters():
+            param.required_grad = False
 
     # Weird function
     def get_frame_id(self, frame):
@@ -130,10 +132,6 @@ class Dataset(object):
     def get_segmented_phones(self, index, start_frame):
         assert lnet_T == 5
         if start_frame < 1: return None
-        if self.clip_model is None:
-            self.clip_model, self.preprocess_clip = clip.load("ViT-B/32", device=self.args.device)
-            for param in self.clip_model.parameters():
-                param.required_grad = False
         # Get folder and file without ext.
         basefile = self.all_videos[index].split('.')[0]
         print(basefile)
