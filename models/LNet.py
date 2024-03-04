@@ -102,7 +102,7 @@ class LNet(nn.Module):
         self.decoder = decoder(image_nc, self.descriptor_nc, base_nc, max_nc, layer, num_res_blocks, **kwargs)
 
         #self.phone_encoder = Phone_Encoder()
-        self.audio_fn = torch.nn.Linear(992, 512)
+        self.audio_fn = torch.nn.Linear(992, descriptor_nc)
         # self.audio_encoder = nn.Sequential(
         #     Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
         #     Conv2d(32, 32, kernel_size=3, stride=1, padding=1, residual=True),
@@ -146,18 +146,13 @@ class LNet(nn.Module):
         B = audio_sequences.size(0)
         input_dim_size = len(face_sequences.size())
         if input_dim_size > 4:
+            audio_sequences = torch.cat([audio_sequences[:,i] for i in range(audio_sequences.size(1))], dim=0)
+            phones_sequences = torch.cat([phones_sequences[:,i] for i in range(phones_sequences.size(1))], dim=0)
             face_sequences = torch.cat([face_sequences[:, :, i] for i in range(face_sequences.size(2))], dim=0)
 
         cropped, ref = torch.split(face_sequences, 3, dim=1)
 
-        #audio_feat = self.audio_fn(audio_sequences)
-        #audio_feat = audio_feat.unsqueeze(2).unsqueeze(3)
-        #phones_feat = self.phone_encoder(phones_sequences)
-        #phones_feat = phones_feat.unsqueeze(2).unsqueeze(3)
-
-        phones_feat = phones_sequences.squeeze(1)
-        audio_feat = audio_sequences[:,0].squeeze(1)
-        audio_phones_feat = self.audio_fn(torch.cat([audio_feat, phones_feat], axis=1))
+        audio_phones_feat = self.audio_fn(torch.cat([audio_sequences, phones_sequences], axis=1))
         print(audio_phones_feat.shape)
         vis_feat = self.encoder(cropped, ref)
         _outputs = self.decoder(vis_feat, audio_phones_feat)

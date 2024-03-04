@@ -189,13 +189,15 @@ class Dataset(object):
         m_fps = 1. / 25
         #print(start_frame, milliseconds, self.phones_per_ms.shape)
         #phones = self.phones_per_ms[100 + m_fps*(start_frame-2) : 100 + m_fps*(start_frame-2+lnet_T) ]
-        tmin = (start_frame - 2) * m_fps
-        tmax = (start_frame - 2 + lnet_T + 1) * m_fps
+
         text_array = []
-        for (ts, te, word) in self.words:
-            if ts < tmax and te >= tmin:
-                text_array.append(word)
-        text_array = [" ".join(text_array)]
+        for i in range(lnet_T):
+            tmin = (start_frame - 2 + i) * m_fps
+            tmax = (start_frame - 2 + i + 1) * m_fps
+            for (ts, te, word) in self.words:
+                if ts < tmax and te >= tmin:
+                    text_array.append(word)
+
         with torch.no_grad():
             text_tokens = clip.tokenize(text_array).to(self.device)
             text_features = self.clip_model.encode_text(text_tokens)
