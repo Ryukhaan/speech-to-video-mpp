@@ -170,14 +170,13 @@ class Dataset(object):
         #         phone = "v"
         #     self.phones_per_ms[int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
         # self.phones_per_ms = np.pad(self.phones_per_ms, ((100, 100)), 'constant', constant_values=0)
-        #m_fps = int(1. / 25 * 1000)
+        m_fps = int(1. / 25 * 1000)
         #print(start_frame, milliseconds, self.phones_per_ms.shape)
         #phones = self.phones_per_ms[100 + m_fps*(start_frame-2) : 100 + m_fps*(start_frame-2+lnet_T) ]
-        Tmin = (start_frame - 2) * 0.2
-        Tmax = (start_frame - 2 + lnet_T + 1) * 0.2
+        Tmin = (start_frame - 2) * m_fps
+        Tmax = (start_frame - 2 + lnet_T + 1) * m_fps
         text_array = []
         for (ts, te, word) in self.words:
-            print(ts, te, word)
             if (ts >= Tmin and te < Tmax):
                 text_array.append(word)
         text_tokens = clip.tokenize(text_array).to(self.device)
