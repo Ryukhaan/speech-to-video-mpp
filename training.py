@@ -366,7 +366,10 @@ class Dataset(object):
             window = self.prepare_window(nframes)
             if window.shape[1] != 5: continue
             self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
-            stabilized_window = self.prepare_window(self.imgs)
+            try:
+                stabilized_window = self.prepare_window(self.imgs)
+            except Exception as e:
+                continue
             self.imgs_masked = self.imgs.copy()
 
             masked_window = self.prepare_window(self.imgs_masked)
