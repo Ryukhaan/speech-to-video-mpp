@@ -11,7 +11,7 @@ import torchvision
 from torchsummary import summary
 from torch.utils import data as data_utils
 from librosa import get_duration
-
+import clip
 import numpy as np
 import cv2, os, sys, subprocess, platform, torch
 from tqdm import tqdm
@@ -129,47 +129,59 @@ class Dataset(object):
     def get_segmented_phones(self, index, start_frame):
         assert lnet_T == 5
         if start_frame < 1: return None
+        if self.clip_model is None:
+            self.clip_model, self.preprocess_clip = clip.load("ViT-B/32", device=self.args.device)
+            for param in self.clip_model.parameters():
+                param.required_grad = False
         # Get folder and file without ext.
         basefile = self.all_videos[index].split('.')[0]
         with open(basefile + ".json", 'r', encoding='utf-8') as file:
             json_data = json.load(file)
         # Get Phones and words from json
-        words = json_data['tiers']['words']
+        self.words = json_data['tiers']['words']['entries']
         self.phones = json_data['tiers']['phones']
 
         # Load File WAV associated to the JSON
-        samplerate, wav_data = wavfile.read(basefile + ".wav", 'r')
-        milliseconds = len(wav_data) / samplerate * 1000
+        #samplerate, wav_data = wavfile.read(basefile + ".wav", 'r')
+        #milliseconds = len(wav_data) / samplerate * 1000
         # Each phones = (start_in_s, end_in_s, phone_str)
-        self.phones_per_ms = np.zeros(int(milliseconds), dtype=np.int32)
-        for (start, end, phone) in self.phones['entries']:
-            # Some errors have been transcribed by MFA
-            if phone == "d̪":
-                phone = "ð"
-            if phone == "t̪":
-                phone = "θ"
-            if phone == "kʷ":
-                phone = "k"
-            if phone == "tʷ":
-                phone = "t"
-            if phone == "cʷ":
-                phone = "k"
-            if phone == "ɾʲ":
-                phone = "ɒ"
-            if phone == "ɾ̃":
-                phone = "θ"
-            if phone == "ɟʷ":
-                phone = "ɟ"
-            if phone == "ɡʷ":
-                phone = "ɡ"
-            if phone == "vʷ":
-                phone = "v"
-            self.phones_per_ms[int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
-        self.phones_per_ms = np.pad(self.phones_per_ms, ((100, 100)), 'constant', constant_values=0)
-        m_fps = int(1. / 25 * 1000)
+        #self.phones_per_ms = np.zeros(int(milliseconds), dtype=np.int32)
+        # for (start, end, phone) in self.phones['entries']:
+        #     # Some errors have been transcribed by MFA
+        #     if phone == "d̪":
+        #         phone = "ð"
+        #     if phone == "t̪":
+        #         phone = "θ"
+        #     if phone == "kʷ":
+        #         phone = "k"
+        #     if phone == "tʷ":
+        #         phone = "t"
+        #     if phone == "cʷ":
+        #         phone = "k"
+        #     if phone == "ɾʲ":
+        #         phone = "ɒ"
+        #     if phone == "ɾ̃":
+        #         phone = "θ"
+        #     if phone == "ɟʷ":
+        #         phone = "ɟ"
+        #     if phone == "ɡʷ":
+        #         phone = "ɡ"
+        #     if phone == "vʷ":
+        #         phone = "v"
+        #     self.phones_per_ms[int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
+        # self.phones_per_ms = np.pad(self.phones_per_ms, ((100, 100)), 'constant', constant_values=0)
+        #m_fps = int(1. / 25 * 1000)
         #print(start_frame, milliseconds, self.phones_per_ms.shape)
-        phones = self.phones_per_ms[100 + m_fps*(start_frame-2) : 100 + m_fps*(start_frame-2+lnet_T) ]
-        return phones
+        #phones = self.phones_per_ms[100 + m_fps*(start_frame-2) : 100 + m_fps*(start_frame-2+lnet_T) ]
+        Tmin = (start_frame - 2) * 0.2
+        Tmax = (start_frame - 2 + lnet_T + 1) * 0.2
+        text_array = []
+        for (ts, te, word) in self.words:
+            if (ts >= Tmin and te < Tmax):
+                text_array.append(word)
+        text_tokens = clip.tokenize(text_array).to(self.args.device)
+        text_features = self.clip_model.encode_text(text_tokens)
+        return text_features
 
     def crop_audio_window(self, spec, start_frame):
         # num_frames = (T x hop_size * fps) / sample_rate

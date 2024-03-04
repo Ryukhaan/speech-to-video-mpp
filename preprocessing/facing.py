@@ -14,6 +14,8 @@ import json
 import os
 from scipy.io import wavfile
 
+import clip
+
 sys.path.append('third_part')
 # 3dmm extraction
 from third_part.face3d.util.preprocess import align_img
@@ -44,6 +46,8 @@ class Preprocessor():
         self.args = args
         self.base_name = self.args.face.split('/')[-1] if args is not None else None
         self.full_frames = []
+        self.clip_model = None
+
     def reading_video(self):
 
         # Image or Video ?
@@ -213,6 +217,11 @@ class Preprocessor():
         return self.dictionary
 
     def get_phones_per_ms(self):
+        if self.clip_model is None:
+            self.clip_model, self.preprocess_clip = clip.load("ViT-B/32", device=self.args.device)
+            for param in self.clip_model.parameters():
+                param.required_grad = False
+
         # Get folder and file without ext.
         folder = os.path.basename(self.args.json_path)
         basename_without_ext = os.path.splitext(os.path.basename(self.args.json_path))[0]
@@ -220,37 +229,40 @@ class Preprocessor():
             json_data = json.load(file)
 
         # Get Phones and words from json
-        words = json_data['tiers']['words']
+        self.words = json_data['tiers']['words']['entries']
         self.phones = json_data['tiers']['phones']
 
         # Load File WAV associated to the JSON
-        wavfile = os.path.join([folder, basename_without_ext + '.wav'])
-        samplerate, wav_data = wavfile.read(wavfile, 'r')
-        milliseconds = len(wav_data) / samplerate * 1000
+        # wavfile = os.path.join([folder, basename_without_ext + '.wav'])
+        # samplerate, wav_data = wavfile.read(wavfile, 'r')
+        # milliseconds = len(wav_data) / samplerate * 1000
 
         # Each phones = (start_in_s, end_in_s, phone_str)
-        self.phones_per_ms = np.zeros((int(milliseconds)+200, 1), dtype=np.int32)
-        for (start, end, phone) in self.phones['entries']:
-            # Some errors have been transcribed by MFA
-            if phone == "d̪":
-                phone = "ð"
-            if phone == "t̪":
-                phone = "θ"
-            if phone == "kʷ":
-                phone = "k"
-            if phone == "tʷ":
-                phone = "t"
-            if phone == "cʷ":
-                phone = "k"
-            if phone == "ɾʲ":
-                phone = "ɒ"
-            if phone == "ɾ̃":
-                phone = "θ"
-            if phone == "ɟʷ":
-                phone = "ɟ"
-            if phone == "ɡʷ":
-                phone = "ɡ"
-            if phone == "vʷ":
-                phone = "v"
-            self.phones_per_ms[100+int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
+        #self.phones_per_ms = np.zeros((int(milliseconds)+200, 1), dtype=np.int32)
+        #for (start, end, phone) in self.phones['entries']:
+        #    # Some errors have been transcribed by MFA
+        #    if phone == "d̪":
+        #        phone = "ð"
+        #    if phone == "t̪":
+        #        phone = "θ"
+        #     if phone == "kʷ":
+        #         phone = "k"
+        #     if phone == "tʷ":
+        #         phone = "t"
+        #     if phone == "cʷ":
+        #         phone = "k"
+        #     if phone == "ɾʲ":
+        #         phone = "ɒ"
+        #     if phone == "ɾ̃":
+        #         phone = "θ"
+        #     if phone == "ɟʷ":
+        #         phone = "ɟ"
+        #     if phone == "ɡʷ":
+        #         phone = "ɡ"
+        #     if phone == "vʷ":
+        #         phone = "v"
+        #     self.phones_per_ms[100+int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
+
+        text = clip.tokenize(text_array).to(self.args.device)
+        self.phones_per_ms = self.clip_model.encode_text(text)
         return self.phones_per_ms
