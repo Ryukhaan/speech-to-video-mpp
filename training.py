@@ -443,7 +443,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             y = y.to(device)
             loss = loss_func(pred, y, mel)
 
-
             global_step += 1
             cur_session_steps = global_step - resumed_step
             running_loss += loss.item()
@@ -650,11 +649,11 @@ if __name__ == "__main__":
 
     print(checkpoint_dir, checkpoint_path)
 
-    #checkpoint_path = "checkpoints/Lnet.pth"
+    checkpoint_path = "checkpoints/Lnet.pth"
     #if checkpoint_path is not None:
     #    load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
     #checkpoint_path = "checkpoints/Pnet.pth"
-    checkpoint_path = 'checkpoints/checkpoint_step000010000.pth'
+    #checkpoint_path = 'checkpoints/checkpoint_step000010000.pth'
     load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
     train(device, model, train_data_loader, test_data_loader, optimizer,
