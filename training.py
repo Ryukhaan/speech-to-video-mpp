@@ -425,7 +425,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             global_step += 1
             cur_session_steps = global_step - resumed_step
             running_loss += loss.item()
-            prog_bar.set_description('Loss: {}'.format(running_loss) / (step + 1))
+            prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
             prog_bar.refresh()
             if global_step == 1 or global_step % checkpoint_interval == 0:
                 save_checkpoint(
