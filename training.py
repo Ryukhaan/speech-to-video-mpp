@@ -1,6 +1,9 @@
 import glob
 from os.path import dirname, join, basename, isfile
 
+# Training Tensorboard
+import matplotlib.pyplot as plt
+from torch.utils.tensorboard import SummaryWriter
 
 import json
 import gc
@@ -395,6 +398,39 @@ class Dataset(object):
             #self.face_3dmm_extraction(save=True)
             #self.hack_3dmm_expression(save=True)
 
+def matplotlib_imshow(img, one_channel=False):
+    if one_channel:
+        img = img.mean(dim=0)
+    img = img / 2 + 0.5     # unnormalize
+    npimg = img.numpy()
+    if one_channel:
+        plt.imshow(npimg, cmap="Greys")
+    else:
+        plt.imshow(np.transpose(npimg, (1, 2, 0)))
+
+def images_to_probs(net, images):
+    '''
+    Generates predictions from a trained network and a list of images
+    '''
+    return net(images)
+
+
+def plot_classes_preds(net, images):
+    '''
+    Generates matplotlib Figure using a trained network, along with images
+    and labels from a batch, that shows the network's top prediction along
+    with its probability, alongside the actual label, coloring this
+    information based on whether the prediction was correct or not.
+    Uses the "images_to_probs" function.
+    '''
+    preds = images_to_probs(net, images)
+    # plot the images in the batch, along with predicted and true labels
+    fig = plt.figure(figsize=(12, 48))
+    for idx in np.arange(4):
+        for t in range(lnet_T):
+            ax = fig.add_subplot(4, 5, idx * lnet_T + t, xticks=[], yticks=[])
+            ax.imshow(np.transpose(preds[idx,:,t,:,:], (1,2,0)))
+    return fig
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
           checkpoint_dir=None, checkpoint_interval=None, nepochs=None):
@@ -402,6 +438,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     global global_step, global_epoch
     resumed_step = global_step
     loss_func = losses.LoraLoss(device)
+    writer = SummaryWriter()
     while global_epoch < nepochs:
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
@@ -428,6 +465,11 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             cur_session_steps = global_step - resumed_step
             running_loss += loss.item()
             prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
+            # Write Loss To TensorBoard
+            writer.add_scalar('training loss', running_loss / (step + 1), global_epoch * len(train_data_loader) + step)
+            writer.add_figure('predictions',
+                              plot_classes_preds(model, x),
+                              global_step=global_epoch * len(train_data_loader) + step)
             prog_bar.refresh()
             if global_step == 1 or global_step % checkpoint_interval == 0:
                 save_checkpoint(
