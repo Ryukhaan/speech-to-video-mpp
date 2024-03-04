@@ -135,6 +135,7 @@ class Dataset(object):
                 param.required_grad = False
         # Get folder and file without ext.
         basefile = self.all_videos[index].split('.')[0]
+        print(basefile)
         with open(basefile + ".json", 'r', encoding='utf-8') as file:
             json_data = json.load(file)
         # Get Phones and words from json
