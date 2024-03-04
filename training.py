@@ -130,6 +130,22 @@ class Dataset(object):
         #print(codes.shape)
         return codes
 
+    def get_segmented_mels(self, spec, start_frame):
+        mels = []
+        syncnet_mel_step_size = 16
+        assert lnet_T == 5
+        #start_frame_num = self.get_frame_id(start_frame) + 1 # 0-indexing ---> 1-indexing
+        if start_frame - 2 < 0: return None
+        for i in range(start_frame, start_frame + lnet_T):
+            m = self.crop_audio_window(spec, i - 2)
+            if m.shape[0] != syncnet_mel_step_size:
+                return None
+            mels.append(m.T)
+
+        mels = np.asarray(mels)
+
+        return mels
+
     def get_segmented_phones(self, index, start_frame):
         assert lnet_T == 5
         if start_frame < 1: return None
@@ -331,6 +347,8 @@ class Dataset(object):
                 wavpath = vidname.split('.')[0] + '.wav'
                 wav = audio.load_wav(wavpath, hparams.sample_rate)
                 orig_mel = audio.melspectrogram(wav).T
+                indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
+
             except Exception as e:
                 #print("Wav", vidname, start_frame)
                 continue
@@ -377,10 +395,11 @@ class Dataset(object):
             codes = torch.FloatTensor(codes)
             #phones = phones
             x = torch.FloatTensor(x)
-            mel = torch.FloatTensor(mel.T).unsqueeze(0)
+            #mel = torch.FloatTensor(mel.T).unsqueeze(0)
+            indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
             if x.shape != size:
                 continue
-            return x, codes, phones, mel, y
+            return x, codes, phones,indiv_mels, y
 
     def save_preprocess(self):
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
