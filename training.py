@@ -445,7 +445,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             global_step += 1
             cur_session_steps = global_step - resumed_step
-            running_loss += loss.item()
+            running_loss = loss.item()
+            prog_bar.set_description('Loss: {}'.format(running_loss))
             if global_step == 1 or global_step % checkpoint_interval == 0:
                 save_checkpoint(
                     model, optimizer, global_step, checkpoint_dir, global_epoch)
@@ -453,8 +454,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             if global_step % hparams.syncnet_eval_interval == 0:
                 with torch.no_grad():
                     eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
-
-            prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
 
         global_epoch += 1
 def datagen(frames, mels, full_frames, frames_pil, cox):
