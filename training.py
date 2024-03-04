@@ -180,6 +180,7 @@ class Dataset(object):
         for (ts, te, word) in self.words:
             if ts < tmax and te >= tmin:
                 text_array.append(word)
+        text_array = [" ".join(text_array)]
         text_tokens = clip.tokenize(text_array).to(self.device)
         text_features = self.clip_model.encode_text(text_tokens)
         print(self.words, text_array, text_features.shape)
