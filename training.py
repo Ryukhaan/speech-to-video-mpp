@@ -383,9 +383,9 @@ class Dataset(object):
             #phones = phones
             x = torch.FloatTensor(x)
             mel = torch.FloatTensor(mel.T).unsqueeze(0)
-            indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
+            #indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
 
-            return x, codes, phones, indiv_mels, y
+            return x, codes, phones, mel, y
 
     def save_preprocess(self):
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
@@ -411,15 +411,15 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             optimizer.zero_grad()
 
             x = x.to(device)
-            mel = mel.to(device)
             code = code.to(device)
             phone = phone.to(device)
             pred = model(code, phone, x)
-            #print(pred.shape)
             if pred.shape != torch.Size([4, 3, 5, 96, 96]):
                 continue
+
             pred = pred.to(device)
             y = y.to(device)
+            mel = mel.to(device)
             loss = loss_func(pred, y, mel)
 
             global_step += 1
