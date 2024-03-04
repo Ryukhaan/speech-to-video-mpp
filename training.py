@@ -397,7 +397,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
     global global_step, global_epoch
     resumed_step = global_step
-    loss_func = losses.LoraLoss()
+    loss_func = losses.LoraLoss(device)
     while global_epoch < nepochs:
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
