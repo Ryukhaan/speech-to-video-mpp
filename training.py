@@ -175,7 +175,6 @@ class Dataset(object):
         #phones = self.phones_per_ms[100 + m_fps*(start_frame-2) : 100 + m_fps*(start_frame-2+lnet_T) ]
         tmin = (start_frame - 2) * m_fps
         tmax = (start_frame - 2 + lnet_T + 1) * m_fps
-        print(tmin, tmax)
         text_array = []
         for (ts, te, word) in self.words:
             if ts < tmax and te >= tmin:
@@ -183,7 +182,6 @@ class Dataset(object):
         text_array = [" ".join(text_array)]
         text_tokens = clip.tokenize(text_array).to(self.device)
         text_features = self.clip_model.encode_text(text_tokens)
-        print(self.words, text_array, text_features.shape)
         return text_features
 
     def crop_audio_window(self, spec, start_frame):
@@ -321,11 +319,11 @@ class Dataset(object):
 
             nframes = self.get_segmented_window(start_frame)
             codes  = self.get_segmented_codes(idx, start_frame)
-            #try:
-            phones = self.get_segmented_phones(idx, start_frame)
-            #except Exception as e:
+            try:
+                phones = self.get_segmented_phones(idx, start_frame)
+            except Exception as e:
             #    print("Phones", vidname, start_frame)
-            #    continue
+                continue
 
             try:
                 #wavpath = join(vidname, "audio.wav")
@@ -333,24 +331,24 @@ class Dataset(object):
                 wav = audio.load_wav(wavpath, hparams.sample_rate)
                 orig_mel = audio.melspectrogram(wav).T
             except Exception as e:
-                print("Wav", vidname, start_frame)
+                #print("Wav", vidname, start_frame)
                 continue
 
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
             if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
-                print("Landmarks", vidname, start_frame)
+                #print("Landmarks", vidname, start_frame)
                 continue
 
             try:
                 self.face_3dmm_extraction(save=False, start_frame=start_frame)
             except Exception as e:
-                print("Face3d", vidname, start_frame)
+                #print("Face3d", vidname, start_frame)
                 continue
             try:
                 self.hack_3dmm_expression(save=False, start_frame=start_frame)
             except Exception as e:
-                print("Hack", vidname, start_frame)
+                #print("Hack", vidname, start_frame)
                 continue
 
             if len(self.imgs.shape) <= 3: continue
