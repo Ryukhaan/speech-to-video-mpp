@@ -91,6 +91,7 @@ class Dataset(object):
         self.clip_model, self.preprocess_clip = clip.load("ViT-B/32", device=device)
         for param in self.clip_model.parameters():
             param.required_grad = False
+        self.device = device
 
     # Weird function
     def get_frame_id(self, frame):
@@ -179,7 +180,7 @@ class Dataset(object):
         for (ts, te, word) in self.words:
             if (ts >= Tmin and te < Tmax):
                 text_array.append(word)
-        text_tokens = clip.tokenize(text_array).to(self.args.device)
+        text_tokens = clip.tokenize(text_array).to(self.device)
         text_features = self.clip_model.encode_text(text_tokens)
         print(text_features.shape)
         return text_features
