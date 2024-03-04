@@ -322,7 +322,7 @@ class Dataset(object):
             try:
                 phones = self.get_segmented_phones(idx, start_frame)
             except Exception as e:
-                #print("Phones", vidname, start_frame)
+                print("Phones", vidname, start_frame)
                 continue
 
             try:
@@ -331,24 +331,24 @@ class Dataset(object):
                 wav = audio.load_wav(wavpath, hparams.sample_rate)
                 orig_mel = audio.melspectrogram(wav).T
             except Exception as e:
-                #print("Wav", vidname, start_frame)
+                print("Wav", vidname, start_frame)
                 continue
 
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
             if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
-                #print("Landmarks", vidname, start_frame)
+                print("Landmarks", vidname, start_frame)
                 continue
 
             try:
                 self.face_3dmm_extraction(save=False, start_frame=start_frame)
             except Exception as e:
-                #print("Face3d", vidname, start_frame)
+                print("Face3d", vidname, start_frame)
                 continue
             try:
                 self.hack_3dmm_expression(save=False, start_frame=start_frame)
             except Exception as e:
-                #print("Hack", vidname, start_frame)
+                print("Hack", vidname, start_frame)
                 continue
 
             if len(self.imgs.shape) <= 3: continue
