@@ -82,7 +82,7 @@ class LNet(nn.Module):
     def __init__(
         self, 
         image_nc=3, 
-        descriptor_nc=992,
+        descriptor_nc=512,
         layer=3, 
         base_nc=64, 
         max_nc=512,
