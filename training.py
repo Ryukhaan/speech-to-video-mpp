@@ -320,11 +320,11 @@ class Dataset(object):
 
             nframes = self.get_segmented_window(start_frame)
             codes  = self.get_segmented_codes(idx, start_frame)
-            try:
-                phones = self.get_segmented_phones(idx, start_frame)
-            except Exception as e:
-                print("Phones", vidname, start_frame)
-                continue
+            #try:
+            phones = self.get_segmented_phones(idx, start_frame)
+            #except Exception as e:
+            #    print("Phones", vidname, start_frame)
+            #    continue
 
             try:
                 #wavpath = join(vidname, "audio.wav")
