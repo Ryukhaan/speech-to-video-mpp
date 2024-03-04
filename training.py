@@ -409,28 +409,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         running_loss = 0.
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
         for step, (x, code, phone, mel, y) in prog_bar:
-            # mask_x, stab_x = torch.split(x, 15, dim=1)
-            # model.train()
-            # optimizer.zero_grad()
-            #
-            # mask_x = mask_x.to(device)
-            # stab_x = stab_x.to(device)
-            # code = code.to(device)
-            # phone = phone.to(device)
-            # y = y.to(device)
-            # pred_list = []
-            # # Iterate through T=5 frames
-            # for i in range(lnet_T):
-            #     x = torch.cat((mask_x[:,3*i:3*(i+1),:,:], stab_x[:,3*i:3*(i+1),:,:]), dim=1)
-            #     pred = model(code[:,i,:], phone[:,40*i:40*(i+1)], x)
-            #     #loss_list.append(loss_func(pred, y[:,:,i,:,:]))
-            #     pred_list.append(pred.unsqueeze(1))
-            # #pred = model(code, phone, x)
-            # pred = torch.cat(pred_list, dim=1)
-            # loss = loss_func(pred, y, audio)
-            # loss.backward()
-            # optimizer.step()
-
             if x is None: continue
             model.train()
             optimizer.zero_grad()
@@ -441,7 +419,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             phone = phone.to(device)
             pred = model(code, phone, x)
             print(pred.shape)
-            if pred.shape != torch.Size([2, 3, 5, 96, 96]):
+            if pred.shape != torch.Size([4, 3, 5, 96, 96]):
                 continue
             pred = pred.to(device)
             y = y.to(device)
@@ -449,8 +427,9 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             global_step += 1
             cur_session_steps = global_step - resumed_step
-            running_loss = loss.item()
-            prog_bar.set_description('Loss: {}'.format(running_loss))
+            running_loss += loss.item()
+            prog_bar.set_description('Loss: {}'.format(running_loss) / (step + 1))
+            prog_bar.refresh()
             if global_step == 1 or global_step % checkpoint_interval == 0:
                 save_checkpoint(
                     model, optimizer, global_step, checkpoint_dir, global_epoch)
@@ -460,6 +439,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                     eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
 
         global_epoch += 1
+        prog_bar.close()
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
     base_name = args.face.split('/')[-1]
