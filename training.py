@@ -418,7 +418,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             code = code.to(device)
             phone = phone.to(device)
             pred = model(code, phone, x)
-            print(pred.shape)
+            #print(pred.shape)
             if pred.shape != torch.Size([4, 3, 5, 96, 96]):
                 continue
             pred = pred.to(device)
