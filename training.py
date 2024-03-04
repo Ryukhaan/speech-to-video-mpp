@@ -347,6 +347,7 @@ class Dataset(object):
                 orig_mel = audio.melspectrogram(wav).T
                 indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
             except Exception as e:
+                print("Error in wav or mel")
                 continue
             #mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
