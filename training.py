@@ -177,11 +177,12 @@ class Dataset(object):
         Tmax = (start_frame - 2 + lnet_T + 1) * 0.2
         text_array = []
         for (ts, te, word) in self.words:
+            print(ts, te, word)
             if (ts >= Tmin and te < Tmax):
                 text_array.append(word)
         text_tokens = clip.tokenize(text_array).to(self.device)
         text_features = self.clip_model.encode_text(text_tokens)
-        print(text_array, text_features.shape)
+        print(self.words, text_array, text_features.shape)
         return text_features
 
     def crop_audio_window(self, spec, start_frame):
