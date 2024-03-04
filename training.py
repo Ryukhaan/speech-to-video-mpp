@@ -183,7 +183,6 @@ class Dataset(object):
         with torch.no_grad():
             text_tokens = clip.tokenize(text_array).to(self.device)
             text_features = self.clip_model.encode_text(text_tokens)
-        print(text_features.shape)
         return text_features
 
     def crop_audio_window(self, spec, start_frame):
