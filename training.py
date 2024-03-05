@@ -536,8 +536,8 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
 
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
-    eval_steps = 1400
-    print('Evaluating for {} steps'.format(eval_steps))
+    #eval_steps = 1400
+    print('Evaluating for {} steps'.format(global_step))
     losses_list = []
     loss_func = losses.LoraLoss(device)
     #while 1:
