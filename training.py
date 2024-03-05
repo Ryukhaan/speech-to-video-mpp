@@ -421,7 +421,7 @@ class Dataset(object):
         frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, lms)]  # frames is the croped version of modified face
         crops, orig_images, quads = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
         #print(crops[0])
-        Image.save('temp/crop.png', crops[0])
+        crops[0].save('temp/crop.png')
 
 
     def save_preprocess(self):
