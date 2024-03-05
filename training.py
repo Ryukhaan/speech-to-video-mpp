@@ -336,7 +336,7 @@ class Dataset(object):
             # Sure that nframe if >= 2 and lower than N - 3
             start_frame = np.random.randint(3, len(frames) - 4)
 
-            print(self.all_videos[self.idx], self.all_videos[self.idx].split('.')[0])
+            print(idx, self.all_videos[self.idx])
             nframes = self.get_segmented_window(start_frame)
             codes  = self.get_segmented_codes(idx, start_frame)
             try:
@@ -354,13 +354,12 @@ class Dataset(object):
                 continue
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
-            if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
-                continue
-
-            try:
-                self.face_3dmm_extraction(save=False, start_frame=start_frame)
-            except Exception as e:
-                continue
+            #if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
+            #    continue
+            #try:
+            #    self.face_3dmm_extraction(save=False, start_frame=start_frame)
+            #except Exception as e:
+            #    continue
             try:
                 self.hack_3dmm_expression(save=False, start_frame=start_frame)
             except Exception as e:
