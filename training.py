@@ -429,16 +429,17 @@ def plot_classes_preds(net, x, code, phone, images):
     images = images.detach().cpu().numpy()
     # plot the images in the batch, along with predicted and true labels
     fig = plt.figure(figsize=(12, 48))
-    B, C, T, H, W = preds.shape
-    full_img = np.zeros((3,2*B*H,T*W))
+    B, C, T, Hp, Wp = preds.shape
+    B, C, T, Hi, Wi = preds.shape
+    full_img = np.zeros((3,B*(Hi+Hp),T*(Wp+Wi)))
     for idx in range(B):
-        hp = 2 * idx * H
-        hi = (2 * idx + 1) * H
+        hp = 2 * idx * (Hi+Hp)
+        hi = hp + Hp
         for t in range(T):
-            wp = t * W
-            wi = t * W
-            full_img[:, hp:hp+H, wp:wp+W] = preds[idx,:,t,:,:]
-            full_img[:, hi:hi+H, wi:wi+W] = images[idx,:,t,:,:]
+            wp = t * (Wi+Wp)
+            wi = t * (Wi+Wp)
+            full_img[:, hp:hp+Hp, wp:wp+Wp] = preds[idx,:,t,:,:]
+            full_img[:, hi:hi+Hi, wi:wi+Wi] = images[idx,:,t,:,:]
     ax = fig.add_subplot(1, 1, 1, xticks=[], yticks=[])
     plt.imshow(np.transpose(full_img, (1, 2, 0)))
     return fig
