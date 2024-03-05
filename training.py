@@ -60,6 +60,9 @@ from futils import hparams, audio
 import warnings
 warnings.filterwarnings("ignore")
 
+import matplotlib.pyplot as plt
+from torch.utils.tensorboard import SummaryWriter
+
 args = train_options()
 hparams = hparams.hparams
 lnet_T = 5
@@ -435,6 +438,24 @@ class Dataset(object):
             self.hack_3dmm_expression(save=True)
 
 
+def plot_predictions(x, y, preds):
+    # plot the images in the batch, along with predicted and true labels
+    fig = plt.figure(figsize=(12, 48))
+    cropped, ref = torch.split(x, 3, dim=1)
+    ref = ref.detach().cpu().numpy()
+    y = y.detach().cpu().numpy()
+    preds = preds.detach().cpu().numpy()
+    B, C, T, Hi, Wi = x.shape
+    print(x.shape, y.shape, preds.shape)
+    idx = 0
+    for bi in range(B):
+        for ti in range(T):
+            ax = fig.add_subplot(B, T, idx + 1, xticks=[], yticks=[])
+            image = np.zeros((C, Hi, Wi))
+            image[:,:,:] = preds[bi, :, ti, :, :]
+            ax.imshow(np.transpose(image, (1,2,0)))
+            idx += 1
+    return fig
 def train(device, model, train_data_loader, test_data_loader, optimizer,
           checkpoint_dir=None, checkpoint_interval=None, nepochs=None, filenames=None):
 
@@ -443,12 +464,9 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     loss_func = losses.LoraLoss(device)
     prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader) + 1, leave=True)
     best_eval_loss = 100.
+    writer = SummaryWriter('runs/lora')
     for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch):
-    #while global_epoch < nepochs:
         running_loss = 0.
-        #for idx, vid in enumerate(filenames):
-        #    train_data_loader.read_video(idx)
-        #    prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader.full_frames) + 1, leave=True)
         for step, (x, indiv_mel, mel, y) in prog_bar:
             if x is None: continue
             model.train()
@@ -471,6 +489,12 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             cur_session_steps = global_step - resumed_step
             running_loss += loss.item()
 
+            writer.add_scalar('Loss/train', running_loss / (step+1), step)
+            if step % 10 == 0:
+                writer.add_figure('predictions',
+                                plot_predictions(x, y, pred),
+                                global_step=step
+                )
         #if global_step == 1 or global_step % checkpoint_interval == 0:
         #    save_checkpoint(
         #        model, optimizer, global_step, checkpoint_dir, global_epoch)
