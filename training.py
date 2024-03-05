@@ -440,6 +440,7 @@ class Dataset(object):
             y1, y2, x1, x2 = coords
             im = ff[y1: y2, x1:x2]
             print(im, type(im))
+            break
             #refs.append()
 
 
