@@ -413,7 +413,7 @@ class Dataset(object):
         #     return x, indiv_mels, mel, y
 
     def save_preprocess(self):
-        #self.D_Net, self.model = load_model(self.args, device)
+        self.D_Net, self.model = load_model(self.args, device)
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
             self.idx = idx
             self.read_video(self.idx)
@@ -640,11 +640,11 @@ if __name__ == "__main__":
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
-    train_dataset.read_video(0)
-    train_dataset.save_preprocess()
+    #train_dataset.read_video(0)
+    #train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
-    test_dataset.read_video(0)
-    test_dataset.save_preprocess()
+    #test_dataset.read_video(0)
+    #test_dataset.save_preprocess()
     exit(0)
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
