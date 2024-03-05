@@ -673,7 +673,7 @@ if __name__ == "__main__":
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
     train_dataset.save_preprocess()
-    return 0
+    exit(0)
     test_dataset = Dataset(val_list, device)
     test_dataset.save_preprocess()
 
