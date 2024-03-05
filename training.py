@@ -227,11 +227,10 @@ class Dataset(object):
 
     def landmarks_estimate(self, nframes, save=False, start_frame=0):
         # face detection & cropping, cropping the first frame as the style of FFHQ
-        if self.croper is None:
-            self.croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
-        self.full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
+        croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+        full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
         try:
-            self.full_frames_RGB, crop, quad = self.croper.crop(self.full_frames_RGB, xsize=512) # Why 512 ?
+            full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
         except TypeError:
             return 1
         return 0
@@ -399,11 +398,24 @@ class Dataset(object):
 
             return x, codes, phones, mel, y
 
+    def get_crop_orig_images(self):
+        image_size = 256
+        #kp_extractor = KeypointExtractor()
+        fr_pil = [Image.fromarray(frame) for frame in self.full_frames]
+        lms = np.loadtxt(self.all_videos[self.idx].split('.')[0] + '_landmarks.txt').astype(np.float32)
+        #lms = kp_extractor.extract_keypoint(fr_pil, 'temp/' + base_name + 'x12_landmarks.txt')
+        frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, lms)]  # frames is the croped version of modified face
+        crops, orig_images, quads = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
+        cv2.imwrite( 'temp/crop.png', crops[0])
+
+
     def save_preprocess(self):
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
             self.idx = idx
             self.read_video(idx)
-            self.landmarks_estimate(self.full_frames, save=True)
+            self.get_crop_orig_images()
+            break
+            #self.landmarks_estimate(self.full_frames, save=True)
             #self.face_3dmm_extraction(save=True)
             #self.hack_3dmm_expression(save=True)
 
@@ -450,7 +462,7 @@ def plot_classes_preds(net, x, code, phone, images):
             wi = t * (Wi+Wp)
             full_img[:, hp:hp+Hp, wp:wp+Wp] = preds[idx,:,t,:,:]
             full_img[:, hp:hp + Hp, wp+Wp:wp+2*Wp] = ref[idx, ::-1, t, :, :]
-            full_img[:, hi:hi+Hi, wi:wi+Wi] = images[idx,::-1,t,:,:]
+            full_img[:, hi:hi+Hi, wi:wi+Wi] = images[idx,:,t,:,:]
     ax.imshow(np.transpose(full_img, (1, 2, 0)))
     return fig
 
@@ -660,9 +672,10 @@ if __name__ == "__main__":
     print(len(filenames), len(train_list), len(val_list))
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
-    #train_dataset.save_preprocess()
+    train_dataset.save_preprocess()
+    return 0
     test_dataset = Dataset(val_list, device)
-    #test_dataset.save_preprocess()
+    test_dataset.save_preprocess()
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
