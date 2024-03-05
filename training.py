@@ -330,9 +330,9 @@ class Dataset(object):
         img_size = 384
         size = torch.Size([30, 96, 96])
         while True:
-            idx = np.random.randint(0, len(self.all_videos) - 1)
-            vidname = self.all_videos[idx]
-            frames = self.read_video(idx)
+            self.idx = np.random.randint(0, len(self.all_videos) - 1)
+            vidname = self.all_videos[self.idx]
+            frames = self.read_video(self.idx)
             # Sure that nframe if >= 2 and lower than N - 3
             start_frame = np.random.randint(3, len(frames) - 4)
 
@@ -648,7 +648,6 @@ if __name__ == "__main__":
 
     filenames = get_image_list(args.data_root, 'train')
     seed = 42
-    print(filenames)
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     print(len(filenames), len(train_list), len(val_list))
     # Dataset and Dataloader setup
