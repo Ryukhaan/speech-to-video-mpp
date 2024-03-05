@@ -159,7 +159,6 @@ class LNet(nn.Module):
         _outputs = self.decoder(vis_feat, audio_phones_feat)
 
         if input_dim_size > 4:
-            print(_outputs.shape)
             _outputs = torch.split(_outputs, B, dim=0)
             outputs = torch.stack(_outputs, dim=2)
         else:

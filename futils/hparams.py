@@ -76,7 +76,7 @@ hparams = HParams(
 	num_workers=1,
 	checkpoint_interval=3000,
 	eval_interval=3000,
-	writer_interval=10,
+	writer_interval=2,
     save_optimizer_state=True,
 
     syncnet_wt=0.0, # is initially zero, will be set automatically to 0.03 later. Leads to faster convergence. 
