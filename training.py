@@ -231,7 +231,7 @@ class Dataset(object):
             self.croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
         self.full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
         try:
-            self.full_frames_RGB, crop, quad = self.croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+            self.full_frames_RGB, crop, quad = self.croper.crop(self.full_frames_RGB, xsize=512) # Why 512 ?
         except TypeError:
             return 1
         return 0
