@@ -477,7 +477,10 @@ def plot_classes_preds(net, x, code, phone, images):
 def get_crop_orig_images(full_frames, idx, all_videos, croper):
     # face detection & cropping, cropping the first frame as the style of FFHQ
     full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in full_frames]
-    full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+    try:
+        full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+    except Exception as e:
+        return
 
     clx, cly, crx, cry = crop
     lx, ly, rx, ry = quad
@@ -486,7 +489,7 @@ def get_crop_orig_images(full_frames, idx, all_videos, croper):
     coordinates = oy1, oy2, ox1, ox2
     # original_size = (ox2 - ox1, oy2 - oy1)
     frames_pil = np.array([Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB])
-    print("Save {}".format(all_videos[idx].split('.')[0] + "_cropped.npy"))
+    #print("Save {}".format(all_videos[idx].split('.')[0] + "_cropped.npy"))
     np.save(all_videos[idx].split('.')[0] + "_cropped.npy", frames_pil)
 
 def read_video(idx, all_videos):
