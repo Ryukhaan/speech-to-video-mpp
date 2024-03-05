@@ -413,6 +413,7 @@ class Dataset(object):
         coordinates = oy1, oy2, ox1, ox2
         # original_size = (ox2 - ox1, oy2 - oy1)
         frames_pil = np.array([Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB])
+        print("Save {}".format(self.all_videos[self.idx].split('.')[0] + "_cropped.npy"))
         np.save(self.all_videos[self.idx].split('.')[0] + "_cropped.npy", frames_pil)
 
 
