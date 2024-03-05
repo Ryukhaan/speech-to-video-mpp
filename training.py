@@ -409,14 +409,14 @@ def matplotlib_imshow(img, one_channel=False):
     else:
         plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
-def images_to_probs(net, images):
+def images_to_probs(net, images, code, phone):
     '''
     Generates predictions from a trained network and a list of images
     '''
-    return net(images)
+    return net(code, phone, images)
 
 
-def plot_classes_preds(net, images):
+def plot_classes_preds(net, images, code, phone):
     '''
     Generates matplotlib Figure using a trained network, along with images
     and labels from a batch, that shows the network's top prediction along
@@ -424,10 +424,10 @@ def plot_classes_preds(net, images):
     information based on whether the prediction was correct or not.
     Uses the "images_to_probs" function.
     '''
-    preds = images_to_probs(net, images)
+    preds = images_to_probs(net, images, code, phone)
     # plot the images in the batch, along with predicted and true labels
     fig = plt.figure(figsize=(12, 48))
-    for idx in np.arange(4):
+    for idx in np.arange(preds.size(0)):
         for t in range(lnet_T):
             ax = fig.add_subplot(4, 5, idx * lnet_T + t, xticks=[], yticks=[])
             ax.imshow(np.transpose(preds[idx,:,t,:,:], (1,2,0)))
@@ -467,7 +467,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             # Write Loss To TensorBoard
             writer.add_scalar('training loss', running_loss / (step + 1), global_epoch * len(train_data_loader) + step)
             writer.add_figure('predictions',
-                              plot_classes_preds(model, x),
+                              plot_classes_preds(model, x, code, phone),
                               global_step=global_epoch * len(train_data_loader) + step)
             prog_bar.refresh()
             if global_step == 1 or global_step % checkpoint_interval == 0:
