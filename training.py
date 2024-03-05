@@ -240,7 +240,7 @@ class Dataset(object):
 
             np.save(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', np.array(self.frames_pil))
         else:
-            self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] +'_cropped.npy').astype(np.float32)
+            self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', allow_pickle=True).astype(np.float32)
         # get the landmark according to the detected face.
         # Change this one
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_landmarks.txt') or save:
