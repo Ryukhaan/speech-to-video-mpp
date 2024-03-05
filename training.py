@@ -481,9 +481,10 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
             # Write Loss To TensorBoard
             writer.add_scalar('training loss', running_loss / (step + 1), global_epoch * len(train_data_loader) + step)
-            writer.add_figure('predictions',
-                              plot_classes_preds(model, x, code, phone, y),
-                              global_step=global_epoch * len(train_data_loader) + step)
+            if global_step % writer_interval == 0:
+                writer.add_figure('predictions',
+                                  plot_classes_preds(model, x, code, phone, y),
+                                  global_step=global_epoch * len(train_data_loader) + step)
             prog_bar.refresh()
             if global_step == 1 or global_step % checkpoint_interval == 0:
                 save_checkpoint(
