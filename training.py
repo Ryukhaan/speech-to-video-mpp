@@ -89,7 +89,7 @@ class Dataset(object):
         self.dictionary.insert(0, 'spn')
         self.kp_extractor = None
         self.full_frames = []
-        self.index = 0
+        self.idx = 0
         self.initialize()
 
     def initialize(self):
