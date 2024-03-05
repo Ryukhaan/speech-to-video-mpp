@@ -438,8 +438,8 @@ def plot_classes_preds(net, x, code, phone, images):
         for t in range(T):
             wp = t * (Wi+Wp)
             wi = t * (Wi+Wp)
-            full_img[:, hp:hp+Hp, wp:wp+Wp] = preds[idx,:,t,:,:]
-            full_img[:, hi:hi+Hi, wi:wi+Wi] = images[idx,:,t,:,:]
+            full_img[:, hp:hp+Hp, wp:wp+Wp] = cv2.cvtColor(preds[idx,:,t,:,:], cv2.COLOR_BGR2RGB)
+            full_img[:, hi:hi+Hi, wi:wi+Wi] = cv2.cvtColor(images[idx,:,t,:,:], cv2.COLOR_BGR2RGB)
     ax = fig.add_subplot(1, 1, 1, xticks=[], yticks=[])
     plt.imshow(np.transpose(full_img, (1, 2, 0)))
     return fig
