@@ -399,11 +399,24 @@ class Dataset(object):
             return x, codes, phones, mel, y
 
     def get_crop_orig_images(self):
+        # face detection & cropping, cropping the first frame as the style of FFHQ
+        croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+        full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in self.full_frames]
+        full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+
+        clx, cly, crx, cry = crop
+        lx, ly, rx, ry = quad
+        lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
+        oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, self.full_frames[0].shape[0]), clx +lx, min(clx +rx, self.full_frames[0].shape[1])
+        coordinates = oy1, oy2, ox1, ox2
+        # original_size = (ox2 - ox1, oy2 - oy1)
+        frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
+
         image_size = 256
         kp_extractor = KeypointExtractor()
         fr_pil = [Image.fromarray(frame) for frame in self.full_frames]
         #lms = np.loadtxt(self.all_videos[self.idx].split('.')[0] + '_landmarks.txt').astype(np.float32)
-        lms = kp_extractor.extract_keypoint(fr_pil, 'temp/' + base_name + 'x12_landmarks.txt')
+        lms = kp_extractor.extract_keypoint(fr_pil, 'temp/temp_landmarks.txt')
         frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, lms)]  # frames is the croped version of modified face
         crops, orig_images, quads = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
         cv2.imwrite( 'temp/crop.png', crops[0])
