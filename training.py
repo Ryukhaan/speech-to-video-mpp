@@ -338,13 +338,11 @@ class Dataset(object):
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
 
         self.landmarks_estimate(nframes, save=False, start_frame=start_frame)
-        self.face_3dmm_extraction(save=False, start_frame=start_frame)
+        #self.face_3dmm_extraction(save=False, start_frame=start_frame)
         self.hack_3dmm_expression(save=False, start_frame=start_frame)
 
-        nframes = self.crop_face(nframes)
+        nframes = self.frames_pil[start_frame-2:start_frame+lnet_T-2]
         window = self.prepare_window(nframes)
-        #if window.shape[1] != 5:
-        #    return
 
         self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
         stabilized_window = self.prepare_window(self.imgs)
