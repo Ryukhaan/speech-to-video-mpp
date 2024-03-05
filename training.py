@@ -439,7 +439,7 @@ class Dataset(object):
             oface, coords = face_det
             y1, y2, x1, x2 = coords
             im = ff[y1: y2, x1:x2]
-            print(im, type(im))
+            cv2.imwrite('temp/crop.png', im)
             break
             #refs.append()
 
