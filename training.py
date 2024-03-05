@@ -433,7 +433,7 @@ def plot_classes_preds(net, x, code, phone, images):
     B, C, T, Hi, Wi = images.shape
     full_img = np.zeros((3,B*(Hi+Hp),T*(Wp+Wi)))
     for idx in range(B):
-        hp = 2 * idx * (Hi+Hp)
+        hp = idx * (Hi+Hp)
         hi = hp + Hp
         for t in range(T):
             wp = t * (Wi+Wp)
