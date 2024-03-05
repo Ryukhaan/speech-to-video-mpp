@@ -120,8 +120,8 @@ class Dataset(object):
         return int(basename(frame).split('.')[0])
 
     def read_video(self, index):
-        self.idx = index
-        self.vid_idx = index
+        #self.idx = index
+        #self.vid_idx = index
         self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] + '_cropped.npy', allow_pickle=True).astype(np.float32)
         return self.frames_pil
 
