@@ -400,10 +400,10 @@ class Dataset(object):
 
     def get_crop_orig_images(self):
         image_size = 256
-        #kp_extractor = KeypointExtractor()
+        kp_extractor = KeypointExtractor()
         fr_pil = [Image.fromarray(frame) for frame in self.full_frames]
-        lms = np.loadtxt(self.all_videos[self.idx].split('.')[0] + '_landmarks.txt').astype(np.float32)
-        #lms = kp_extractor.extract_keypoint(fr_pil, 'temp/' + base_name + 'x12_landmarks.txt')
+        #lms = np.loadtxt(self.all_videos[self.idx].split('.')[0] + '_landmarks.txt').astype(np.float32)
+        lms = kp_extractor.extract_keypoint(fr_pil, 'temp/' + base_name + 'x12_landmarks.txt')
         frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, lms)]  # frames is the croped version of modified face
         crops, orig_images, quads = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
         cv2.imwrite( 'temp/crop.png', crops[0])
