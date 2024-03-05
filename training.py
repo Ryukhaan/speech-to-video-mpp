@@ -425,6 +425,8 @@ def plot_classes_preds(net, x, code, phone, images):
     Uses the "images_to_probs" function.
     '''
     preds = images_to_probs(net, x, code, phone)
+    cropped, ref = torch.split(x, 3, dim=1)
+    ref = ref.detach().cpu().numpy()
     preds = preds.detach().cpu().numpy()
     images = images.detach().cpu().numpy()
     # plot the images in the batch, along with predicted and true labels
@@ -439,6 +441,7 @@ def plot_classes_preds(net, x, code, phone, images):
             wp = t * (Wi+Wp)
             wi = t * (Wi+Wp)
             full_img[:, hp:hp+Hp, wp:wp+Wp] = preds[idx,::-1,t,:,:]
+            full_img[:, hp:hp + Hp, wp+Wp:wp+2*Wp] = ref[idx, ::-1, t, :, :]
             full_img[:, hi:hi+Hi, wi:wi+Wi] = images[idx,::-1,t,:,:]
     #ax = fig.add_subplot(1, 1, 1, xticks=[], yticks=[])
     plt.imshow(np.transpose(full_img, (1, 2, 0)))
