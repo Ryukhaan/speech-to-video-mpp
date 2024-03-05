@@ -492,7 +492,7 @@ def get_crop_orig_images(full_frames, idx, all_videos, croper):
 def read_video(idx, all_videos):
     video_stream = cv2.VideoCapture(all_videos[idx])
     fps = video_stream.get(cv2.CAP_PROP_FPS)
-    full_frames = np.load(all_videos[idx].split('.')[0] + "_cropped.npy")
+    #full_frames = np.load(all_videos[idx].split('.')[0] + "_cropped.npy")
     full_frames = []
     while True:
        still_reading, frame = video_stream.read()
