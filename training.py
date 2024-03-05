@@ -95,6 +95,7 @@ class Dataset(object):
         #for param in self.clip_model.parameters():
         #    param.required_grad = False
         self.device = device
+        self.croper = None
 
     # Weird function
     def get_frame_id(self, frame):
@@ -226,12 +227,14 @@ class Dataset(object):
 
     def landmarks_estimate(self, nframes, save=False, start_frame=0):
         # face detection & cropping, cropping the first frame as the style of FFHQ
-        croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
-        full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
+        if self.croper is None:
+            self.croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+        self.full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
         try:
-            full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+            self.full_frames_RGB, crop, quad = self.croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
         except TypeError:
             return 1
+        return 0
 
         clx, cly, crx, cry = crop
         lx, ly, rx, ry = quad
@@ -354,8 +357,10 @@ class Dataset(object):
                 continue
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
-            #if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
-            #    continue
+            if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
+                continue
+
+            nframes = self.full_frames_RGB
             #try:
             #    self.face_3dmm_extraction(save=False, start_frame=start_frame)
             #except Exception as e:
@@ -382,6 +387,7 @@ class Dataset(object):
             x = np.concatenate([masked_window, stabilized_window], axis=0)
             if x.shape != torch.Size([6, 5, 96, 96]):
                 continue
+
             y = window.copy()
             y = torch.FloatTensor(y)
 
@@ -481,7 +487,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
             # Write Loss To TensorBoard
             writer.add_scalar('training loss', running_loss / (step + 1), global_epoch * len(train_data_loader) + step)
-            if global_step % writer_interval == 0:
+            if global_step % hparams.writer_interval == 0:
                 writer.add_figure('predictions',
                                   plot_classes_preds(model, x, code, phone, y),
                                   global_step=global_epoch * len(train_data_loader) + step)
