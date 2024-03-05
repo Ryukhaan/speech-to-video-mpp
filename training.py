@@ -428,7 +428,7 @@ def plot_classes_preds(net, x, code, phone, images):
     preds = preds.detach().cpu().numpy()
     images = images.detach().cpu().numpy()
     # plot the images in the batch, along with predicted and true labels
-    fig = plt.figure(figsize=(12, 48))
+    fig = plt.figure()
     B, C, T, Hp, Wp = preds.shape
     B, C, T, Hi, Wi = images.shape
     full_img = np.zeros((3,B*(Hi+Hp),T*(Wp+Wi)))
@@ -440,7 +440,7 @@ def plot_classes_preds(net, x, code, phone, images):
             wi = t * (Wi+Wp)
             full_img[:, hp:hp+Hp, wp:wp+Wp] = cv2.cvtColor(preds[idx,:,t,:,:], cv2.COLOR_BGR2RGB)
             full_img[:, hi:hi+Hi, wi:wi+Wi] = cv2.cvtColor(images[idx,:,t,:,:], cv2.COLOR_BGR2RGB)
-    ax = fig.add_subplot(1, 1, 1, xticks=[], yticks=[])
+    #ax = fig.add_subplot(1, 1, 1, xticks=[], yticks=[])
     plt.imshow(np.transpose(full_img, (1, 2, 0)))
     return fig
 
