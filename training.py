@@ -425,7 +425,7 @@ def plot_classes_preds(net, images, code, phone):
     Uses the "images_to_probs" function.
     '''
     preds = images_to_probs(net, images, code, phone)
-    preds = preds.cpu().numpy()
+    preds = preds.detach().cpu().numpy()
     # plot the images in the batch, along with predicted and true labels
     fig = plt.figure(figsize=(12, 48))
     for idx in np.arange(preds.size(0)):
