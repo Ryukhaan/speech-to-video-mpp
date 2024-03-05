@@ -365,9 +365,11 @@ class Dataset(object):
             except Exception as e:
                 continue
 
-            if len(self.imgs.shape) <= 3: continue
+            if len(self.imgs.shape) <= 3:
+                continue
             window = self.prepare_window(nframes)
-            if window.shape[1] != 5: continue
+            if window.shape[1] != 5:
+                continue
             self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
             try:
                 stabilized_window = self.prepare_window(self.imgs)
@@ -440,7 +442,7 @@ def plot_classes_preds(net, x, code, phone, images):
         for t in range(T):
             wp = t * (Wi+Wp)
             wi = t * (Wi+Wp)
-            full_img[:, hp:hp+Hp, wp:wp+Wp] = preds[idx,::-1,t,:,:]
+            full_img[:, hp:hp+Hp, wp:wp+Wp] = preds[idx,:,t,:,:]
             full_img[:, hp:hp + Hp, wp+Wp:wp+2*Wp] = ref[idx, ::-1, t, :, :]
             full_img[:, hi:hi+Hi, wi:wi+Wi] = images[idx,::-1,t,:,:]
     #ax = fig.add_subplot(1, 1, 1, xticks=[], yticks=[])
