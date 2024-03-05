@@ -412,7 +412,7 @@ class Dataset(object):
         coordinates = oy1, oy2, ox1, ox2
         # original_size = (ox2 - ox1, oy2 - oy1)
         frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
-
+        cv2.imwrite("temp/frame.png", frames_pil[0])
         image_size = 256
         kp_extractor = KeypointExtractor()
         fr_pil = [Image.fromarray(frame) for frame in self.full_frames]
