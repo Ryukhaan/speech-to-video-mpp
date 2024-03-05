@@ -548,41 +548,29 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     eval_steps = 1400
     print('Evaluating for {} steps'.format(eval_steps))
     losses = []
-    loss_func = losses.LNetLoss()
+    loss_func = losses.LoraLoss(device)
     while 1:
         prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1)
-        for step, (x, code, phone, audio, y) in prog_bar:
-            mask_x, stab_x = torch.split(x, 15, dim=1)
+        for step, (x, code, phone, mel, y) in prog_bar:
+            if x is None:
+                continue
             model.eval()
 
-            # Transform data to CUDA device
-            mask_x = mask_x.to(device)
-            stab_x = stab_x.to(device)
+            optimizer.zero_grad()
+
+            x = x.to(device)
+            mel = mel.to(device)
+            y = y.to(device)
             code = code.to(device)
             phone = phone.to(device)
-            y = y.to(device)
-            pred_list = []
-            # Iterate through T=5 frames
-            for i in range(lnet_T):
-                x = torch.cat((mask_x[:, 3 * i:3 * (i + 1), :, :], stab_x[:, 3 * i:3 * (i + 1), :, :]), dim=1)
-                pred = model(code[:, i, :], phone[:, 40 * i:40 * (i + 1)], x)
-                # loss_list.append(loss_func(pred, y[:,:,i,:,:]))
-                pred_list.append(pred.unsqueeze(1))
-            # pred = model(code, phone, x)
-            pred = torch.cat(pred_list, dim=1)
-            loss = loss_func(pred, y, audio)
-            optimizer.step()
+            pred = model(code, phone, x)
+            if pred.shape != torch.Size([4, 3, 5, 96, 96]):
+                continue
+            mel = mel.to(device)
+            loss = loss_func(pred, y, mel)
 
-            #x = x.to(device)
-            #codes = codes.to(device)
-            #phones = phones.to(device)
-            #for i in range(lnet_T):
-            #    pred = model(x[:,i,:], codes, phones)
-            #    y = y.to(device)
-
-            #loss = loss(pred, y)
             losses.append(loss.item())
-
+            prog_bar.set_description('Loss: {}'.format(sum(losses) / len(losses)))
             if step > eval_steps: break
 
         averaged_loss = sum(losses) / len(losses)
