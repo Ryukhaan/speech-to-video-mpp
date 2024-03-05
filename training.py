@@ -111,7 +111,7 @@ class Dataset(object):
         #     frame = frame[y1:y2, x1:x2]
         #     self.full_frames.append(frame)
         # print(len(self.full_frames))
-        self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] + '_cropped.npy').astype(np.float32)
+        self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] + '_cropped.npy', allow_pickle=True).astype(np.float32)
         return self.frames_pil
 
     def get_segmented_window(self, start_frame):
