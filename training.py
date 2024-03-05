@@ -420,8 +420,8 @@ class Dataset(object):
         lms = kp_extractor.extract_keypoint(fr_pil, 'temp/temp_landmarks.txt')
         frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, lms)]  # frames is the croped version of modified face
         crops, orig_images, quads = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
-        print(crops[0])
-        cv2.imwrite( 'temp/crop.png', crops[0])
+        #print(crops[0])
+        Image.save('temp/crop.png', crops[0])
 
 
     def save_preprocess(self):
