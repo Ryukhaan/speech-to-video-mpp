@@ -474,6 +474,44 @@ def plot_classes_preds(net, x, code, phone, images):
     ax.imshow(np.transpose(full_img, (1, 2, 0)))
     return fig
 
+def get_crop_orig_images(full_frames, idx, all_videos, croper):
+    # face detection & cropping, cropping the first frame as the style of FFHQ
+    full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in full_frames]
+    full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+
+    clx, cly, crx, cry = crop
+    lx, ly, rx, ry = quad
+    lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
+    oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, full_frames[0].shape[0]), clx +lx, min(clx +rx, full_frames[0].shape[1])
+    coordinates = oy1, oy2, ox1, ox2
+    # original_size = (ox2 - ox1, oy2 - oy1)
+    frames_pil = np.array([Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB])
+    print("Save {}".format(all_videos[idx].split('.')[0] + "_cropped.npy"))
+    np.save(all_videos[idx].split('.')[0] + "_cropped.npy", frames_pil)
+
+def read_video(idx, all_videos):
+    video_stream = cv2.VideoCapture(all_videos[idx])
+    fps = video_stream.get(cv2.CAP_PROP_FPS)
+    full_frames = np.load(all_videos[idx].split('.')[0] + "_cropped.npy")
+    full_frames = []
+    while True:
+       still_reading, frame = video_stream.read()
+       if not still_reading:
+           video_stream.release()
+           break
+       y1, y2, x1, x2 = [0, -1, 0, -1] #self.args.crop
+       if x2 == -1: x2 = frame.shape[1]
+       if y2 == -1: y2 = frame.shape[0]
+       frame = frame[y1:y2, x1:x2]
+       full_frames.append(frame)
+    return full_frames
+
+def save_preprocess(all_videos):
+    croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+    for idx, file in tqdm(enumerate(all_videos), total=len(all_videos)):
+        full_frames = read_video(idx, all_videos)
+        get_crop_orig_images(full_frames, idx, all_videos, croper)
+
 def train(device, model, train_data_loader, test_data_loader, optimizer,
           checkpoint_dir=None, checkpoint_interval=None, nepochs=None):
 
@@ -679,10 +717,13 @@ if __name__ == "__main__":
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     print(len(filenames), len(train_list), len(val_list))
     # Dataset and Dataloader setup
-    train_dataset = Dataset(train_list, device)
-    train_dataset.save_preprocess()
+    save_preprocess(train_list)
+    save_preprocess(val_list)
+    exit(0)
+    #train_dataset = Dataset(train_list, device)
+    #train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
-    test_dataset.save_preprocess()
+    #test_dataset.save_preprocess()
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
