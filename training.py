@@ -430,7 +430,7 @@ def plot_classes_preds(net, x, code, phone, images):
     # plot the images in the batch, along with predicted and true labels
     fig = plt.figure(figsize=(12, 48))
     B, C, T, Hp, Wp = preds.shape
-    B, C, T, Hi, Wi = preds.shape
+    B, C, T, Hi, Wi = images.shape
     full_img = np.zeros((3,B*(Hi+Hp),T*(Wp+Wi)))
     for idx in range(B):
         hp = 2 * idx * (Hi+Hp)
