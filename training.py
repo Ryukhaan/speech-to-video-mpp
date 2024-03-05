@@ -648,6 +648,7 @@ if __name__ == "__main__":
 
     filenames = get_image_list(args.data_root, 'train')
     seed = 42
+    print(filenames)
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     print(len(filenames), len(train_list), len(val_list))
     # Dataset and Dataloader setup
@@ -662,7 +663,6 @@ if __name__ == "__main__":
     test_data_loader = data_utils.DataLoader(
         test_dataset, batch_size=hparams.batch_size)
         #num_workers=8)
-
 
 
     # Model
