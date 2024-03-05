@@ -338,9 +338,9 @@ class Dataset(object):
 
             #print(idx, self.all_videos[self.idx])
             nframes = self.get_segmented_window(start_frame)
-            codes  = self.get_segmented_codes(idx, start_frame)
+            codes  = self.get_segmented_codes(self.idx, start_frame)
             try:
-                phones = self.get_segmented_phones(idx, start_frame)
+                phones = self.get_segmented_phones(self.idx, start_frame)
             except Exception as e:
                 continue
 
