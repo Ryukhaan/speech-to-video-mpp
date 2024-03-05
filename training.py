@@ -413,7 +413,7 @@ class Dataset(object):
         #     return x, indiv_mels, mel, y
 
     def save_preprocess(self):
-        self.D_Net, self.model = load_model(self.args, device)
+        #self.D_Net, self.model = load_model(self.args, device)
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
             self.idx = idx
             self.read_video(self.idx)
