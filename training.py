@@ -416,7 +416,7 @@ def images_to_probs(net, images, code, phone):
     return net(code, phone, images)
 
 
-def plot_classes_preds(net, images, code, phone):
+def plot_classes_preds(net, x, code, phone, images):
     '''
     Generates matplotlib Figure using a trained network, along with images
     and labels from a batch, that shows the network's top prediction along
@@ -424,14 +424,23 @@ def plot_classes_preds(net, images, code, phone):
     information based on whether the prediction was correct or not.
     Uses the "images_to_probs" function.
     '''
-    preds = images_to_probs(net, images, code, phone)
+    preds = images_to_probs(net, x, code, phone)
     preds = preds.detach().cpu().numpy()
+    images = images.detach().cpu().numpy()
     # plot the images in the batch, along with predicted and true labels
     fig = plt.figure(figsize=(12, 48))
-    for idx in range(preds.shape[0]):
-        for t in range(lnet_T):
-            ax = fig.add_subplot(4, 5, idx * lnet_T + t + 1, xticks=[], yticks=[])
-            ax.imshow(np.transpose(preds[idx,:,t,:,:], (1,2,0)))
+    B, C, T, H, W = preds.shape
+    full_img = np.shape((3,2*B*H,T*W))
+    for idx in range(B):
+        hp = 2 * idx * H
+        hi = (2 * idx + 1) * H
+        for t in range(T):
+            wp = t * W
+            wi = t * W
+            full_img[:, hp:hp+H, wp:wp+W] = preds[idx,:,t,:,:]
+            full_img[:, hi:hi+H, wi:wi+W] = images[idx,:,t,:,:]
+    ax = fig.add_subplot(1, 1, 1, xticks=[], yticks=[])
+    plt.imshow(np.transpose(full_img, (1, 2, 0)))
     return fig
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
@@ -468,7 +477,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             # Write Loss To TensorBoard
             writer.add_scalar('training loss', running_loss / (step + 1), global_epoch * len(train_data_loader) + step)
             writer.add_figure('predictions',
-                              plot_classes_preds(model, x, code, phone),
+                              plot_classes_preds(model, x, code, phone, y),
                               global_step=global_epoch * len(train_data_loader) + step)
             prog_bar.refresh()
             if global_step == 1 or global_step % checkpoint_interval == 0:
