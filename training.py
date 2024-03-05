@@ -95,9 +95,9 @@ class Dataset(object):
     def initialize(self):
         if not os.path.isfile(self.all_videos[0].split('.')[0] + '_landmarks.txt'):
             self.read_full_video()
-        self.landmarks_estimate(self.full_frames, save=True)
-        self.face_3dmm_extraction(save=True)
-        self.hack_3dmm_expression(save=True)
+        self.landmarks_estimate(self.full_frames, save=False)
+        self.face_3dmm_extraction(save=False)
+        self.hack_3dmm_expression(save=False)
 
     def read_full_video(self, index=0):
         self.full_frames = []
