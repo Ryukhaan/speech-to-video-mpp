@@ -421,7 +421,26 @@ class Dataset(object):
         frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, lms)]  # frames is the croped version of modified face
         crops, orig_images, quads = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
         #print(crops[0])
-        crops[0].save('temp/crop.png')
+        inverse_transforms = [calc_alignment_coefficients(quad + 0.5,
+                                                          [[0, 0], [0, image_size], [image_size, image_size],
+                                                           [image_size, 0]]) for quad in quads]
+        #del kp_extractor.detector
+
+        #oy1, oy2, ox1, ox2 = cox
+        face_det_results = face_detect(full_frames_RGB, args, jaw_correction=True)
+
+        for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames_RGB, face_det_results):
+            imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
+                cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
+
+            ff = full_frame.copy()
+            ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')),
+                                                                  (ox2 - ox1, oy2 - oy1))
+            oface, coords = face_det
+            y1, y2, x1, x2 = coords
+            im = ff[y1: y2, x1:x2]
+            print(im, type(im))
+            #refs.append()
 
 
     def save_preprocess(self):
