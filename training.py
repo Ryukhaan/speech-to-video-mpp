@@ -445,7 +445,7 @@ def plot_predictions(x, y, preds):
     ref = ref.detach().cpu().numpy()
     y = y.detach().cpu().numpy()
     preds = preds.detach().cpu().numpy()
-    B, C, T, Hi, Wi = x.shape
+    B, C, T, Hi, Wi = preds.shape
     print(x.shape, y.shape, preds.shape)
     idx = 0
     for bi in range(B):
