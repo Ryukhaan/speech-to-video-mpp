@@ -378,7 +378,8 @@ class Dataset(object):
             masked_window = self.prepare_window(self.imgs_masked)
             masked_window[:, window.shape[2] // 2:] = 0.
             x = np.concatenate([masked_window, stabilized_window], axis=0)
-
+            if x.shape != torch.size([6, 5, 96, 96]):
+                continue
             y = window.copy()
             y = torch.FloatTensor(y)
 
@@ -444,14 +445,12 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
         for step, (x, code, phone, mel, y) in prog_bar:
             if x is None: continue
-            #if x.shape != torch.size([6, 5, 96, 96]): continue
             model.train()
             optimizer.zero_grad()
 
             x = x.to(device)
             code = code.to(device)
             phone = phone.to(device)
-            print(x.shape, code.shape, phone.shape)
             pred = model(code, phone, x)
             if pred.shape != torch.Size([4, 3, 5, 96, 96]):
                 continue
