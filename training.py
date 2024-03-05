@@ -645,7 +645,7 @@ if __name__ == "__main__":
     test_dataset = Dataset(val_list, device)
     #test_dataset.read_video(0)
     #test_dataset.save_preprocess()
-    exit(0)
+    #exit(0)
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
         #num_workers=hparams.num_workers)
