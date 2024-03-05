@@ -210,21 +210,25 @@ class Dataset(object):
 
     def landmarks_estimate(self, nframes, save=False, start_frame=0):
         # face detection & cropping, cropping the first frame as the style of FFHQ
-        croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
-        full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
-        try:
-            full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
-        except TypeError:
-            return 1
+        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
+            croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+            full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
+            try:
+                full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+            except TypeError:
+                return 1
 
-        clx, cly, crx, cry = crop
-        lx, ly, rx, ry = quad
-        lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
-        oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, nframes[0].shape[0]), clx +lx, min(clx +rx, nframes[0].shape[1])
-        self.coordinates = oy1, oy2, ox1, ox2
-        # original_size = (ox2 - ox1, oy2 - oy1)
-        self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
+            clx, cly, crx, cry = crop
+            lx, ly, rx, ry = quad
+            lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
+            oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, nframes[0].shape[0]), clx +lx, min(clx +rx, nframes[0].shape[1])
+            self.coordinates = oy1, oy2, ox1, ox2
+            # original_size = (ox2 - ox1, oy2 - oy1)
+            self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
 
+            np.save(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', np.array(self.frames_pil))
+        else:
+            self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] +'_cropped.npy').astype(np.float32)
         # get the landmark according to the detected face.
         # Change this one
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_landmarks.txt') or save:
@@ -337,9 +341,9 @@ class Dataset(object):
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
 
-        self.landmarks_estimate(nframes, save=False, start_frame=start_frame)
-        #self.face_3dmm_extraction(save=False, start_frame=start_frame)
-        self.hack_3dmm_expression(save=False, start_frame=start_frame)
+        self.landmarks_estimate(self.full_frames, save=False)
+        self.face_3dmm_extraction(save=False)
+        self.hack_3dmm_expression(save=False)
 
         nframes = self.frames_pil[start_frame-2:start_frame+lnet_T-2]
         window = self.prepare_window(nframes)
@@ -412,10 +416,10 @@ class Dataset(object):
         self.D_Net, self.model = load_model(self.args, device)
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
             self.idx = idx
-            self.read_video(idx)
+            self.read_video(self.idx)
             self.landmarks_estimate(self.full_frames, save=True)
             self.face_3dmm_extraction(save=True)
-            #self.hack_3dmm_expression(save=False)
+            self.hack_3dmm_expression(save=True)
 
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
@@ -637,10 +641,10 @@ if __name__ == "__main__":
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
     train_dataset.read_video(0)
-    #train_dataset.save_preprocess()
+    train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
     test_dataset.read_video(0)
-    #test_dataset.save_preprocess()
+    test_dataset.save_preprocess()
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
