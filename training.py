@@ -358,7 +358,7 @@ class Dataset(object):
         #self.face_3dmm_extraction(save=False)
         self.hack_3dmm_expression(save=False)
 
-        nframes = self.frames_pil[start_frame-2:start_frame+lnet_T-2]
+        nframes = np.array(self.frames_pil[start_frame-2:start_frame+lnet_T-2])
         window = self.prepare_window(nframes)
 
         self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
