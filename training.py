@@ -428,7 +428,7 @@ def plot_classes_preds(net, images, code, phone):
     preds = preds.detach().cpu().numpy()
     # plot the images in the batch, along with predicted and true labels
     fig = plt.figure(figsize=(12, 48))
-    for idx in np.arange(preds.size(0)):
+    for idx in range(preds.shape[0]):
         for t in range(lnet_T):
             ax = fig.add_subplot(4, 5, idx * lnet_T + t + 1, xticks=[], yticks=[])
             ax.imshow(np.transpose(preds[idx,:,t,:,:], (1,2,0)))
