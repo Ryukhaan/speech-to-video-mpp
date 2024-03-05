@@ -104,17 +104,18 @@ class Dataset(object):
     def read_video(self, index):
         video_stream = cv2.VideoCapture(self.all_videos[index])
         self.fps = video_stream.get(cv2.CAP_PROP_FPS)
-        self.full_frames = []
-        while True:
-            still_reading, frame = video_stream.read()
-            if not still_reading:
-                video_stream.release()
-                break
-            y1, y2, x1, x2 = self.args.crop
-            if x2 == -1: x2 = frame.shape[1]
-            if y2 == -1: y2 = frame.shape[0]
-            frame = frame[y1:y2, x1:x2]
-            self.full_frames.append(frame)
+        self.full_frames = np.load(self.all_videos[self.idx].split('.')[0] + "_cropped.npy")
+        #self.full_frames = []
+        #while True:
+        #    still_reading, frame = video_stream.read()
+        #    if not still_reading:
+        #        video_stream.release()
+        #        break
+        #    y1, y2, x1, x2 = self.args.crop
+        #    if x2 == -1: x2 = frame.shape[1]
+        #    if y2 == -1: y2 = frame.shape[0]
+        #    frame = frame[y1:y2, x1:x2]
+        #    self.full_frames.append(frame)
         return self.full_frames
 
     def get_segmented_window(self, start_frame):
@@ -411,37 +412,8 @@ class Dataset(object):
         oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, self.full_frames[0].shape[0]), clx +lx, min(clx +rx, self.full_frames[0].shape[1])
         coordinates = oy1, oy2, ox1, ox2
         # original_size = (ox2 - ox1, oy2 - oy1)
-        frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
-        frames_pil[0].save("temp/frame.png")
-        image_size = 256
-        kp_extractor = KeypointExtractor()
-        fr_pil = [Image.fromarray(frame) for frame in self.full_frames]
-        #lms = np.loadtxt(self.all_videos[self.idx].split('.')[0] + '_landmarks.txt').astype(np.float32)
-        lms = kp_extractor.extract_keypoint(fr_pil, 'temp/temp_landmarks.txt')
-        frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, lms)]  # frames is the croped version of modified face
-        crops, orig_images, quads = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
-        #print(crops[0])
-        inverse_transforms = [calc_alignment_coefficients(quad + 0.5,
-                                                          [[0, 0], [0, image_size], [image_size, image_size],
-                                                           [image_size, 0]]) for quad in quads]
-        #del kp_extractor.detector
-
-        #oy1, oy2, ox1, ox2 = cox
-        face_det_results = face_detect(full_frames_RGB, args, jaw_correction=True)
-
-        for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames_RGB, face_det_results):
-            imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
-                cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
-
-            ff = full_frame.copy()
-            ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')),
-                                                                  (ox2 - ox1, oy2 - oy1))
-            oface, coords = face_det
-            y1, y2, x1, x2 = coords
-            im = ff[y1: y2, x1:x2]
-            cv2.imwrite('temp/crop.png', im)
-            break
-            #refs.append()
+        frames_pil = np.array([Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB])
+        np.save(self.all_videos[self.idx].split('.')[0] + "_cropped.npy", frames_pil)
 
 
     def save_preprocess(self):
@@ -450,7 +422,6 @@ class Dataset(object):
             self.idx = idx
             self.read_video(idx)
             self.get_crop_orig_images()
-            break
             #self.landmarks_estimate(self.full_frames, save=True)
             #self.face_3dmm_extraction(save=True)
             #self.hack_3dmm_expression(save=True)
@@ -709,7 +680,6 @@ if __name__ == "__main__":
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
     train_dataset.save_preprocess()
-    exit(0)
     test_dataset = Dataset(val_list, device)
     test_dataset.save_preprocess()
 
