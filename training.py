@@ -451,9 +451,9 @@ def plot_predictions(x, y, preds):
     for bi in range(B):
         for ti in range(T):
             ax = fig.add_subplot(B, T, idx + 1, xticks=[], yticks=[])
-            image = np.zeros((C, 2*Hi, 2*Wi))
-            image[:, :Wi, :Hi] = preds[bi, :, ti, :, :]
-            image[:, Wi:, Hi:] = ref[bi, :, ti, :, :]
+            image = np.zeros((C, Hi, 2*Wi))
+            image[:, :, :Wi] = preds[bi, ::-1, ti, :, :]
+            image[:, :, Wi:] = ref[bi, ::-1, ti, :, :]
             ax.imshow(np.transpose(image, (1,2,0)))
             idx += 1
     return fig
