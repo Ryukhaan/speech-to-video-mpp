@@ -88,6 +88,7 @@ class Dataset(object):
         self.dictionary = self.dictionary['phones']
         self.dictionary.insert(0, 'spn')
         self.kp_extractor = None
+        self.full_frames = []
         self.initialize()
 
     def initialize(self):
