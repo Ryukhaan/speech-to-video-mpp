@@ -456,7 +456,7 @@ def plot_predictions(x, y, preds):
             image[:, :, Wi:] = ref[bi, ::-1, ti, :, :]
             ax.imshow(np.transpose(image, (1,2,0)))
             ax = fig.add_subplot(2 * B, T, 2*B*(bi+1) + ti + 1, xticks=[], yticks=[])
-            ax.imshow(np.tranpose(y[bi,::-1,ti,:,:], (1,2,0)))
+            ax.imshow(np.transpose(y[bi,::-1,ti,:,:], (1,2,0)))
             #idx += 1
     return fig
 def train(device, model, train_data_loader, test_data_loader, optimizer,
