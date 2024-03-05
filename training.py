@@ -97,21 +97,22 @@ class Dataset(object):
     def read_video(self, index):
         self.idx = index
         self.vid_idx = index
-        self.full_frames = []
-        video_stream = cv2.VideoCapture(self.all_videos[index])
-        self.fps = video_stream.get(cv2.CAP_PROP_FPS)
-        while True:
-            still_reading, frame = video_stream.read()
-            if not still_reading:
-                video_stream.release()
-                break
-            y1, y2, x1, x2 = self.args.crop
-            if x2 == -1: x2 = frame.shape[1]
-            if y2 == -1: y2 = frame.shape[0]
-            frame = frame[y1:y2, x1:x2]
-            self.full_frames.append(frame)
-        print(len(self.full_frames))
-        return self.full_frames
+        # self.full_frames = []
+        # video_stream = cv2.VideoCapture(self.all_videos[index])
+        # self.fps = video_stream.get(cv2.CAP_PROP_FPS)
+        # while True:
+        #     still_reading, frame = video_stream.read()
+        #     if not still_reading:
+        #         video_stream.release()
+        #         break
+        #     y1, y2, x1, x2 = self.args.crop
+        #     if x2 == -1: x2 = frame.shape[1]
+        #     if y2 == -1: y2 = frame.shape[0]
+        #     frame = frame[y1:y2, x1:x2]
+        #     self.full_frames.append(frame)
+        # print(len(self.full_frames))
+        self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] + '_cropped.npy').astype(np.float32)
+        return self.frames_pil
 
     def get_segmented_window(self, start_frame):
         assert lnet_T == 5
@@ -341,8 +342,8 @@ class Dataset(object):
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
 
-        self.landmarks_estimate(self.full_frames, save=False)
-        self.face_3dmm_extraction(save=False)
+        #self.landmarks_estimate(self.full_frames, save=False)
+        #self.face_3dmm_extraction(save=False)
         self.hack_3dmm_expression(save=False)
 
         nframes = self.frames_pil[start_frame-2:start_frame+lnet_T-2]
