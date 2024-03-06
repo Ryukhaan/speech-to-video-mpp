@@ -456,13 +456,17 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             writer.add_scalar('Loss/train', running_loss / (step+1), step)
             if step % 10 == 0:
                 x_input = torch.cat([x[:, :, i] for i in range(x.size(2))], dim=0)
-                print(x_input.shape)
+                cropped, reference = torch.split(x_input, 3, dim=1)
                 writer.add_figure('predictions',
                                 plot_predictions(x, y, pred),
                                 global_step=step
                 )
-                writer.add_images('input',
-                                  x_input,
+                writer.add_images('cropped',
+                                  cropped,
+                                  global_step=step
+                                  )
+                writer.add_images('reference',
+                                  reference,
                                   global_step=step
                                   )
         #if global_step == 1 or global_step % checkpoint_interval == 0:
