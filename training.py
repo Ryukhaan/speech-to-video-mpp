@@ -94,6 +94,7 @@ class Dataset(object):
         self.full_frames = []
         self.idx = 0
         self.initialize()
+        self.fps = self.args.fps
 
     def initialize(self):
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
