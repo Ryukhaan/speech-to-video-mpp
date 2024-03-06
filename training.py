@@ -349,7 +349,7 @@ class Dataset(object):
         if indiv_mels is None:
             start_frame = 5
             nframes = self.get_segmented_window(start_frame)
-            vidname = self.all_videos[self.vid_idx]
+            vidname = self.all_videos[0]
 
             wavpath = vidname.split('.')[0] + '.wav'
             wav = audio.load_wav(wavpath, hparams.sample_rate)
