@@ -360,6 +360,7 @@ class Dataset(object):
 
         self.stabilized_imgs = self.get_subframes(self.stabilized_imgs, start_frame)
         self.stabilized_imgs = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.stabilized_imgs])
+        print(self.stabilized_imgs.shape)
         stabilized_window = self.prepare_window(self.stabilized_imgs)
 
         nframes = self.get_subframes(self.frames_pil, start_frame)
