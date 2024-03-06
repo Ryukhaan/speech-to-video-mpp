@@ -404,6 +404,7 @@ def plot_predictions(x, y, preds):
     fig = plt.figure(figsize=(9, 16))
     cropped, ref = torch.split(x, 3, dim=1)
     ref = ref.detach().cpu().numpy()
+    cropped = cropped.detach().cpu().numpy()
     y = y.detach().cpu().numpy()
     preds = preds.detach().cpu().numpy()
     B, C, T, Hi, Wi = preds.shape
