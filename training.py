@@ -126,6 +126,8 @@ class Dataset(object):
         #self.idx = index
         #self.vid_idx = index
         self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] + '_cropped.npy', allow_pickle=True)
+        print(np.asarray(self.frames_pil[0]).shape)
+        self.frames_pil = [np.array(frame)[::-1,:,:] for frame in self.full_frames]
         return self.frames_pil
 
     def get_segmented_window(self, start_frame):
