@@ -154,6 +154,7 @@ class Dataset(object):
             frame_batch.append(frame_to_save)
             full_frame_batch.append(self.full_frames[idx].copy())
 
+        print(self.args.im_size)
         self.img_batch, self.mel_batch, self.ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
         self.img_masked = img_batch.copy()
         self.img_original = img_batch.copy()
