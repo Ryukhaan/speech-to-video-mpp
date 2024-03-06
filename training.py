@@ -706,8 +706,8 @@ if __name__ == "__main__":
     #model.decoder = lora_l_decoder
     #for param in model.encoder.parameters():
     #    param.requires_grad = False
-    for param in model.decoder.parameters():
-        param.requires_grad = False
+    #for param in model.decoder.parameters():
+    #    param.requires_grad = False
     #model.audio_encoder = lora_ae_encoder
     print_trainable_parameters(model)
 
