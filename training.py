@@ -126,7 +126,7 @@ class Dataset(object):
         #self.idx = index
         #self.vid_idx = index
         self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] + '_cropped.npy', allow_pickle=True)
-        self.frames_pil = [np.array(frame)[:, :, ::-1] for frame in self.frames_pil]
+        self.frames_pil = [np.array(frame) for frame in self.frames_pil]
         return self.frames_pil
 
     def get_segmented_window(self, start_frame):
@@ -245,7 +245,7 @@ class Dataset(object):
             np.save(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', np.array(self.frames_pil))
         else:
             self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', allow_pickle=True)
-            self.frames_pil = [np.array(frame)[:, :, ::-1] for frame in self.frames_pil]
+            self.frames_pil = [np.array(frame) for frame in self.frames_pil]
         # get the landmark according to the detected face.
         # Change this one
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_landmarks.txt') or save:
@@ -389,14 +389,12 @@ class Dataset(object):
 
 def plot_predictions(x, y, preds):
     # plot the images in the batch, along with predicted and true labels
-    fig = plt.figure(figsize=(12, 48))
+    fig = plt.figure(figsize=(9, 16))
     cropped, ref = torch.split(x, 3, dim=1)
     ref = ref.detach().cpu().numpy()
     y = y.detach().cpu().numpy()
     preds = preds.detach().cpu().numpy()
     B, C, T, Hi, Wi = preds.shape
-    #print(x.shape, y.shape, preds.shape)
-    idx = 0
     for bi in range(B):
         for ti in range(T):
             ax = fig.add_subplot(2 * B, T, 2*T*bi + ti + 1, xticks=[], yticks=[])
@@ -406,7 +404,6 @@ def plot_predictions(x, y, preds):
             ax.imshow(np.transpose(image, (1,2,0)))
             ax = fig.add_subplot(2 * B, T, 2*T*bi + T + ti + 1, xticks=[], yticks=[])
             ax.imshow(np.transpose(y[bi,:, ti, :,:], (1,2,0)))
-            #idx += 1
     return fig
 def train(device, model, train_data_loader, test_data_loader, optimizer,
           checkpoint_dir=None, checkpoint_interval=None, nepochs=None, filenames=None):
