@@ -251,6 +251,7 @@ class Dataset(object):
         else:
             self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', allow_pickle=True)
             self.frames_pil = [np.array(frame) for frame in self.frames_pil]
+            self.frames_96pil = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.frames_pil])
         # get the landmark according to the detected face.
         # Change this one
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_landmarks.txt') or save:
@@ -333,6 +334,7 @@ class Dataset(object):
         else:
             self.stabilized_imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
             self.stabilized_imgs = self.stabilized_imgs[:,:,:,::-1]
+            self.stabilized_imgs = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.stabilized_imgs])
 
     def __len__(self):
         return len(self.frames_pil) - 4
@@ -359,12 +361,12 @@ class Dataset(object):
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
 
         stabilized_window = self.get_subframes(self.stabilized_imgs, start_frame)
-        stabilized_window = np.asarray([cv2.resize(frame, (96, 96)) for frame in stabilized_window])
+        #stabilized_window = np.asarray([cv2.resize(frame, (96, 96)) for frame in stabilized_window])
         stabilized_window = self.prepare_window(stabilized_window)
 
         nframes = self.get_subframes(self.frames_pil, start_frame)
-        masked_window = nframes.copy()
-        masked_window = np.asarray([cv2.resize(frame, (96,96)) for frame in masked_window])
+        masked_window = self.get_subframes(self.frames_96pil, start_frame)
+        #masked_window = np.asarray([cv2.resize(frame, (96,96)) for frame in masked_window])
 
         window = self.prepare_window(nframes)
         masked_window = self.prepare_window(masked_window)
@@ -408,9 +410,10 @@ def plot_predictions(x, y, preds):
     for bi in range(B):
         for ti in range(T):
             ax = fig.add_subplot(2 * B, T, 2*T*bi + ti + 1, xticks=[], yticks=[])
-            image = np.zeros((C, Hi, 2*Wi))
+            image = np.zeros((C, Hi, 3*Wi))
             image[:, :, :Wi] = preds[bi, :, ti, :, :]
-            image[:, :, Wi:] = ref[bi, :, ti, :, :]
+            image[:, :, Wi:2*Wi] = ref[bi, :, ti, :, :]
+            image[:, :, 2*Wi:] = cropped[bi, :, ti, :, :]
             ax.imshow(np.transpose(image, (1,2,0)))
             ax = fig.add_subplot(2 * B, T, 2*T*bi + T + ti + 1, xticks=[], yticks=[])
             ax.imshow(np.transpose(y[bi,:, ti, :,:], (1,2,0)))
