@@ -413,13 +413,14 @@ def plot_predictions(x, y, preds):
             ax.imshow(np.transpose(y[bi,:, ti, :,:], (1,2,0)))
     return fig
 def train(device, model, train_data_loader, test_data_loader, optimizer,
-          checkpoint_dir=None, checkpoint_interval=None, nepochs=None, filenames=None):
+          checkpoint_dir=None, checkpoint_interval=None, nepochs=None, filenames=None, writer=None):
 
     global global_step, global_epoch
     resumed_step = global_step
     loss_func = losses.LoraLoss(device)
     prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader) + 1, leave=True)
-    writer = SummaryWriter('runs/lora')
+    if writer is None:
+        writer = SummaryWriter('runs/lora')
     best_eval_loss = 100.
     for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch):
         running_loss = 0.
@@ -640,7 +641,7 @@ if __name__ == "__main__":
                     np.transpose(train_dataset.frames_pil, (0,3,1,2)),
                     global_step=0
                     )
-    writer.add_images('stablized',
+    writer.add_images('stabilized',
                       np.transpose(train_dataset.stabilized_imgs, (0, 3, 1, 2)),
                       global_step=0
                       )
@@ -698,4 +699,5 @@ if __name__ == "__main__":
           filenames=filenames,
           checkpoint_dir=checkpoint_dir,
           checkpoint_interval=hparams.syncnet_checkpoint_interval,
-          nepochs=hparams.nepochs)
+          nepochs=hparams.nepochs,
+          writer=writer)
