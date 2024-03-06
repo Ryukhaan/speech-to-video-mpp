@@ -358,6 +358,7 @@ class Dataset(object):
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
 
+        print(start_frame)
         self.stabilized_imgs = self.get_subframes(self.stabilized_imgs, start_frame)
         print("SubFrame", self.stabilized_imgs.shape)
         self.stabilized_imgs = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.stabilized_imgs])
