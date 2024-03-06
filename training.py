@@ -135,7 +135,7 @@ class Dataset(object):
             y1, y2, x1, x2 = coords
             refs.append(ff[y1: y2, x1:x2])
 
-        for i, m in enumerate(self.mels_chunks):
+        for i, m in tqdm(enumerate(self.mels_chunks)):
             idx = i
             frame_to_save = self.stabilized_imgs[idx].copy()
             face = refs[idx]
