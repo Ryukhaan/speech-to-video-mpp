@@ -110,7 +110,7 @@ class Dataset(object):
         img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
         refs = []
         image_size = 256
-
+        self.stabilized_imgs = self.stabilized_imgs[:len(self.mel_chunks)]
         # original frames
         kp_extractor = KeypointExtractor()
         fr_pil = [Image.fromarray(frame) for frame in self.stabilized_imgs]
