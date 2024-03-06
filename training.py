@@ -365,10 +365,10 @@ class Dataset(object):
         window = self.prepare_window(nframes)
 
         self.imgs_masked = window.copy()
-        print(self.imgs_masked.shape)
-        masked_window = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.imgs_masked])
-        #masked_window = self.prepare_window(self.imgs_masked)
-        print(masked_window.shape)
+        masked_window = np.asarray([cv2.resize(
+            np.transpose(self.imgs_masked[:,i,:,:], (1,2,0)),
+            (96,96)) for i in range(lnet_T)])
+        masked_window = np.transpose(masked_window, (3,0,1,2))
         masked_window[:, window.shape[2] // 2:] = 0.
 
         x = np.concatenate([masked_window, stabilized_window], axis=0)
