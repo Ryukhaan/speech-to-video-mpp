@@ -369,9 +369,8 @@ class Dataset(object):
         #masked_window = np.asarray([cv2.resize(frame, (96,96)) for frame in masked_window])
 
         window = self.prepare_window(nframes)
+        masked_window[:, window.shape[2] //2:] = 0.
         masked_window = self.prepare_window(masked_window)
-        #print(masked_window.shape)
-        masked_window[:, :, 48:, :] = 0.
 
         x = np.concatenate([masked_window, stabilized_window], axis=0)
 
