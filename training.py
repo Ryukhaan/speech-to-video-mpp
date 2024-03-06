@@ -371,7 +371,7 @@ class Dataset(object):
         window = self.prepare_window(nframes)
         masked_window = self.prepare_window(masked_window)
         print(masked_window.shape)
-        masked_window[:, :, 48:, :] = 0.
+        masked_window[:, 48:] = 0.
 
         x = np.concatenate([masked_window, stabilized_window], axis=0)
 
@@ -704,10 +704,10 @@ if __name__ == "__main__":
     #lora_l_decoder = get_peft_model(model.decoder, decoder_config)
     #lora_ae_encode = get_peft_model(model.audio_encoder, audio_enc_config)
     #model.decoder = lora_l_decoder
-    for param in model.encoder.parameters():
-        param.requires_grad = False
-    #for param in model.decoder.parameters():
+    #for param in model.encoder.parameters():
     #    param.requires_grad = False
+    for param in model.decoder.parameters():
+        param.requires_grad = False
     #model.audio_encoder = lora_ae_encoder
     print_trainable_parameters(model)
 
