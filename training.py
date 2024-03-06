@@ -386,6 +386,11 @@ class Dataset(object):
             self.face_3dmm_extraction(save=True)
             self.hack_3dmm_expression(save=True)
 
+def plot_cropped_ref(x):
+    cropped, ref = torch.split(x, 3, dim=1)
+    ref = ref.detach().cpu().numpy()
+    cropped = cropped.detach().cpu().numpy()
+    return ref, cropped
 
 def plot_predictions(x, y, preds):
     # plot the images in the batch, along with predicted and true labels
@@ -412,8 +417,18 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     resumed_step = global_step
     loss_func = losses.LoraLoss(device)
     prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader) + 1, leave=True)
-    best_eval_loss = 100.
     writer = SummaryWriter('runs/lora')
+    for step, (x, indiv_mel, mel, y) in prog_bar:
+        cropped, ref = plot_cropped_ref(x)
+        writer.add_images('cropped',
+                          cropped,
+                          global_step=0
+                          )
+        writer.add_images('ref',
+                          ref,
+                          global_step=0
+                          )
+    best_eval_loss = 100.
     for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch):
         running_loss = 0.
         for step, (x, indiv_mel, mel, y) in prog_bar:
