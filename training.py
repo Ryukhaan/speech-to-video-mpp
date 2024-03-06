@@ -126,6 +126,7 @@ class Dataset(object):
         #self.idx = index
         #self.vid_idx = index
         self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] + '_cropped.npy', allow_pickle=True)
+        self.frames_pil = [np.array(frame)[:, :, ::-1] for frame in self.frames_pil]
         return self.frames_pil
 
     def get_segmented_window(self, start_frame):
@@ -244,7 +245,7 @@ class Dataset(object):
             np.save(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', np.array(self.frames_pil))
         else:
             self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', allow_pickle=True)
-            self.frames_pil = [np.array(frame)[:, :, ::-1] for frame in self.full_frames]
+            self.frames_pil = [np.array(frame)[:, :, ::-1] for frame in self.frames_pil]
         # get the landmark according to the detected face.
         # Change this one
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_landmarks.txt') or save:
