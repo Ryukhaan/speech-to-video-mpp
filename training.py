@@ -370,7 +370,7 @@ class Dataset(object):
             (96,96)) for i in range(lnet_T)])
         masked_window = np.transpose(masked_window, (3,0,1,2))
         masked_window[:, window.shape[2] // 2:] = 0.
-
+        print(masked_window.shape, stabilized_window.shape)
         x = np.concatenate([masked_window, stabilized_window], axis=0)
 
         y = window.copy()
