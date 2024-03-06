@@ -370,7 +370,7 @@ class Dataset(object):
 
         window = self.prepare_window(nframes)
         masked_window = self.prepare_window(masked_window)
-        masked_window[:, :, :, window.shape[2] // 2:] = 0.
+        masked_window[:, :, window.shape[2] // 2:, :] = 0.
 
         x = np.concatenate([masked_window, stabilized_window], axis=0)
 
