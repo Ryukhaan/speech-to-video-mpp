@@ -332,8 +332,7 @@ class Dataset(object):
             torch.cuda.empty_cache()
         else:
             self.stabilized_imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
-            print(self.stabilized_imgs.shape)
-            self.stabilized_imgs = self.stabilized_imgs[:,::-1,:,:]
+            self.stabilized_imgs = self.stabilized_imgs[:,:,:,::-1]
 
     def __len__(self):
         return len(self.frames_pil) - 4
