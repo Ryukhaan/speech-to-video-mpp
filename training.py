@@ -322,9 +322,10 @@ class Dataset(object):
             self.coordinates = oy1, oy2, ox1, ox2
             # original_size = (ox2 - ox1, oy2 - oy1)
             self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
-
             np.save(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', np.array(self.frames_pil))
+            np.save(self.all_videos[self.idx].split('.')[0] + '_coordinates.npy', np.array(self.coordinates))
         else:
+            self.coordinates = np.load(self.all_videos[self.idx].split('.')[0] + '_coordinates.npy', allow_pickle=True)
             self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', allow_pickle=True)
             self.frames_pil = [np.array(frame) for frame in self.frames_pil]
             self.frames_96pil = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.frames_pil])
