@@ -329,16 +329,9 @@ class Dataset(object):
             self.imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
             self.imgs = self.imgs[start_frame:start_frame+lnet_T]
     def __len__(self):
-        #self.read_video(0)
         return len(self.frames_pil) - 4
-        #return (len(self.full_frames) - 20) // 5
-        #return len(self.full_frames)
 
     def __getitem__(self, idx):
-        #if 2 <= idx <= len(self.full_frames) - 2:
-        #    idx = np.random.randint(2, len(self.full_frames) - 3)
-        #start_frame = idx
-        #start_frame = 5 * idx + 2
         start_frame = idx + 2
         nframes = self.get_segmented_window(start_frame)
         vidname = self.all_videos[0]
@@ -384,52 +377,6 @@ class Dataset(object):
         indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
         return x, indiv_mels, mel, y
 
-        # while True:
-        #     # Get videos index
-        #     idx = np.random.randint(0, len(self.all_videos) - 1)
-        #     vidname = self.all_videos[idx]
-        #     # Read video
-        #     frames = self.read_video(idx)
-        #     # Sure that nframe if >= 2 and lower than N - 3
-        #     start_frame = np.random.randint(3, len(frames) - 4)
-        #     nframes = self.get_segmented_window(start_frame)
-        #
-        #
-        #     # Read wav and get corresponding spectogram
-        #     wavpath = vidname.split('.')[0] + '.wav'
-        #     wav = audio.load_wav(wavpath, hparams.sample_rate)
-        #     orig_mel = audio.melspectrogram(wav).T
-        #     mel = self.crop_audio_window(orig_mel.copy(), start_frame)
-        #
-        #     indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
-        #     if indiv_mels is None:
-        #         continue
-        #     self.landmarks_estimate(nframes, save=False, start_frame=start_frame)
-        #     self.face_3dmm_extraction(save=False, start_frame=start_frame)
-        #     self.hack_3dmm_expression(save=False, start_frame=start_frame)
-        #
-        #     nframes = self.crop_face(nframes)
-        #     window = self.prepare_window(nframes)
-        #     if window.shape[1] != 5: continue
-        #
-        #     self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
-        #     stabilized_window = self.prepare_window(self.imgs)
-        #
-        #     self.imgs_masked = self.imgs.copy()
-        #     masked_window = self.prepare_window(self.imgs_masked)
-        #     masked_window[:, window.shape[2] // 2:] = 0.
-        #
-        #     x = np.concatenate([masked_window, stabilized_window], axis=0)
-        #     y = window.copy()
-        #     y = torch.FloatTensor(y)
-        #
-        #     #codes = torch.FloatTensor(codes)
-        #     #phones = torch.IntTensor(phones)
-        #     x = torch.FloatTensor(x)
-        #     mel = torch.FloatTensor(mel.T).unsqueeze(0)
-        #     indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
-        #     return x, indiv_mels, mel, y
-
     def save_preprocess(self):
         self.D_Net, self.model = load_model(self.args, device)
         for idx, file in tqdm(enumerate(self.all_videos), total=len(self.all_videos)):
@@ -452,13 +399,13 @@ def plot_predictions(x, y, preds):
     idx = 0
     for bi in range(B):
         for ti in range(T):
-            ax = fig.add_subplot(2*B, T, 2*bi*B + ti + 1, xticks=[], yticks=[])
+            ax = fig.add_subplot(2 * B, T, 2*T*bi + ti + 1, xticks=[], yticks=[])
             image = np.zeros((C, Hi, 2*Wi))
-            image[:, :, :Wi] = preds[bi, ::-1, ti, :, :]
-            image[:, :, Wi:] = ref[bi, ::-1, ti, :, :]
+            image[:, :, :Wi] = preds[bi, :, ti, :, :]
+            image[:, :, Wi:] = ref[bi, :, ti, :, :]
             ax.imshow(np.transpose(image, (1,2,0)))
-            ax = fig.add_subplot(2 * B, T, 2*B*(bi+1) + ti + 1, xticks=[], yticks=[])
-            ax.imshow(np.transpose(y[bi,::-1,ti,:,:], (1,2,0)))
+            ax = fig.add_subplot(2 * B, T, 2*T*(bi+1) + ti + 1, xticks=[], yticks=[])
+            ax.imshow(np.transpose(y[bi,:, ti, :,:], (1,2,0)))
             #idx += 1
     return fig
 def train(device, model, train_data_loader, test_data_loader, optimizer,
