@@ -96,11 +96,69 @@ class Dataset(object):
         self.initialize()
 
     def initialize(self):
-        if not os.path.isfile(self.all_videos[0].split('.')[0] + '_landmarks.txt'):
-            self.read_full_video()
+        #if not os.path.isfile(self.all_videos[0].split('.')[0] + '_landmarks.txt'):
+        self.read_full_video()
         self.landmarks_estimate(self.full_frames, save=False)
         self.face_3dmm_extraction(save=False)
         self.hack_3dmm_expression(save=False)
+        self.get_full_mels()
+        self.datagen()
+
+    def datagen(self):
+        img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
+        refs = []
+        image_size = 256
+
+        # original frames
+        kp_extractor = KeypointExtractor()
+        fr_pil = [Image.fromarray(frame) for frame in self.stabilized_imgs]
+        lms = kp_extractor.extract_keypoint(fr_pil, 'temp/' + 'temp_x12_landmarks.txt')
+        frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, lms)]  # frames is the croped version of modified face
+        crops, orig_images, quads = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
+        inverse_transforms = [calc_alignment_coefficients(quad + 0.5,
+                                                          [[0, 0], [0, image_size], [image_size, image_size],
+                                                           [image_size, 0]]) for quad in quads]
+        del kp_extractor.detector
+
+        oy1, oy2, ox1, ox2 = self.coordinates
+        face_det_results = face_detect(self.full_frames, args, jaw_correction=True)
+
+        for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, self.full_frames,
+                                                                 face_det_results):
+            imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
+                cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
+
+            ff = full_frame.copy()
+            ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')),
+                                                                  (ox2 - ox1, oy2 - oy1))
+            oface, coords = face_det
+            y1, y2, x1, x2 = coords
+            refs.append(ff[y1: y2, x1:x2])
+
+        for i, m in enumerate(self.mels_chunks):
+            idx = i
+            frame_to_save = self.stabilized_imgs[idx].copy()
+            face = refs[idx]
+            oface, coords = face_det_results[idx].copy()
+
+            face = cv2.resize(face, (args.img_size, args.img_size))
+            oface = cv2.resize(oface, (args.img_size, args.img_size))
+
+            img_batch.append(oface)
+            ref_batch.append(face)
+            mel_batch.append(m)
+            coords_batch.append(coords)
+            frame_batch.append(frame_to_save)
+            full_frame_batch.append(self.full_frames[idx].copy())
+
+        self.img_batch, self.mel_batch, self.ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
+        self.img_masked = img_batch.copy()
+        self.img_original = img_batch.copy()
+        self.img_masked[:, args.img_size // 2:] = 0
+        self.img_batch = np.concatenate((self.img_masked, self.ref_batch), axis=3) / 255.
+        self.mel_batch = np.reshape(mel_batch, [len(self.mel_batch),
+                                                self.mel_batch.shape[1],
+                                                self.mel_batch.shape[2], 1])
 
     def read_full_video(self, index=0):
         self.full_frames = []
@@ -200,6 +258,24 @@ class Dataset(object):
         start_idx = int(80. * (start_frame / float(hparams.fps)))
         end_idx = start_idx + syncnet_mel_step_size
         return spec[start_idx: end_idx, :]
+
+    def get_full_mels(self):
+        vidname = self.all_videos[0]
+        wavpath = vidname.split('.')[0] + '.wav'
+        wav = audio.load_wav(wavpath, hparams.sample_rate)
+        mel = audio.melspectrogram(wav)
+        if np.isnan(mel.reshape(-1)).sum() > 0:
+            raise ValueError(
+                'Mel contains nan! Using a TTS voice? Add a small epsilon noise to the wav file and try again')
+
+        mel_step_size, mel_idx_multiplier, i, self.mel_chunks = 16, 80. / self.fps, 0, []
+        while True:
+            start_idx = int(i * mel_idx_multiplier)
+            if start_idx + mel_step_size > len(mel[0]):
+                self.mel_chunks.append(mel[:, len(mel[0]) - mel_step_size:])
+                break
+            self.mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
+            i += 1
 
     def get_segmented_mels(self, spec, start_frame):
         mels = []
@@ -334,7 +410,7 @@ class Dataset(object):
         else:
             self.stabilized_imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
             self.stabilized_imgs = self.stabilized_imgs[:,:,:,::-1]
-            self.stabilized_imgs = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.stabilized_imgs])
+            #self.stabilized_imgs = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.stabilized_imgs])
 
     def __len__(self):
         return len(self.frames_pil) - 4
