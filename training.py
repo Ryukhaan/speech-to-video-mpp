@@ -306,15 +306,12 @@ class Dataset(object):
         return x
 
     def landmarks_estimate(self, nframes, save=False, start_frame=0):
+        print("[Step 0] Number of frames available for inference: " + str(len(nframes)))
         # face detection & cropping, cropping the first frame as the style of FFHQ
-        print(len(nframes))
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
             croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
             full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
-            try:
-                full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
-            except TypeError:
-                return 1
+            full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
 
             clx, cly, crx, cry = crop
             lx, ly, rx, ry = quad
@@ -334,7 +331,7 @@ class Dataset(object):
         # Change this one
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_landmarks.txt') or save:
             torch.cuda.empty_cache()
-            #print('[Step 1] Landmarks Extraction in Video.')
+            print('[Step 1] Landmarks Extraction in Video.')
             if self.kp_extractor is None:
                 self.kp_extractor = KeypointExtractor()
             if not save:
@@ -342,10 +339,8 @@ class Dataset(object):
             else:
                 self.lm = self.kp_extractor.extract_keypoint(self.frames_pil, self.all_videos[self.idx].split('.')[0] + '_landmarks.txt')
         else:
-            #print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt( self.all_videos[self.idx].split('.')[0] +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape(-1, 68, 2)
-            #self.lm = self.lm[start_frame:start_frame+lnet_T, ...]
 
     def face_3dmm_extraction(self, save=False, start_frame=0):
         torch.cuda.empty_cache()
