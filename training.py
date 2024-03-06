@@ -359,18 +359,17 @@ class Dataset(object):
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
 
         self.stabilized_imgs = self.get_subframes(self.stabilized_imgs, start_frame)
+        self.stabilized_imgs = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.stabilized_imgs])
         stabilized_window = self.prepare_window(self.stabilized_imgs)
 
         nframes = self.get_subframes(self.frames_pil, start_frame)
-        window = self.prepare_window(nframes)
+        self.imgs_masked = nframes.copy()
+        masked_window = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs_masked])
 
-        self.imgs_masked = window.copy()
-        masked_window = np.asarray([cv2.resize(
-            np.transpose(self.imgs_masked[:,i,:,:], (1,2,0)),
-            (96,96)) for i in range(lnet_T)])
-        masked_window = np.transpose(masked_window, (3,0,1,2))
+        window = self.prepare_window(nframes)
+        masked_window = self.prepare_window(masked_window)
         masked_window[:, window.shape[2] // 2:] = 0.
-        print(masked_window.shape, stabilized_window.shape)
+
         x = np.concatenate([masked_window, stabilized_window], axis=0)
 
         y = window.copy()
