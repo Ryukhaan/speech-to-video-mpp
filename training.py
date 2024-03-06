@@ -129,6 +129,11 @@ class Dataset(object):
         self.frames_pil = [np.array(frame) for frame in self.frames_pil]
         return self.frames_pil
 
+    def get_subframes(self, frames, start_frame):
+        assert lnet_T == 5
+        if start_frame < 1: return None
+        return frames[start_frame:start_frame + lnet_T]
+
     def get_segmented_window(self, start_frame):
         assert lnet_T == 5
         if start_frame < 1: return None
@@ -261,7 +266,7 @@ class Dataset(object):
             #print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt( self.all_videos[self.idx].split('.')[0] +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape(-1, 68, 2)
-            self.lm = self.lm[start_frame:start_frame+lnet_T, ...]
+            #self.lm = self.lm[start_frame:start_frame+lnet_T, ...]
 
     def face_3dmm_extraction(self, save=False, start_frame=0):
         torch.cuda.empty_cache()
@@ -296,7 +301,7 @@ class Dataset(object):
                 np.save( self.all_videos[self.idx].split('.')[0] +'_coeffs.npy', self.semantic_npy)
         else:
             self.semantic_npy = np.load(self.all_videos[self.idx].split('.')[0] + "_coeffs.npy").astype(np.float32)
-            self.semantic_npy = self.semantic_npy[start_frame:start_frame+lnet_T]
+            #self.semantic_npy = self.semantic_npy[start_frame:start_frame+lnet_T]
 
     def hack_3dmm_expression(self, save=False, start_frame=0):
         expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
@@ -326,14 +331,14 @@ class Dataset(object):
             #del D_Net, model
             torch.cuda.empty_cache()
         else:
-            self.imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
-            self.imgs = self.imgs[start_frame:start_frame+lnet_T]
+            self.stabilized_imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
+
     def __len__(self):
         return len(self.frames_pil) - 4
 
     def __getitem__(self, idx):
         start_frame = idx + 2
-        nframes = self.get_segmented_window(start_frame)
+        #nframes = self.get_segmented_window(start_frame)
         vidname = self.all_videos[0]
 
         wavpath = vidname.split('.')[0] + '.wav'
@@ -343,7 +348,7 @@ class Dataset(object):
         indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
         if indiv_mels is None:
             start_frame = 5
-            nframes = self.get_segmented_window(start_frame)
+            #nframes = self.get_segmented_window(start_frame)
             vidname = self.all_videos[0]
 
             wavpath = vidname.split('.')[0] + '.wav'
@@ -352,21 +357,18 @@ class Dataset(object):
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
 
-        #self.landmarks_estimate(self.full_frames, save=False)
-        #self.face_3dmm_extraction(save=False)
-        self.hack_3dmm_expression(save=False)
+        self.stabilized_imgs = self.get_subframes(self.stabilized_imgs, start_frame)
+        self.stabilized_imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.stabilized_imgs])
+        stabilized_window = self.prepare_window(self.stabilized_imgs)
 
-        nframes = [np.array(I) for I in self.frames_pil[start_frame-2:start_frame+lnet_T-2]]
+        nframes = self.get_subframes(self.frames_pil, start_frame)
         window = self.prepare_window(nframes)
-
-        self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
-        stabilized_window = self.prepare_window(self.imgs)
-
-        self.imgs_masked = self.imgs.copy()
+        self.imgs_masked = nframes.copy()
         masked_window = self.prepare_window(self.imgs_masked)
         masked_window[:, window.shape[2] // 2:] = 0.
 
         x = np.concatenate([masked_window, stabilized_window], axis=0)
+
         y = window.copy()
         y = torch.FloatTensor(y)
 
@@ -634,10 +636,14 @@ if __name__ == "__main__":
     test_dataset = Dataset(val_list, device)
 
     writer = SummaryWriter('runs/lora')
-    writer.add_images('stabilized',
+    writer.add_images('ground_truths',
                     np.transpose(train_dataset.frames_pil, (0,3,1,2)),
                     global_step=0
                     )
+    writer.add_images('stablized',
+                      np.transpose(train_dataset.stabilized_imgs, (0, 3, 1, 2)),
+                      global_step=0
+                      )
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
