@@ -307,6 +307,7 @@ class Dataset(object):
 
     def landmarks_estimate(self, nframes, save=False, start_frame=0):
         # face detection & cropping, cropping the first frame as the style of FFHQ
+        print(len(nframes))
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
             croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
             full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
