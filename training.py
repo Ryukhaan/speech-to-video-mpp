@@ -135,7 +135,7 @@ class Dataset(object):
             y1, y2, x1, x2 = coords
             refs.append(ff[y1: y2, x1:x2])
 
-        for i, m in tqdm(enumerate(self.mels_chunks)):
+        for i, m in tqdm(enumerate(self.mel_chunks)):
             idx = i
             frame_to_save = self.stabilized_imgs[idx].copy()
             face = refs[idx]
@@ -276,7 +276,7 @@ class Dataset(object):
                 break
             self.mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
             i += 1
-
+        print(len(self.mel_chunks))
     def get_segmented_mels(self, spec, start_frame):
         mels = []
         syncnet_mel_step_size = 16
