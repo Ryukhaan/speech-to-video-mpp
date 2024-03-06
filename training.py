@@ -121,7 +121,7 @@ class Dataset(object):
         del kp_extractor.detector
 
         oy1, oy2, ox1, ox2 = self.coordinates
-        face_det_results = face_detect(self.full_frames, args, jaw_correction=True)
+        face_det_results = face_detect(self.full_frames, self.args, jaw_correction=True)
 
         for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, self.full_frames,
                                                                  face_det_results):
@@ -141,8 +141,8 @@ class Dataset(object):
             face = refs[idx]
             oface, coords = face_det_results[idx].copy()
 
-            face = cv2.resize(face, (args.img_size, args.img_size))
-            oface = cv2.resize(oface, (args.img_size, args.img_size))
+            face = cv2.resize(face, (self.args.img_size, self.args.img_size))
+            oface = cv2.resize(oface, (self.args.img_size, self.args.img_size))
 
             img_batch.append(oface)
             ref_batch.append(face)
@@ -154,7 +154,7 @@ class Dataset(object):
         self.img_batch, self.mel_batch, self.ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
         self.img_masked = img_batch.copy()
         self.img_original = img_batch.copy()
-        self.img_masked[:, args.img_size // 2:] = 0
+        self.img_masked[:, self.args.img_size // 2:] = 0
         self.img_batch = np.concatenate((self.img_masked, self.ref_batch), axis=3) / 255.
         self.mel_batch = np.reshape(mel_batch, [len(self.mel_batch),
                                                 self.mel_batch.shape[1],
