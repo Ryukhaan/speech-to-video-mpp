@@ -634,12 +634,10 @@ if __name__ == "__main__":
     test_dataset = Dataset(val_list, device)
 
     writer = SummaryWriter('runs/lora')
-    for step, x in tqdm(enumerate(train_dataset.frames_pil)):
-        # cropped, ref = plot_cropped_ref(x)
-        writer.add_images('stabilized',
-                          x,
-                          global_step=0
-                          )
+    writer.add_images('stabilized',
+                    np.transpose(train_dataset.frames_pil, (0,2,3,1)),
+                    global_step=0
+                    )
 
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
