@@ -635,7 +635,7 @@ if __name__ == "__main__":
 
     writer = SummaryWriter('runs/lora')
     writer.add_images('stabilized',
-                    np.transpose(np.asarray(train_dataset.frames_pil), (0,2,3,1)),
+                    np.transpose(train_dataset.frames_pil, (0,3,1,2)),
                     global_step=0
                     )
 
