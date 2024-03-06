@@ -363,7 +363,7 @@ class Dataset(object):
 
         nframes = self.get_subframes(self.frames_pil, start_frame)
         window = self.prepare_window(nframes)
-        self.imgs_masked = nframes.copy()
+        self.imgs_masked = self.stabilized_imgs.copy()
         masked_window = self.prepare_window(self.imgs_masked)
         masked_window[:, window.shape[2] // 2:] = 0.
 
