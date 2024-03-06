@@ -404,7 +404,7 @@ def plot_predictions(x, y, preds):
             image[:, :, :Wi] = preds[bi, :, ti, :, :]
             image[:, :, Wi:] = ref[bi, :, ti, :, :]
             ax.imshow(np.transpose(image, (1,2,0)))
-            ax = fig.add_subplot(2 * B, T, 2*T*(bi+1) + ti + 1, xticks=[], yticks=[])
+            ax = fig.add_subplot(2 * B, T, 2*T*bi + T + ti + 1, xticks=[], yticks=[])
             ax.imshow(np.transpose(y[bi,:, ti, :,:], (1,2,0)))
             #idx += 1
     return fig
