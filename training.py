@@ -359,8 +359,9 @@ class Dataset(object):
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
 
         self.stabilized_imgs = self.get_subframes(self.stabilized_imgs, start_frame)
+        print("SubFrame", self.stabilized_imgs.shape)
         self.stabilized_imgs = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.stabilized_imgs])
-        print(self.stabilized_imgs.shape)
+        print("Resized", self.stabilized_imgs.shape)
         stabilized_window = self.prepare_window(self.stabilized_imgs)
 
         nframes = self.get_subframes(self.frames_pil, start_frame)
