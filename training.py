@@ -418,12 +418,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     loss_func = losses.LoraLoss(device)
     prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader) + 1, leave=True)
     writer = SummaryWriter('runs/lora')
-    for step, x in tqdm(enumerate(train_data_loader.frames_pil)):
-        #cropped, ref = plot_cropped_ref(x)
-        writer.add_images('stabilized',
-                          x,
-                          global_step=0
-                          )
     best_eval_loss = 100.
     for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch):
         running_loss = 0.
@@ -637,12 +631,16 @@ if __name__ == "__main__":
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     # Dataset and Dataloader setup
     train_dataset = Dataset(train_list, device)
-    #train_dataset.read_video(0)
-    #train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
-    #test_dataset.read_video(0)
-    #test_dataset.save_preprocess()
-    #exit(0)
+
+    writer = SummaryWriter('runs/lora')
+    for step, x in tqdm(enumerate(train_dataset.frames_pil)):
+        # cropped, ref = plot_cropped_ref(x)
+        writer.add_images('stabilized',
+                          x,
+                          global_step=0
+                          )
+
     train_data_loader = data_utils.DataLoader(
         train_dataset, batch_size=hparams.batch_size, shuffle=True)
         #num_workers=hparams.num_workers)
