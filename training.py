@@ -418,14 +418,10 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     loss_func = losses.LoraLoss(device)
     prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader) + 1, leave=True)
     writer = SummaryWriter('runs/lora')
-    for step, (x, indiv_mel, mel, y) in prog_bar:
-        cropped, ref = plot_cropped_ref(x)
-        writer.add_images('cropped',
-                          cropped,
-                          global_step=0
-                          )
-        writer.add_images('ref',
-                          ref,
+    for step, x in tqdm(enumerate(train_data_loader.frames_pil)):
+        #cropped, ref = plot_cropped_ref(x)
+        writer.add_images('stabilized',
+                          x,
                           global_step=0
                           )
     best_eval_loss = 100.
