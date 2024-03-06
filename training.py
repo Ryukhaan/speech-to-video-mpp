@@ -93,8 +93,9 @@ class Dataset(object):
         self.kp_extractor = None
         self.full_frames = []
         self.idx = 0
-        self.initialize()
         self.fps = self.args.fps
+        self.initialize()
+
 
     def initialize(self):
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
