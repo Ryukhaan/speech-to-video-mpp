@@ -98,8 +98,8 @@ class Dataset(object):
 
 
     def initialize(self):
-        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
-            self.read_full_video()
+        #if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
+        self.read_full_video()
         self.landmarks_estimate(self.full_frames, save=False)
         self.face_3dmm_extraction(save=False)
         self.hack_3dmm_expression(save=False)
@@ -111,6 +111,7 @@ class Dataset(object):
         refs = []
         image_size = 256
         self.stabilized_imgs = self.stabilized_imgs[:len(self.mel_chunks)]
+        self.full_frames = self.full_frames[:len(self.mel_chunks)]
         # original frames
         kp_extractor = KeypointExtractor()
         fr_pil = [Image.fromarray(frame) for frame in self.stabilized_imgs]
