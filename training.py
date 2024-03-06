@@ -364,6 +364,7 @@ class Dataset(object):
         window = self.prepare_window(nframes)
 
         self.imgs_masked = window.copy()
+        print(self.imgs_masked.shape)
         masked_window = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.imgs_masked])
         #masked_window = self.prepare_window(self.imgs_masked)
         print(masked_window.shape)
