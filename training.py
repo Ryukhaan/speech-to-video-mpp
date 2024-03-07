@@ -766,8 +766,8 @@ def main(model, writer):
     kp_extractor = KeypointExtractor()
     loss_func = losses.LoraLoss(device)
     running_loss = 0.
-    for i, (_, _, _) in enumerate(tqdm(zip(img_batch, mel_batch, img_original), desc='[Step 6] Lip Synthesis:')):
-        print(img_batch.shape, mel_batch.shape, img_original.shape)
+    print(img_batch.shape, mel_batch.shape, img_original.shape)
+    for i in tqdm(range(img_batch.shape[0]-5), desc='[Step 6] Training'):
         x = torch.FloatTensor(np.transpose(img_batch[i:i+5], (0, 3, 1, 2))).to(device)
         mel = torch.FloatTensor(np.transpose(mel_batch[i:i+5], (0, 3, 1, 2))).to(device)
         y = torch.FloatTensor(np.transpose(img_original[i:i+5], (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
