@@ -577,12 +577,12 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
         mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
     np.save('temp/' + 'img_batch.npy', img_batch)
-    np.save('temp/' + 'mel_batch.npy', img_batch)
-    np.save('temp/' + 'frame_batch.npy', img_batch)
-    np.save('temp/' + 'coords_batch.npy', img_batch)
-    np.save('temp/' + 'img_orig_batch.npy', img_batch)
-    np.save('temp/' + 'full_frame_batch.npy', img_batch)
-    return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+    np.save('temp/' + 'mel_batch.npy', mel_batch)
+    #np.save('temp/' + 'frame_batch.npy', img_batch)
+    #np.save('temp/' + 'coords_batch.npy', img_batch)
+    np.save('temp/' + 'img_orig_batch.npy', img_original)
+    #np.save('temp/' + 'full_frame_batch.npy', img_batch)
+    return img_batch, mel_batch, img_original
 
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     #eval_steps = 1400
