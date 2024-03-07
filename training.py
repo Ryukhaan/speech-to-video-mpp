@@ -735,30 +735,31 @@ def main(model, writer):
             pred = cv2.resize(img, (args.img_size, args.img_size))
             imgs_enhanced.append(pred)
         gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
+
     else:
         img_batch = np.load('temp/' + 'img_batch.npy')
         mel_batch = np.load('temp/' + 'mel_batch.npy')
-        frame_batch = np.load('temp/' + 'frame_batch.npy')
-        coords_batch = np.load('temp/' + 'coords_batch.npy')
+        #frame_batch = np.load('temp/' + 'frame_batch.npy')
+        #coords_batch = np.load('temp/' + 'coords_batch.npy')
         img_original = np.load('temp/' + 'img_orig_batch.npy')
-        full_frame_batch = np.load('temp/' + 'full_frame_batch.npy')
-        gen = img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+        #full_frame_batch = np.load('temp/' + 'full_frame_batch.npy')
+        gen = img_batch, mel_batch, img_original
 
 
     #del ref_enhancer
     torch.cuda.empty_cache()
 
-    frame_h, frame_w = full_frames[0].shape[:-1]
-    if not args.cropped_image:
-        out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
-                              (2 * frame_w, 2 * frame_h))
-    else:
-        out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
-                              (frame_w, frame_h))
-    if args.up_face != 'original':
-        instance = GANimationModel()
-        instance.initialize()
-        instance.setup()
+    # frame_h, frame_w = gen[0][0].shape[:-1]
+    # if not args.cropped_image:
+    #     out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
+    #                           (2 * frame_w, 2 * frame_h))
+    # else:
+    #     out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
+    #                           (frame_w, frame_h))
+    # if args.up_face != 'original':
+    #     instance = GANimationModel()
+    #     instance.initialize()
+    #     instance.setup()
 
     #restorer = GFPGANer(model_path='checkpoints/GFPGANv1.4.pth', upscale=1, arch='clean', \
     #                    channel_multiplier=2, bg_upsampler=None)
@@ -766,7 +767,7 @@ def main(model, writer):
     kp_extractor = KeypointExtractor()
     loss_func = losses.LoraLoss(device)
     running_loss = 0.
-    for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
+    for i, (img_batch, mel_batch, img_original) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
         img_batch = torch.FloatTensor(np.transpose(img_batch[i:i+5], (0, 3, 1, 2))).to(device)
@@ -787,7 +788,7 @@ def main(model, writer):
 
         writer.add_scalar('Loss/train', running_loss / (i + 1), i)
         if i % 10 == 0:
-            cropped, stablized = torch.split(x, 3, dim=1)
+            cropped, stablized = torch.split(img_batch, 3, dim=1)
             cropped = torch.cat([cropped[:, :, i] for i in range(lnet_T)], dim=0)
             stablized = torch.cat([stablized[:, :, i] for i in range(lnet_T)], dim=0)
             writer.add_images('predictions',
