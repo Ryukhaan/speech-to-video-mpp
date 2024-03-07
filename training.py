@@ -728,7 +728,7 @@ def main(model, writer):
         imgs_enhanced.append(pred)
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
 
-    del ref_enhancer
+    #del ref_enhancer
     torch.cuda.empty_cache()
 
     frame_h, frame_w = full_frames[0].shape[:-1]
