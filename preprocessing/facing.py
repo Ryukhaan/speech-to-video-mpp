@@ -77,17 +77,25 @@ class Preprocessor():
 
     def landmarks_estimate(self):
         # face detection & cropping, cropping the first frame as the style of FFHQ
-        croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
-        full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in self.full_frames]
-        full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + '_cropped.npy'):
+            croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+            full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in self.full_frames]
+            full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
 
-        clx, cly, crx, cry = crop
-        lx, ly, rx, ry = quad
-        lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
-        oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, self.full_frames[0].shape[0]), clx +lx, min(clx +rx, self.full_frames[0].shape[1])
-        self.coordinates = oy1, oy2, ox1, ox2
-        # original_size = (ox2 - ox1, oy2 - oy1)
-        self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
+            clx, cly, crx, cry = crop
+            lx, ly, rx, ry = quad
+            lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
+            oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, self.full_frames[0].shape[0]), clx +lx, min(clx +rx, self.full_frames[0].shape[1])
+            self.coordinates = oy1, oy2, ox1, ox2
+            # original_size = (ox2 - ox1, oy2 - oy1)
+            self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
+            np.save('temp/'+ self.base_name + '_cropped.npy', np.array(self.frames_pil))
+            np.save('temp/' + self.base_name + '_coordinates.npy', np.array(self.coordinates))
+        else:
+            self.coordinates = np.load('temp/' + self.base_name + '_coordinates.npy', allow_pickle=True)
+            self.frames_pil = np.load('temp/'+ self.base_name + '_cropped.npy', allow_pickle=True)
+            #self.frames_pil = [np.array(frame) for frame in self.frames_pil]
+            #self.frames_96pil = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.frames_pil])
 
         # get the landmark according to the detected face.
         if not os.path.isfile('temp/' + self.base_name + '_landmarks.txt') or self.args.re_preprocess:
