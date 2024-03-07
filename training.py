@@ -104,69 +104,7 @@ class Dataset(object):
         self.face_3dmm_extraction(save=False)
         self.hack_3dmm_expression(save=False)
         self.get_full_mels()
-        self.datagen()
-
-    def datagen(self):
-        img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
-        refs = []
-        image_size = 256
-        self.stabilized_imgs = self.stabilized_imgs[:len(self.mel_chunks)]
-        self.full_frames = self.full_frames[:len(self.mel_chunks)]
-        # original frames
-        kp_extractor = KeypointExtractor()
-        fr_pil = [Image.fromarray(frame) for frame in self.stabilized_imgs]
-        if not os.path.isfile( 'temp/' + 'temp_x12_landmarks.txt' ):
-            lms = np.load('temp/' + 'temp_x12_landmarks.txt', allow_pickle=True)
-        else:
-            lms = kp_extractor.extract_keypoint(fr_pil, 'temp/' + 'temp_x12_landmarks.txt')
-        frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, lms)]  # frames is the croped version of modified face
-        crops, orig_images, quads = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
-        inverse_transforms = [calc_alignment_coefficients(quad + 0.5,
-                                                          [[0, 0], [0, image_size], [image_size, image_size],
-                                                           [image_size, 0]]) for quad in quads]
-        del kp_extractor.detector
-
-        oy1, oy2, ox1, ox2 = self.coordinates
-        face_det_results = face_detect(self.full_frames, self.args, jaw_correction=True)
-        print("Here")
-        for inverse_transform, crop, full_frame, face_det in tqdm(zip(inverse_transforms, crops, self.full_frames,
-                                                                 face_det_results), desc='Cropping'):
-            imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
-                cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
-
-            ff = full_frame.copy()
-            ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')),
-                                                                  (ox2 - ox1, oy2 - oy1))
-            oface, coords = face_det
-            y1, y2, x1, x2 = coords
-            refs.append(ff[y1: y2, x1:x2])
-
-        for i, m in tqdm(enumerate(self.mel_chunks), desc='Iteratate through mel chinks'):
-            idx = i
-            frame_to_save = self.stabilized_imgs[idx].copy()
-            face = refs[idx]
-            oface, coords = face_det_results[idx].copy()
-
-            face = cv2.resize(face, (self.args.img_size, self.args.img_size))
-            oface = cv2.resize(oface, (self.args.img_size, self.args.img_size))
-
-            img_batch.append(oface)
-            ref_batch.append(face)
-            mel_batch.append(m)
-            coords_batch.append(coords)
-            frame_batch.append(frame_to_save)
-            full_frame_batch.append(self.full_frames[idx].copy())
-        print(len(img_batch))
-        if len(img_batch) > 0:
-            self.img_batch, self.mel_batch, self.ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
-            self.img_masked = img_batch.copy()
-            self.img_original = img_batch.copy()
-            self.img_masked[:, self.args.img_size // 2:] = 0
-            #self.img_masked = img_masked.copy()
-            self.img_batch = np.concatenate((self.img_masked, self.ref_batch), axis=3) / 255.
-            self.mel_batch = np.reshape(mel_batch, [len(self.mel_batch),
-                                                    self.mel_batch.shape[1],
-                                                    self.mel_batch.shape[2], 1])
+        #self.datagen()
 
     def read_full_video(self, index=0):
         self.full_frames = []
@@ -189,8 +127,6 @@ class Dataset(object):
         return int(basename(frame).split('.')[0])
 
     def read_video(self, index):
-        #self.idx = index
-        #self.vid_idx = index
         self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] + '_cropped.npy', allow_pickle=True)
         self.frames_pil = [np.array(frame) for frame in self.frames_pil]
         return self.frames_pil
@@ -432,9 +368,7 @@ class Dataset(object):
         indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
         if indiv_mels is None:
             start_frame = 5
-            #nframes = self.get_segmented_window(start_frame)
             vidname = self.all_videos[0]
-
             wavpath = vidname.split('.')[0] + '.wav'
             wav = audio.load_wav(wavpath, hparams.sample_rate)
             orig_mel = audio.melspectrogram(wav).T
@@ -445,6 +379,9 @@ class Dataset(object):
         #stabilized_window = np.asarray([cv2.resize(frame, (96, 96)) for frame in stabilized_window])
         stabilized_window = self.prepare_window(stabilized_window)
 
+        sub_full_frames = self.get_subframes(self.full_frames, start_frame)
+        oy1, oy2, ox1, ox2 = self.coordinates
+        gen = datagen(stabilized_window.copy(), indiv_mels, sub_full_frames, None, (oy1, oy2, ox1, ox2))
         nframes = self.get_subframes(self.frames_pil, start_frame)
         masked_window = self.get_subframes(self.frames_96pil, start_frame)
         #masked_window = np.asarray([cv2.resize(frame, (96,96)) for frame in masked_window])
