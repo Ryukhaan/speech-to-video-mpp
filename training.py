@@ -802,7 +802,9 @@ if __name__ == "__main__":
     #train_dataset = Dataset(train_list, device)
     #test_dataset = Dataset(val_list, device)
     args.face = train_list[0]
+    args.audio = train_list[0].split('.')[-1] + '.wav'
     print(args.face)
+
     writer = SummaryWriter('runs/lora')
 
     # train_data_loader = data_utils.DataLoader(
