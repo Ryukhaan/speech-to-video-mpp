@@ -743,7 +743,6 @@ def main(model, writer):
         #coords_batch = np.load('temp/' + 'coords_batch.npy')
         img_original = np.load('temp/' + 'img_orig_batch.npy')
         #full_frame_batch = np.load('temp/' + 'full_frame_batch.npy')
-        gen = img_batch, mel_batch, img_original
 
 
     #del ref_enhancer
@@ -767,7 +766,7 @@ def main(model, writer):
     kp_extractor = KeypointExtractor()
     loss_func = losses.LoraLoss(device)
     running_loss = 0.
-    for i, (img_batch, mel_batch, img_original) in enumerate(tqdm(gen, desc='[Step 6] Lip Synthesis:')):
+    for i, (img_batch, mel_batch, img_original) in enumerate(tqdm(zip(img_batch, mel_batch, img_original), desc='[Step 6] Lip Synthesis:')):
         img_batch = torch.FloatTensor(np.transpose(img_batch[i:i+5], (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch[i:i+5], (0, 3, 1, 2))).to(device)
         img_original = torch.FloatTensor(np.transpose(img_original[i:i+5], (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
