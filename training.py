@@ -515,82 +515,73 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         global_epoch += 1
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
-    if not os.path.isfile('temp/' + 'img_batch_.npy'):
+    #base_name = args.face.split('/')[-1]
+    refs = []
+    image_size = 256
 
-        #base_name = args.face.split('/')[-1]
-        refs = []
-        image_size = 256
+    # original frames
+    kp_extractor = KeypointExtractor()
+    fr_pil = [Image.fromarray(frame) for frame in frames]
+    #fr_pil = frames.copy()
+    lms = kp_extractor.extract_keypoint(fr_pil, 'temp/'+'temp_x12_landmarks.txt')
+    frames_pil = [ (lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
+    crops, orig_images, quads  = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
+    inverse_transforms = [calc_alignment_coefficients(quad + 0.5, [[0, 0], [0, image_size], [image_size, image_size], [image_size, 0]]) for quad in quads]
+    del kp_extractor.detector
 
-        # original frames
-        kp_extractor = KeypointExtractor()
-        fr_pil = [Image.fromarray(frame) for frame in frames]
-        #fr_pil = frames.copy()
-        lms = kp_extractor.extract_keypoint(fr_pil, 'temp/'+'temp_x12_landmarks.txt')
-        frames_pil = [ (lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
-        crops, orig_images, quads  = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
-        inverse_transforms = [calc_alignment_coefficients(quad + 0.5, [[0, 0], [0, image_size], [image_size, image_size], [image_size, 0]]) for quad in quads]
-        del kp_extractor.detector
+    oy1,oy2,ox1,ox2 = cox
+    face_det_results = face_detect(full_frames, args, jaw_correction=True)
 
-        oy1,oy2,ox1,ox2 = cox
-        face_det_results = face_detect(full_frames, args, jaw_correction=True)
+    for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames, face_det_results):
+        imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
+            cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
 
-        for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames, face_det_results):
-            imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
-                cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
+        ff = full_frame.copy()
+        ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
+        oface, coords = face_det
+        y1, y2, x1, x2 = coords
+        refs.append(ff[y1: y2, x1:x2])
 
-            ff = full_frame.copy()
-            ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
-            oface, coords = face_det
-            y1, y2, x1, x2 = coords
-            refs.append(ff[y1: y2, x1:x2])
+    for i, m in enumerate(mels):
+        idx = 0 if args.static else i % len(frames)
+        frame_to_save = frames[idx].copy()
+        face = refs[idx]
+        oface, coords = face_det_results[idx].copy()
 
-        for i, m in enumerate(mels):
-            idx = 0 if args.static else i % len(frames)
-            frame_to_save = frames[idx].copy()
-            face = refs[idx]
-            oface, coords = face_det_results[idx].copy()
+        face = cv2.resize(face, (args.img_size, args.img_size))
+        oface = cv2.resize(oface, (args.img_size, args.img_size))
 
-            face = cv2.resize(face, (args.img_size, args.img_size))
-            oface = cv2.resize(oface, (args.img_size, args.img_size))
+        img_batch.append(oface)
+        ref_batch.append(face)
+        mel_batch.append(m)
+        coords_batch.append(coords)
+        frame_batch.append(frame_to_save)
+        full_frame_batch.append(full_frames[idx].copy())
 
-            img_batch.append(oface)
-            ref_batch.append(face)
-            mel_batch.append(m)
-            coords_batch.append(coords)
-            frame_batch.append(frame_to_save)
-            full_frame_batch.append(full_frames[idx].copy())
+        # if len(img_batch) >= args.LNet_batch_size:
+        #     img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
+        #     img_masked = img_batch.copy()
+        #     img_original = img_batch.copy()
+        #     img_masked[:, args.img_size//2:] = 0
+        #     img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
+        #     mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
+        #
+        #     yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+        #     img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
 
-            # if len(img_batch) >= args.LNet_batch_size:
-            #     img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
-            #     img_masked = img_batch.copy()
-            #     img_original = img_batch.copy()
-            #     img_masked[:, args.img_size//2:] = 0
-            #     img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
-            #     mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
-            #
-            #     yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
-            #     img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
-
-        if len(img_batch) > 0:
-            img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
-            img_masked = img_batch.copy()
-            img_original = img_batch.copy()
-            img_masked[:, args.img_size//2:] = 0
-            img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
-            mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
-        np.save('temp/' + 'img_batch.npy', img_batch)
-        np.save('temp/' + 'mel_batch.npy', img_batch)
-        np.save('temp/' + 'frame_batch.npy', img_batch)
-        np.save('temp/' + 'coords_batch.npy', img_batch)
-        np.save('temp/' + 'img_orig_batch.npy', img_batch)
-        np.save('temp/' + 'full_frame_batch.npy', img_batch)
-    else:
-        img_batch = np.load('temp/' + 'img_batch.npy')
-        mel_batch = np.load('temp/' + 'mel_batch.npy')
-        frame_batch = np.load('temp/' + 'frame_batch.npy')
-        coords_batch = np.load('temp/' + 'coords_batch.npy')
-        img_original = np.load('temp/' + 'img_orig_batch.npy')
-        full_frame_batch = np.load('temp/' + 'full_frame_batch.npy')
+    if len(img_batch) > 0:
+        img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
+        img_masked = img_batch.copy()
+        img_original = img_batch.copy()
+        img_masked[:, args.img_size//2:] = 0
+        img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
+        mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
+    np.save('temp/' + 'img_batch.npy', img_batch)
+    np.save('temp/' + 'mel_batch.npy', img_batch)
+    np.save('temp/' + 'frame_batch.npy', img_batch)
+    np.save('temp/' + 'coords_batch.npy', img_batch)
+    np.save('temp/' + 'img_orig_batch.npy', img_batch)
+    np.save('temp/' + 'full_frame_batch.npy', img_batch)
     return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
 
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
@@ -687,61 +678,72 @@ def main(model, writer):
     gc.collect()
     torch.cuda.empty_cache()
     print('[Info] Using {} for inference.'.format(device))
-    preprocessor = preprocessing.Preprocessor(args)
-    preprocessor.reading_video()
-    preprocessor.landmarks_estimate()
-    preprocessor.face_3dmm_extraction()
-    preprocessor.hack_3dmm_expression()
-    frames_pil = preprocessor.frames_pil
-    full_frames = preprocessor.full_frames
-    fps = preprocessor.fps
-    imgs = preprocessor.imgs
-    lm = preprocessor.lm
-    oy1, oy2, ox1, ox2 = preprocessor.coordinates
-    del preprocessor.model
-    if not args.audio.endswith('.wav'):
-        command = 'ffmpeg -loglevel error -y -i {} -strict -2 {}'.format(args.audio,
-                                                                         'temp/{}/temp.wav'.format(args.tmp_dir))
-        subprocess.call(command, shell=True)
-        args.audio = 'temp/{}/temp.wav'.format(args.tmp_dir)
-    wav = audio.load_wav(args.audio, 16000)
-    mel = audio.melspectrogram(wav)
-    if np.isnan(mel.reshape(-1)).sum() > 0:
-        raise ValueError('Mel contains nan! Using a TTS voice? Add a small epsilon noise to the wav file and try again')
+    if not os.path.isfile('temp/' + 'img_batch.npy'):
+        preprocessor = preprocessing.Preprocessor(args)
+        preprocessor.reading_video()
+        preprocessor.landmarks_estimate()
+        preprocessor.face_3dmm_extraction()
+        preprocessor.hack_3dmm_expression()
+        frames_pil = preprocessor.frames_pil
+        full_frames = preprocessor.full_frames
+        fps = preprocessor.fps
+        imgs = preprocessor.imgs
+        lm = preprocessor.lm
+        oy1, oy2, ox1, ox2 = preprocessor.coordinates
+        del preprocessor.model
+        if not args.audio.endswith('.wav'):
+            command = 'ffmpeg -loglevel error -y -i {} -strict -2 {}'.format(args.audio,
+                                                                             'temp/{}/temp.wav'.format(args.tmp_dir))
+            subprocess.call(command, shell=True)
+            args.audio = 'temp/{}/temp.wav'.format(args.tmp_dir)
+        wav = audio.load_wav(args.audio, 16000)
+        mel = audio.melspectrogram(wav)
+        if np.isnan(mel.reshape(-1)).sum() > 0:
+            raise ValueError(
+                'Mel contains nan! Using a TTS voice? Add a small epsilon noise to the wav file and try again')
 
-    mel_step_size, mel_idx_multiplier, i, mel_chunks = 16, 80. / fps, 0, []
-    while True:
-        start_idx = int(i * mel_idx_multiplier)
-        if start_idx + mel_step_size > len(mel[0]):
-            mel_chunks.append(mel[:, len(mel[0]) - mel_step_size:])
-            break
-        mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
-        i += 1
+        mel_step_size, mel_idx_multiplier, i, mel_chunks = 16, 80. / fps, 0, []
+        while True:
+            start_idx = int(i * mel_idx_multiplier)
+            if start_idx + mel_step_size > len(mel[0]):
+                mel_chunks.append(mel[:, len(mel[0]) - mel_step_size:])
+                break
+            mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
+            i += 1
 
-    print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
-    #imgs = imgs[:12]
-    imgs = imgs[:len(mel_chunks)]
-    full_frames = full_frames[:len(mel_chunks)]
-    lm = lm[:len(mel_chunks)]
+        print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
+        # imgs = imgs[:12]
+        imgs = imgs[:len(mel_chunks)]
+        full_frames = full_frames[:len(mel_chunks)]
+        lm = lm[:len(mel_chunks)]
 
-    # enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
-    #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
-    #ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
-    #                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=4,
-    #                               model='GPEN-BFR-512', use_sr=False)
-    #enhancer = FaceEnhancement(args, base_dir='checkpoints',
-    #                           in_size=2048, channel_multiplier=2, narrow=1, sr_scale=2,
-    #                           sr_model=None,
-    #                           model='GPEN-BFR-2048', use_sr=True)
+        # enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
+        #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
+        # ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
+        #                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=4,
+        #                               model='GPEN-BFR-512', use_sr=False)
+        # enhancer = FaceEnhancement(args, base_dir='checkpoints',
+        #                           in_size=2048, channel_multiplier=2, narrow=1, sr_scale=2,
+        #                           sr_model=None,
+        #                           model='GPEN-BFR-2048', use_sr=True)
 
-    imgs_enhanced = []
-    for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
-        img = imgs[idx]
-        # pred, _, _ = enhancer.process(img, aligned=True)
-        #pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
-        pred = cv2.resize(img, (args.img_size, args.img_size))
-        imgs_enhanced.append(pred)
-    gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
+        imgs_enhanced = []
+        for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
+            img = imgs[idx]
+            # pred, _, _ = enhancer.process(img, aligned=True)
+            # pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
+            pred = cv2.resize(img, (args.img_size, args.img_size))
+            imgs_enhanced.append(pred)
+        gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
+    else:
+        img_batch = np.load('temp/' + 'img_batch.npy')
+        mel_batch = np.load('temp/' + 'mel_batch.npy')
+        frame_batch = np.load('temp/' + 'frame_batch.npy')
+        coords_batch = np.load('temp/' + 'coords_batch.npy')
+        img_original = np.load('temp/' + 'img_orig_batch.npy')
+        full_frame_batch = np.load('temp/' + 'full_frame_batch.npy')
+        gen = img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+
 
     #del ref_enhancer
     torch.cuda.empty_cache()
