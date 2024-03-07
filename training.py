@@ -769,11 +769,13 @@ def main(model, writer):
     loss_func = losses.LoraLoss(device)
     running_loss = 0.
     print(img_batch.shape, mel_batch.shape, img_original.shape)
-    for i in tqdm(range(img_batch.shape[0]-5), desc='[Step 6] Training'):
+    B = args.LNet_batch_size
+    for i in tqdm(range(0, img_batch.shape[0]-5, B), desc='[Step 6] Training'):
         cv2.imwrite("results/extract{}.png".format(i), img_original[i])
-        x = torch.FloatTensor(np.transpose(img_batch[i:i+5], (0, 3, 1, 2))).to(device)
-        mel = torch.FloatTensor(np.transpose(mel_batch[i:i+5], (0, 3, 1, 2))).to(device)
-        y = torch.FloatTensor(np.transpose(img_original[i:i+5], (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
+
+        x = torch.FloatTensor([np.transpose(img_batch[i+n:i+n+lnet_T], (3, 0, 1, 2)) for n in range(B)]).to(device)
+        mel = torch.FloatTensor([np.transpose(mel_batch[i+n:i+n+lnet_T], (3, 0, 1, 2)) for n in range(B)]).to(device)
+        y = torch.FloatTensor([np.transpose(img_original[i+n:i+n+lnet_T], (3, 0, 1, 2)) for n in range(B)]).to(device) / 255.  # BGR -> RGB
 
         x = F.interpolate(x, size=(96,96), mode='bilinear')
         #incomplete, reference = torch.split(x, 3, dim=1)
