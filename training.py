@@ -767,6 +767,7 @@ def main(model, writer):
     loss_func = losses.LoraLoss(device)
     running_loss = 0.
     for i, (img_batch, mel_batch, img_original) in enumerate(tqdm(zip(img_batch, mel_batch, img_original), desc='[Step 6] Lip Synthesis:')):
+        print(img_batch.shape, mel_batch.shape, img_batch.shape)
         img_batch = torch.FloatTensor(np.transpose(img_batch[i:i+5], (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch[i:i+5], (0, 3, 1, 2))).to(device)
         img_original = torch.FloatTensor(np.transpose(img_original[i:i+5], (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
