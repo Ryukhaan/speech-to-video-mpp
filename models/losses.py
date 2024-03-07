@@ -29,6 +29,7 @@ class LipSyncLoss(torch.nn.Module):
         return loss
 
     def forward(self, audio, y_pred):
+        print(y_pred.shape)
         y_pred = y_pred[:, :, :, y_pred.size(3)//2]
         if y_pred.size(0) == 1:
             y_pred = torch.cat([y_pred[:, i] for i in range(self.number_of_frames)], dim=1)
