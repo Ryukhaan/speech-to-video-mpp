@@ -134,13 +134,10 @@ class LoraLoss(torch.nn.Module):
 
     def forward(self, face_pred, face_true, audio_seq):
         B = audio_seq.size(0)
+        print(audio_seq.shape)
         input_dim_size = len(face_pred.size())
-        if input_dim_size > 4:
-            B, C, T, Hin, Win = face_pred.shape
-            _, _, _, H, W =  face_true.shape
-        else:
-            T, C, Hin, Win = face_pred.shape
-            _, _, H, W = face_true.shape
+        Hin, Win = face_pred.shape[-2:]
+        H, W =  face_true.shape[-2:]
         resizer_96 = torchvision.transforms.Resize((Hin, Win))
         resizer_up = torchvision.transforms.Resize((H, W))
         if input_dim_size > 4:
