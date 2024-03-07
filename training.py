@@ -44,7 +44,7 @@ from third_part.face3d.util.preprocess import align_img
 from third_part.face3d.util.load_mats import load_lm3d
 from third_part.face3d.extract_kp_videos import KeypointExtractor
 # face enhancement
-from third_part.GPEN.face_enhancement import FaceEnhancement
+#from third_part.GPEN.face_enhancement import FaceEnhancement
 #from third_part.GFPGAN.gfpgan import GFPGANer
 # expression control
 from third_part.ganimation_replicate.model.ganimation import GANimationModel
@@ -711,9 +711,9 @@ def main(model, writer):
 
     # enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
-    ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
-                                   in_size=512, channel_multiplier=2, narrow=1, sr_scale=4,
-                                   model='GPEN-BFR-512', use_sr=False)
+    #ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
+    #                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=4,
+    #                               model='GPEN-BFR-512', use_sr=False)
     #enhancer = FaceEnhancement(args, base_dir='checkpoints',
     #                           in_size=2048, channel_multiplier=2, narrow=1, sr_scale=2,
     #                           sr_model=None,
@@ -723,7 +723,8 @@ def main(model, writer):
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
         img = imgs[idx]
         # pred, _, _ = enhancer.process(img, aligned=True)
-        pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
+        #pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
+        pred = cv2.resize(img, (args.img_size, args.img_size))
         imgs_enhanced.append(pred)
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
 
