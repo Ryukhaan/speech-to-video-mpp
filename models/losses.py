@@ -34,8 +34,7 @@ class LipSyncLoss(torch.nn.Module):
             y_pred = torch.cat([y_pred[:, i] for i in range(self.number_of_frames)], dim=1)
         else:
             y_pred = torch.cat([y_pred[:, :, i] for i in range(self.number_of_frames)], dim=1)
-        #audio = audio
-        #y_pred = y_pred
+        print(y_pred.shape)
         audio_emb, video_emb = self.net(audio, y_pred)
         #video_emb = video_emb.view(video_emb.size(0), 512, 4)
         y = torch.ones(y_pred.size(0), 1).float().to(self.device)
