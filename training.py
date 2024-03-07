@@ -766,15 +766,15 @@ def main(model, writer):
     kp_extractor = KeypointExtractor()
     loss_func = losses.LoraLoss(device)
     running_loss = 0.
-    for i, (img_batch, mel_batch, img_original) in enumerate(tqdm(zip(img_batch, mel_batch, img_original), desc='[Step 6] Lip Synthesis:')):
-        print(img_batch.shape, mel_batch.shape, img_batch.shape)
-        img_batch = torch.FloatTensor(np.transpose(img_batch[i:i+5], (0, 3, 1, 2))).to(device)
-        mel_batch = torch.FloatTensor(np.transpose(mel_batch[i:i+5], (0, 3, 1, 2))).to(device)
-        img_original = torch.FloatTensor(np.transpose(img_original[i:i+5], (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
+    for i, (_, _, _) in enumerate(tqdm(zip(img_batch, mel_batch, img_original), desc='[Step 6] Lip Synthesis:')):
+        print(img_batch.shape, mel_batch.shape, img_original.shape)
+        x = torch.FloatTensor(np.transpose(img_batch[i:i+5], (0, 3, 1, 2))).to(device)
+        mel = torch.FloatTensor(np.transpose(mel_batch[i:i+5], (0, 3, 1, 2))).to(device)
+        y = torch.FloatTensor(np.transpose(img_original[i:i+5], (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
 
-        incomplete, reference = torch.split(img_batch, 3, dim=1)
-        pred = model(mel_batch, img_batch)
-        y = img_batch.to(device)
+        #incomplete, reference = torch.split(x, 3, dim=1)
+        pred = model(mel, x)
+        y = y.to(device)
         loss = loss_func(pred, y, mel)
 
         loss.backward()
@@ -786,7 +786,7 @@ def main(model, writer):
 
         writer.add_scalar('Loss/train', running_loss / (i + 1), i)
         if i % 10 == 0:
-            cropped, stablized = torch.split(img_batch, 3, dim=1)
+            cropped, stablized = torch.split(x, 3, dim=1)
             cropped = torch.cat([cropped[:, :, i] for i in range(lnet_T)], dim=0)
             stablized = torch.cat([stablized[:, :, i] for i in range(lnet_T)], dim=0)
             writer.add_images('predictions',
