@@ -181,7 +181,6 @@ def main():
             y1, y2, x1, x2 = c
             p = cv2.resize(p.astype(np.uint8), (x2 - x1, y2 - y1))
             cv2.imwrite("./results/low_out{}.png".format(idx), p)
-
             ff = xf.copy()
             ff[y1:y2, x1:x2] = p
             pf = xf.copy()
