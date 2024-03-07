@@ -515,68 +515,83 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         global_epoch += 1
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
-    #base_name = args.face.split('/')[-1]
-    refs = []
-    image_size = 256
+    if not os.path.isfile('temp/' + 'img_batch_.npy'):
 
-    # original frames
-    kp_extractor = KeypointExtractor()
-    fr_pil = [Image.fromarray(frame) for frame in frames]
-    #fr_pil = frames.copy()
-    lms = kp_extractor.extract_keypoint(fr_pil, 'temp/'+'temp_x12_landmarks.txt')
-    frames_pil = [ (lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
-    crops, orig_images, quads  = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
-    inverse_transforms = [calc_alignment_coefficients(quad + 0.5, [[0, 0], [0, image_size], [image_size, image_size], [image_size, 0]]) for quad in quads]
-    del kp_extractor.detector
+        #base_name = args.face.split('/')[-1]
+        refs = []
+        image_size = 256
 
-    oy1,oy2,ox1,ox2 = cox
-    face_det_results = face_detect(full_frames, args, jaw_correction=True)
+        # original frames
+        kp_extractor = KeypointExtractor()
+        fr_pil = [Image.fromarray(frame) for frame in frames]
+        #fr_pil = frames.copy()
+        lms = kp_extractor.extract_keypoint(fr_pil, 'temp/'+'temp_x12_landmarks.txt')
+        frames_pil = [ (lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
+        crops, orig_images, quads  = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
+        inverse_transforms = [calc_alignment_coefficients(quad + 0.5, [[0, 0], [0, image_size], [image_size, image_size], [image_size, 0]]) for quad in quads]
+        del kp_extractor.detector
 
-    for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames, face_det_results):
-        imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
-            cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
+        oy1,oy2,ox1,ox2 = cox
+        face_det_results = face_detect(full_frames, args, jaw_correction=True)
 
-        ff = full_frame.copy()
-        ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
-        oface, coords = face_det
-        y1, y2, x1, x2 = coords
-        refs.append(ff[y1: y2, x1:x2])
+        for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames, face_det_results):
+            imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
+                cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
 
-    for i, m in enumerate(mels):
-        idx = 0 if args.static else i % len(frames)
-        frame_to_save = frames[idx].copy()
-        face = refs[idx]
-        oface, coords = face_det_results[idx].copy()
+            ff = full_frame.copy()
+            ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
+            oface, coords = face_det
+            y1, y2, x1, x2 = coords
+            refs.append(ff[y1: y2, x1:x2])
 
-        face = cv2.resize(face, (args.img_size, args.img_size))
-        oface = cv2.resize(oface, (args.img_size, args.img_size))
+        for i, m in enumerate(mels):
+            idx = 0 if args.static else i % len(frames)
+            frame_to_save = frames[idx].copy()
+            face = refs[idx]
+            oface, coords = face_det_results[idx].copy()
 
-        img_batch.append(oface)
-        ref_batch.append(face)
-        mel_batch.append(m)
-        coords_batch.append(coords)
-        frame_batch.append(frame_to_save)
-        full_frame_batch.append(full_frames[idx].copy())
+            face = cv2.resize(face, (args.img_size, args.img_size))
+            oface = cv2.resize(oface, (args.img_size, args.img_size))
 
-        if len(img_batch) >= args.LNet_batch_size:
+            img_batch.append(oface)
+            ref_batch.append(face)
+            mel_batch.append(m)
+            coords_batch.append(coords)
+            frame_batch.append(frame_to_save)
+            full_frame_batch.append(full_frames[idx].copy())
+
+            # if len(img_batch) >= args.LNet_batch_size:
+            #     img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
+            #     img_masked = img_batch.copy()
+            #     img_original = img_batch.copy()
+            #     img_masked[:, args.img_size//2:] = 0
+            #     img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
+            #     mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
+            #
+            #     yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+            #     img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
+
+        if len(img_batch) > 0:
             img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
             img_masked = img_batch.copy()
             img_original = img_batch.copy()
             img_masked[:, args.img_size//2:] = 0
             img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
             mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
-
-            yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
-            img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
-
-    if len(img_batch) > 0:
-        img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
-        img_masked = img_batch.copy()
-        img_original = img_batch.copy()
-        img_masked[:, args.img_size//2:] = 0
-        img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
-        mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
-        yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+        np.save('temp/' + 'img_batch.npy', img_batch)
+        np.save('temp/' + 'mel_batch.npy', img_batch)
+        np.save('temp/' + 'frame_batch.npy', img_batch)
+        np.save('temp/' + 'coords_batch.npy', img_batch)
+        np.save('temp/' + 'img_orig_batch.npy', img_batch)
+        np.save('temp/' + 'full_frame_batch.npy', img_batch)
+    else:
+        img_batch = np.load('temp/' + 'img_batch.npy')
+        mel_batch = np.load('temp/' + 'mel_batch.npy')
+        frame_batch = np.load('temp/' + 'frame_batch.npy')
+        coords_batch = np.load('temp/' + 'coords_batch.npy')
+        img_original = np.load('temp/' + 'img_orig_batch.npy')
+        full_frame_batch = np.load('temp/' + 'full_frame_batch.npy')
+    return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
 
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     #eval_steps = 1400
@@ -752,9 +767,9 @@ def main(model, writer):
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
             tqdm(gen, desc='[Step 6] Lip Synthesis:',
                  total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
-        img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
-        mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
-        img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
+        img_batch = torch.FloatTensor(np.transpose(img_batch[i:i+5], (0, 3, 1, 2))).to(device)
+        mel_batch = torch.FloatTensor(np.transpose(mel_batch[i:i+5], (0, 3, 1, 2))).to(device)
+        img_original = torch.FloatTensor(np.transpose(img_original[i:i+5], (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
 
         incomplete, reference = torch.split(img_batch, 3, dim=1)
         pred = model(mel_batch, img_batch)
