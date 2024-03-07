@@ -520,7 +520,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 
     # original frames
     kp_extractor = KeypointExtractor()
-    fr_pil = [frame for frame in frames]
+    fr_pil = [Image.fromarray(frame) for frame in frames]
     #fr_pil = frames.copy()
     lms = kp_extractor.extract_keypoint(fr_pil, 'temp/'+'temp_x12_landmarks.txt')
     frames_pil = [ (lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
@@ -565,8 +565,8 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
             img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
             mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
 
-            return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
-            #img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
+            yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+            img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
 
     if len(img_batch) > 0:
         img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
@@ -575,7 +575,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         img_masked[:, args.img_size//2:] = 0
         img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
         mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
-        return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+        yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
 
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     #eval_steps = 1400
@@ -664,6 +664,125 @@ def print_trainable_parameters(model):
     print(
         f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param:.2f}"
     )
+
+
+def main(model):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    gc.collect()
+    torch.cuda.empty_cache()
+    print('[Info] Using {} for inference.'.format(device))
+    preprocessor = preprocessing.Preprocessor(args)
+    preprocessor.reading_video()
+    preprocessor.landmarks_estimate()
+    preprocessor.face_3dmm_extraction()
+    preprocessor.hack_3dmm_expression()
+    frames_pil = preprocessor.frames_pil
+    full_frames = preprocessor.full_frames
+    fps = preprocessor.fps
+    imgs = preprocessor.imgs
+    lm = preprocessor.lm
+    oy1, oy2, ox1, ox2 = preprocessor.coordinates
+    del preprocessor.model
+    if not args.audio.endswith('.wav'):
+        command = 'ffmpeg -loglevel error -y -i {} -strict -2 {}'.format(args.audio,
+                                                                         'temp/{}/temp.wav'.format(args.tmp_dir))
+        subprocess.call(command, shell=True)
+        args.audio = 'temp/{}/temp.wav'.format(args.tmp_dir)
+    wav = audio.load_wav(args.audio, 16000)
+    mel = audio.melspectrogram(wav)
+    if np.isnan(mel.reshape(-1)).sum() > 0:
+        raise ValueError('Mel contains nan! Using a TTS voice? Add a small epsilon noise to the wav file and try again')
+
+    mel_step_size, mel_idx_multiplier, i, mel_chunks = 16, 80. / fps, 0, []
+    while True:
+        start_idx = int(i * mel_idx_multiplier)
+        if start_idx + mel_step_size > len(mel[0]):
+            mel_chunks.append(mel[:, len(mel[0]) - mel_step_size:])
+            break
+        mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
+        i += 1
+
+    print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
+    imgs = imgs[:12]
+    # imgs = imgs[:len(mel_chunks)]
+    full_frames = full_frames[:len(mel_chunks)]
+    lm = lm[:len(mel_chunks)]
+
+    # enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
+    #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
+    ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
+                                   in_size=512, channel_multiplier=2, narrow=1, sr_scale=4,
+                                   model='GPEN-BFR-512', use_sr=False)
+    #enhancer = FaceEnhancement(args, base_dir='checkpoints',
+    #                           in_size=2048, channel_multiplier=2, narrow=1, sr_scale=2,
+    #                           sr_model=None,
+    #                           model='GPEN-BFR-2048', use_sr=True)
+
+    imgs_enhanced = []
+    for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
+        img = imgs[idx]
+        # pred, _, _ = enhancer.process(img, aligned=True)
+        pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
+        imgs_enhanced.append(pred)
+    gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
+
+    del ref_enhancer
+    torch.cuda.empty_cache()
+
+    frame_h, frame_w = full_frames[0].shape[:-1]
+    if not args.cropped_image:
+        out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
+                              (2 * frame_w, 2 * frame_h))
+    else:
+        out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
+                              (frame_w, frame_h))
+    if args.up_face != 'original':
+        instance = GANimationModel()
+        instance.initialize()
+        instance.setup()
+
+    #restorer = GFPGANer(model_path='checkpoints/GFPGANv1.4.pth', upscale=1, arch='clean', \
+    #                    channel_multiplier=2, bg_upsampler=None)
+
+    kp_extractor = KeypointExtractor()
+    loss_func = losses.LoraLoss(device)
+    running_loss = 0.
+    for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(
+            tqdm(gen, desc='[Step 6] Lip Synthesis:',
+                 total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
+        img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
+        mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
+        img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
+
+        incomplete, reference = torch.split(img_batch, 3, dim=1)
+        pred = model(mel_batch, img_batch)
+        y = y.to(device)
+        loss = loss_func(pred, y, mel)
+
+        loss.backward()
+        optimizer.step()
+
+        global_step += 1
+        #cur_session_steps = global_step - resumed_step
+        running_loss += loss.item()
+
+        writer.add_scalar('Loss/train', running_loss / (i + 1), i)
+        if i % 10 == 0:
+            cropped, stablized = torch.split(x, 3, dim=1)
+            cropped = torch.cat([cropped[:, :, i] for i in range(lnet_T)], dim=0)
+            stablized = torch.cat([stablized[:, :, i] for i in range(lnet_T)], dim=0)
+            writer.add_images('predictions',
+                              pred,
+                              global_step=i
+                              )
+            writer.add_images('cropped',
+                              cropped,
+                              global_step=i
+                              )
+            writer.add_images('stablized',
+                              stablized,
+                              global_step=i
+                              )
 
 if __name__ == "__main__":
 
