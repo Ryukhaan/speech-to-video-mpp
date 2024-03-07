@@ -318,7 +318,6 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         full_frame_batch.append(full_frames[idx].copy())
 
         if len(img_batch) >= args.LNet_batch_size:
-            print("Upper")
             img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
             img_masked = img_batch.copy()
             img_original = img_batch.copy()
@@ -328,9 +327,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 
             yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
             img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
-    print("Before masked")
     if len(img_batch) > 0:
-        print("There")
         img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
         img_masked = img_batch.copy()
         img_original = img_batch.copy()
