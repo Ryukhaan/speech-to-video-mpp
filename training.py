@@ -64,6 +64,7 @@ import matplotlib.pyplot as plt
 from torch.utils.tensorboard import SummaryWriter
 
 args = train_options()
+
 hparams = hparams.hparams
 lnet_T = 5
 global_step = 0
@@ -800,7 +801,8 @@ if __name__ == "__main__":
     # Dataset and Dataloader setup
     #train_dataset = Dataset(train_list, device)
     #test_dataset = Dataset(val_list, device)
-
+    args.face = train_list[0]
+    print(args.face)
     writer = SummaryWriter('runs/lora')
 
     # train_data_loader = data_utils.DataLoader(
