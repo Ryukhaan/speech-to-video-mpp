@@ -774,7 +774,7 @@ def main(model, writer):
         cv2.imwrite("results/extract{}.png".format(i), img_original[i])
 
 
-        x = torch.FloatTensor([np.transpose([cv2.imresize(image, (96,96)) for image in img_batch[i+n:i+n+lnet_T]], (3,0,1,2))
+        x = torch.FloatTensor([np.transpose([cv2.resize(image, (96,96)) for image in img_batch[i+n:i+n+lnet_T]], (3,0,1,2))
              for n in range(B)]).to(device)
         mel = torch.FloatTensor([np.transpose(mel_batch[i+n:i+n+lnet_T], (3, 0, 1, 2)) for n in range(B)]).to(device)
         y = torch.FloatTensor([np.transpose(img_original[i+n:i+n+lnet_T], (3, 0, 1, 2)) for n in range(B)]).to(device) / 255.  # BGR -> RGB
