@@ -146,7 +146,7 @@ class LoraLoss(torch.nn.Module):
         if input_dim_size > 4:
             y_pred = torch.cat([face_pred[:, :, i] for i in range(face_pred.size(2))], dim=0)
             y_true = torch.cat([face_true[:, :, i] for i in range(face_pred.size(2))], dim=0)
-        else
+        else:
             y_pred = face_pred
             y_true = face_true
         y_pred_up = resizer_up(y_pred)
