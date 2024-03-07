@@ -328,7 +328,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 
             yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
             img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
-
+    print("Before masked")
     if len(img_batch) > 0:
         print("There")
         img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
