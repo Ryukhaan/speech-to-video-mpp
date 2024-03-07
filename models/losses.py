@@ -139,13 +139,13 @@ class LoraLoss(torch.nn.Module):
         if input_dim_size > 4:
             y_pred = torch.cat([face_pred[:, :, i] for i in range(face_pred.size(2))], dim=0)
             y_true = torch.cat([face_true[:, :, i] for i in range(face_pred.size(2))], dim=0)
-            audio_cat = torch.cat([audio_seq[:, :, i] for i in range(face_pred.size(2))], dim=0)
+            audio_cat = torch.cat([audio_seq[:, i] for i in range(face_pred.size(2))], dim=0)
         else:
             y_pred = face_pred
             y_true = face_true
         y_pred_up = resizer_up(y_pred)
         y_true_96 = resizer_96(y_true)
-        print(audio_seq.shape, audio_cat.shape)
+        #print(audio_seq.shape, audio_cat.shape)
         l1_val = self.L1(y_pred_up, y_true).to(self.device)
         lp_val = self.L_perceptual(y_pred, y_true_96).to(self.device)
         lsync_val = self.lip_sync_loss(audio_cat, face_pred.unsqueeze(0)).to(self.device)
