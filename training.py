@@ -128,9 +128,9 @@ class Dataset(object):
 
         oy1, oy2, ox1, ox2 = self.coordinates
         face_det_results = face_detect(self.full_frames, self.args, jaw_correction=True)
-
-        for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, self.full_frames,
-                                                                 face_det_results):
+        print("Here")
+        for inverse_transform, crop, full_frame, face_det in tqdm(zip(inverse_transforms, crops, self.full_frames,
+                                                                 face_det_results), desc='Cropping'):
             imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
                 cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
 
@@ -141,7 +141,7 @@ class Dataset(object):
             y1, y2, x1, x2 = coords
             refs.append(ff[y1: y2, x1:x2])
 
-        for i, m in tqdm(enumerate(self.mel_chunks)):
+        for i, m in tqdm(enumerate(self.mel_chunks), desc='Iteratate through mel chinks'):
             idx = i
             frame_to_save = self.stabilized_imgs[idx].copy()
             face = refs[idx]
