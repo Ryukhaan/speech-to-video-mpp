@@ -170,9 +170,8 @@ def main():
         
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
         incomplete = incomplete.cpu().numpy().transpose(0, 2, 3, 1) * 255.
-        print(incomplete.shape)
+        print(pred.shape, incomplete.shape, reference.shape)
         reference = reference.cpu().numpy().transpose(0, 2, 3, 1) * 255.
-        print(reference.shape)
         cv2.imwrite("./results/low_inp{}.png".format(idx), incomplete[0])
         cv2.imwrite("./results/low_ref{}.png".format(idx), reference[0])
         torch.cuda.empty_cache()
@@ -319,6 +318,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         full_frame_batch.append(full_frames[idx].copy())
 
         if len(img_batch) >= args.LNet_batch_size:
+            print("Upper")
             img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
             img_masked = img_batch.copy()
             img_original = img_batch.copy()
@@ -330,6 +330,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
             img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
 
     if len(img_batch) > 0:
+        print("There")
         img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
         img_masked = img_batch.copy()
         img_original = img_batch.copy()
