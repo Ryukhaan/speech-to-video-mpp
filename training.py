@@ -381,26 +381,34 @@ class Dataset(object):
 
         sub_full_frames = self.get_subframes(self.full_frames, start_frame)
         oy1, oy2, ox1, ox2 = self.coordinates
+
         gen = datagen(stabilized_window.copy(), indiv_mels, sub_full_frames, None, (oy1, oy2, ox1, ox2))
-        nframes = self.get_subframes(self.frames_pil, start_frame)
-        masked_window = self.get_subframes(self.frames_96pil, start_frame)
-        #masked_window = np.asarray([cv2.resize(frame, (96,96)) for frame in masked_window])
+        img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch = gen
 
-        window = self.prepare_window(nframes)
-        masked_window[:, window.shape[2] //2:] = 0.
-        masked_window = self.prepare_window(masked_window)
+        img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(self.device)
+        mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(self.device)
+        img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(self.device) / 255.
 
-        x = np.concatenate([masked_window, stabilized_window], axis=0)
-
-        y = window.copy()
-        y = torch.FloatTensor(y)
-
-        #codes = torch.FloatTensor(codes)
-        #phones = torch.IntTensor(phones)
-        x = torch.FloatTensor(x)
+        # nframes = self.get_subframes(self.frames_pil, start_frame)
+        # masked_window = self.get_subframes(self.frames_96pil, start_frame)
+        # #masked_window = np.asarray([cv2.resize(frame, (96,96)) for frame in masked_window])
+        #
+        # window = self.prepare_window(nframes)
+        # masked_window[:, window.shape[2] //2:] = 0.
+        # masked_window = self.prepare_window(masked_window)
+        #
+        # x = np.concatenate([masked_window, stabilized_window], axis=0)
+        #
+        # y = window.copy()
+        # y = torch.FloatTensor(y)
+        #
+        # #codes = torch.FloatTensor(codes)
+        # #phones = torch.IntTensor(phones)
+        # x = torch.FloatTensor(x)
         mel = torch.FloatTensor(mel.T).unsqueeze(0)
         indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
-        return x, indiv_mels, mel, y
+        return img_batch, indiv_mels, mel_batch, img_original
+        #return x, indiv_mels, mel, y
 
     def save_preprocess(self):
         self.D_Net, self.model = load_model(self.args, device)
@@ -454,12 +462,13 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             model.train()
             optimizer.zero_grad()
 
-            x = x.to(device)
-            indiv_mel = indiv_mel.to(device)
+            #x = x.to(device)
+            #indiv_mel = indiv_mel.to(device)
+            #incomplete, reference = torch.split(x, 3, dim=1)
             pred = model(indiv_mel, x)
             if pred.shape != torch.Size([2, 3, 5, 96, 96]):
                 continue
-            mel = mel.to(device)
+            #mel = mel.to(device)
             pred = pred.to(device)
             y = y.to(device)
             loss = loss_func(pred, y, mel)
@@ -555,8 +564,8 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
             img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
             mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
 
-            yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
-            img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
+            return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+            #img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
 
     if len(img_batch) > 0:
         img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
@@ -565,7 +574,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         img_masked[:, args.img_size//2:] = 0
         img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
         mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
-        yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+        return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
 
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     #eval_steps = 1400
