@@ -666,7 +666,7 @@ def print_trainable_parameters(model):
     )
 
 
-def main(model):
+def main(model, writer):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     gc.collect()
     torch.cuda.empty_cache()
@@ -798,25 +798,17 @@ if __name__ == "__main__":
     seed = 0
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     # Dataset and Dataloader setup
-    train_dataset = Dataset(train_list, device)
-    test_dataset = Dataset(val_list, device)
+    #train_dataset = Dataset(train_list, device)
+    #test_dataset = Dataset(val_list, device)
 
     writer = SummaryWriter('runs/lora')
-    #writer.add_images('ground_truths',
-    #                np.transpose(train_dataset.frames_pil, (0,3,1,2)),
-    #                global_step=0
-    #                )
-    #writer.add_images('stabilized',
-    #                  np.transpose(train_dataset.stabilized_imgs, (0, 3, 1, 2)),
-    #                  global_step=0
-    #                  )
 
-    train_data_loader = data_utils.DataLoader(
-        train_dataset, batch_size=hparams.batch_size, shuffle=True)
-        #num_workers=hparams.num_workers)
-    test_data_loader = data_utils.DataLoader(
-        test_dataset, batch_size=hparams.batch_size)
-        #num_workers=8)
+    # train_data_loader = data_utils.DataLoader(
+    #     train_dataset, batch_size=hparams.batch_size, shuffle=True)
+    #     #num_workers=hparams.num_workers)
+    # test_data_loader = data_utils.DataLoader(
+    #     test_dataset, batch_size=hparams.batch_size)
+    #     #num_workers=8)
 
 
     # Model
@@ -861,10 +853,10 @@ if __name__ == "__main__":
     #load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
     model = model.to(device)
-
-    train(device, model, train_data_loader, test_data_loader, optimizer,
-          filenames=filenames,
-          checkpoint_dir=checkpoint_dir,
-          checkpoint_interval=hparams.syncnet_checkpoint_interval,
-          nepochs=hparams.nepochs,
-          writer=writer)
+    main(model, writer)
+    #train(device, model, train_data_loader, test_data_loader, optimizer,
+    #      filenames=filenames,
+    #      checkpoint_dir=checkpoint_dir,
+    #      checkpoint_interval=hparams.syncnet_checkpoint_interval,
+    #      nepochs=hparams.nepochs,
+    #      writer=writer)
