@@ -140,7 +140,7 @@ class LoraLoss(torch.nn.Module):
             _, _, _, H, W =  face_true.shape
         else:
             T, C, Hin, Win = face_pred.shape
-            _, _, _, H, W = face_true.shape
+            _, _, H, W = face_true.shape
         resizer_96 = torchvision.transforms.Resize((Hin, Win))
         resizer_up = torchvision.transforms.Resize((H, W))
         if input_dim_size > 4:
