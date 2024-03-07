@@ -779,7 +779,7 @@ def main(model, writer):
         mel = torch.FloatTensor([np.transpose(mel_batch[i+n:i+n+lnet_T], (3, 0, 1, 2)) for n in range(B)]).to(device)
         y = torch.FloatTensor([np.transpose(img_original[i+n:i+n+lnet_T], (3, 0, 1, 2)) for n in range(B)]).to(device) / 255.  # BGR -> RGB
 
-        x = F.interpolate(x, size=(96,96), mode='bilinear')
+        #x = F.interpolate(x, size=(96,96), mode='bilinear')
         #incomplete, reference = torch.split(x, 3, dim=1)
         pred = model(mel, x)
         y = y.to(device)
