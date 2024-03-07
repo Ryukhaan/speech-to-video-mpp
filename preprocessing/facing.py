@@ -77,7 +77,7 @@ class Preprocessor():
 
     def landmarks_estimate(self):
         # face detection & cropping, cropping the first frame as the style of FFHQ
-        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + '_cropped.npy'):
+        if not os.path.isfile('temp/' + self.base_name + '_coordinates.npy'):
             croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
             full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in self.full_frames]
             full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
