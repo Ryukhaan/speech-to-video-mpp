@@ -755,7 +755,7 @@ def main(model, writer):
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
         img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
-
+        print(img_batch.shape)
         incomplete, reference = torch.split(img_batch, 3, dim=1)
         pred = model(mel_batch, img_batch)
         y = y.to(device)
