@@ -156,9 +156,10 @@ class Dataset(object):
 
         print(self.args.img_size)
         self.img_batch, self.mel_batch, self.ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
-        self.img_masked = img_batch.copy()
+        img_masked = img_batch.copy()
         self.img_original = img_batch.copy()
-        self.img_masked[:, self.args.img_size // 2:] = 0
+        img_masked[:, self.args.img_size // 2:] = 0
+        self.img_masked = img_masked.copy()
         self.img_batch = np.concatenate((self.img_masked, self.ref_batch), axis=3) / 255.
         self.mel_batch = np.reshape(mel_batch, [len(self.mel_batch),
                                                 self.mel_batch.shape[1],
