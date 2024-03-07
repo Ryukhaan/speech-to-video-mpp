@@ -93,7 +93,7 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    #mel_chunks = mel_chunks[:20] # Change here length of inference video
+    mel_chunks = mel_chunks[:20] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
     #imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
@@ -170,7 +170,9 @@ def main():
         
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
         incomplete = incomplete.cpu().numpy().transpose(0, 2, 3, 1) * 255.
+        print(incomplete.shape)
         reference = reference.cpu().numpy().transpose(0, 2, 3, 1) * 255.
+        print(reference.shape)
         torch.cuda.empty_cache()
         delta = 0
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
