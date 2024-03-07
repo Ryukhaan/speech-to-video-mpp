@@ -89,8 +89,8 @@ class Preprocessor():
             self.coordinates = oy1, oy2, ox1, ox2
             # original_size = (ox2 - ox1, oy2 - oy1)
             self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
-            np.save('temp/'+ self.base_name + '_cropped.npy', np.array(self.frames_pil))
-            np.save('temp/' + self.base_name + '_coordinates.npy', np.array(self.coordinates))
+            np.save('temp/'+ self.base_name + '_cropped.npy', self.frames_pil)
+            np.save('temp/' + self.base_name + '_coordinates.npy', self.coordinates)
         else:
             self.coordinates = np.load('temp/' + self.base_name + '_coordinates.npy', allow_pickle=True)
             self.frames_pil = np.load('temp/'+ self.base_name + '_cropped.npy', allow_pickle=True)
