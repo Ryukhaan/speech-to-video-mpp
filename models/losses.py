@@ -133,13 +133,19 @@ class LoraLoss(torch.nn.Module):
         self.lambda_sync = 0.3
 
     def forward(self, face_pred, face_true, audio_seq):
-
-        B, C, T, Hin, Win = face_pred.shape
-        _, _, _, H, W =  face_true.shape
+        B = audio_seq.size(0)
+        input_dim_size = len(face_pred.size())
+        if input_dim_size > 4:
+            B, C, T, Hin, Win = face_pred.shape
+            _, _, _, H, W =  face_true.shape
+        else:
+            T, C, Hin, Win = face_pred.shape
+            _, _, _, H, W = face_true.shape
         resizer_96 = torchvision.transforms.Resize((Hin, Win))
         resizer_up = torchvision.transforms.Resize((H, W))
-        y_pred = torch.cat([face_pred[:, :, i] for i in range(face_pred.size(2))], dim=0)
-        y_true = torch.cat([face_true[:, :, i] for i in range(face_pred.size(2))], dim=0)
+        if input_dim_size > 4:
+            y_pred = torch.cat([face_pred[:, :, i] for i in range(face_pred.size(2))], dim=0)
+            y_true = torch.cat([face_true[:, :, i] for i in range(face_pred.size(2))], dim=0)
 
         y_pred_up = resizer_up(y_pred)
         y_true_96 = resizer_96(y_true)
