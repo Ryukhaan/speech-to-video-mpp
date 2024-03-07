@@ -115,7 +115,10 @@ class Dataset(object):
         # original frames
         kp_extractor = KeypointExtractor()
         fr_pil = [Image.fromarray(frame) for frame in self.stabilized_imgs]
-        lms = kp_extractor.extract_keypoint(fr_pil, 'temp/' + 'temp_x12_landmarks.txt')
+        if not os.path.isfile( 'temp/' + 'temp_x12_landmarks.txt' ):
+            lms = np.load('temp/' + 'temp_x12_landmarks.txt', allow_pickle=True)
+        else:
+            lms = kp_extractor.extract_keypoint(fr_pil, 'temp/' + 'temp_x12_landmarks.txt')
         frames_pil = [(lm, frame) for frame, lm in zip(fr_pil, lms)]  # frames is the croped version of modified face
         crops, orig_images, quads = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
         inverse_transforms = [calc_alignment_coefficients(quad + 0.5,
