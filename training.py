@@ -450,26 +450,23 @@ def plot_predictions(x, y, preds):
     return fig
 
 def crop_audio_window(spec, start_frame):
-    # num_frames = (T x hop_size * fps) / sample_rate
     syncnet_mel_step_size = 16
     start_idx = int(80. * (start_frame / float(hparams.fps)))
     end_idx = start_idx + syncnet_mel_step_size
-    return spec[start_idx: end_idx, :]
+    return spec[start_idx:end_idx, :]
 
 def get_segmented_mels(spec, start_frame):
     mels = []
     syncnet_mel_step_size = 16
     assert lnet_T == 5
     #start_frame_num = self.get_frame_id(start_frame) + 1 # 0-indexing ---> 1-indexing
-    if start_frame - 2 < 0: return None
+    #if start_frame - 2 < 0: return None
     for i in range(start_frame, start_frame + lnet_T):
-        m = self.crop_audio_window(spec, i - 2)
+        m = crop_audio_window(spec, i)
         if m.shape[0] != syncnet_mel_step_size:
             return None
         mels.append(m.T)
-
     mels = np.asarray(mels)
-
     return mels
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
