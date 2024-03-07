@@ -30,12 +30,8 @@ class LipSyncLoss(torch.nn.Module):
 
     def forward(self, audio, y_pred):
         y_pred = y_pred[:, :, :, y_pred.size(3)//2:]
-        if y_pred.size(0) == 1:
-            y_pred = torch.cat([y_pred[:, i] for i in range(self.number_of_frames)], dim=1)
-        else:
-            y_pred = torch.cat([y_pred[:, :, i] for i in range(self.number_of_frames)], dim=1)
-        with torch.no_grad():
-            audio_emb, video_emb = self.net(audio, y_pred)
+        y_pred = torch.cat([y_pred[:, :, i] for i in range(self.number_of_frames)], dim=1)
+        audio_emb, video_emb = self.net(audio, y_pred)
         y = torch.ones(y_pred.size(0), 1).float().to(self.device)
         p = self.cosine_loss(audio_emb, video_emb, y)
         return p
@@ -143,6 +139,7 @@ class LoraLoss(torch.nn.Module):
         if input_dim_size > 4:
             y_pred = torch.cat([face_pred[:, :, i] for i in range(face_pred.size(2))], dim=0)
             y_true = torch.cat([face_true[:, :, i] for i in range(face_pred.size(2))], dim=0)
+            audio_cat = torch.cat([audio_seq[:, i] for i in range(face_pred.size(2))], dim=0).unsqueeze(1)
         else:
             y_pred = face_pred
             y_true = face_true
@@ -151,6 +148,6 @@ class LoraLoss(torch.nn.Module):
 
         l1_val = self.L1(y_pred_up, y_true).to(self.device)
         lp_val = self.L_perceptual(y_pred, y_true_96).to(self.device)
-        lsync_val = self.lip_sync_loss(audio_seq, face_pred.unsqueeze(0)).to(self.device)
+        lsync_val = self.lip_sync_loss(audio_cat, face_pred.unsqueeze(0)).to(self.device)
 
         return self.lambda_1 * l1_val + self.lambda_sync * lsync_val + self.lambda_p * lp_val
