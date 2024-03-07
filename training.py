@@ -768,10 +768,12 @@ def main(model, writer):
     running_loss = 0.
     print(img_batch.shape, mel_batch.shape, img_original.shape)
     for i in tqdm(range(img_batch.shape[0]-5), desc='[Step 6] Training'):
+        cv2.imwrite("results/extract{}.png".format(i), img_original[i])
         x = torch.FloatTensor(np.transpose(img_batch[i:i+5], (0, 3, 1, 2))).to(device)
         mel = torch.FloatTensor(np.transpose(mel_batch[i:i+5], (0, 3, 1, 2))).to(device)
         y = torch.FloatTensor(np.transpose(img_original[i:i+5], (0, 3, 1, 2))).to(device) / 255.  # BGR -> RGB
 
+        x = F.interpolate(x, size=(96,96), mode='bilinear')
         #incomplete, reference = torch.split(x, 3, dim=1)
         pred = model(mel, x)
         y = y.to(device)
