@@ -448,6 +448,30 @@ def plot_predictions(x, y, preds):
             ax = fig.add_subplot(2 * B, T, 2*T*bi + T + ti + 1, xticks=[], yticks=[])
             ax.imshow(np.transpose(y[bi,:, ti, :,:], (1,2,0)))
     return fig
+
+def crop_audio_window(spec, start_frame):
+    # num_frames = (T x hop_size * fps) / sample_rate
+    syncnet_mel_step_size = 16
+    start_idx = int(80. * (start_frame / float(hparams.fps)))
+    end_idx = start_idx + syncnet_mel_step_size
+    return spec[start_idx: end_idx, :]
+
+def get_segmented_mels(spec, start_frame):
+    mels = []
+    syncnet_mel_step_size = 16
+    assert lnet_T == 5
+    #start_frame_num = self.get_frame_id(start_frame) + 1 # 0-indexing ---> 1-indexing
+    if start_frame - 2 < 0: return None
+    for i in range(start_frame, start_frame + lnet_T):
+        m = self.crop_audio_window(spec, i - 2)
+        if m.shape[0] != syncnet_mel_step_size:
+            return None
+        mels.append(m.T)
+
+    mels = np.asarray(mels)
+
+    return mels
+
 def train(device, model, train_data_loader, test_data_loader, optimizer,
           checkpoint_dir=None, checkpoint_interval=None, nepochs=None, filenames=None, writer=None):
 
@@ -765,6 +789,10 @@ def main(model, writer):
     #restorer = GFPGANer(model_path='checkpoints/GFPGANv1.4.pth', upscale=1, arch='clean', \
     #                    channel_multiplier=2, bg_upsampler=None)
 
+    wavpath = args.audio
+    wav = audio.load_wav(wavpath, hparams.sample_rate)
+    orig_mel = audio.melspectrogram(wav).T
+
     kp_extractor = KeypointExtractor()
     loss_func = losses.LoraLoss(device)
     running_loss = 0.
@@ -776,12 +804,17 @@ def main(model, writer):
 
         x = torch.FloatTensor([np.transpose([cv2.resize(image, (96,96)) for image in img_batch[i+n:i+n+lnet_T]], (3,0,1,2))
              for n in range(B)]).to(device)
-        mel = torch.FloatTensor([np.transpose(mel_batch[i+n:i+n+lnet_T].T, (3, 0, 2, 1)) for n in range(B)]).to(device)
+        #mel = torch.FloatTensor([np.transpose(mel_batch[i+n:i+n+lnet_T].T, (3, 0, 2, 1)) for n in range(B)]).to(device)
         y = torch.FloatTensor([np.transpose(img_original[i+n:i+n+lnet_T], (3, 0, 1, 2)) for n in range(B)]).to(device) / 255.  # BGR -> RGB
+
+        mel = torch.FloatTensor(np.asarray([crop_audio_window(orig_mel.copy(), i+n) for n in range(B)]).T).unsqueeze(0)
+        mel = mel.to(device)
+        indiv_mels = torch.FloatTensor([get_segmented_mels(orig_mel.copy(), i+n) for n in range(B)]).unsqueeze(1)
+        indiv_mels = indiv_mels.to(device)
 
         #x = F.interpolate(x, size=(96,96), mode='bilinear')
         #incomplete, reference = torch.split(x, 3, dim=1)
-        pred = model(mel, x)
+        pred = model(indiv_mels, x)
         y = y.to(device)
         loss = loss_func(pred, y, mel)
 
