@@ -382,8 +382,8 @@ class Dataset(object):
     def __getitem__(self, idx):
         start_frame = idx + 2
 
-        mels = self.crop_audio_window(self.mel_chunks.copy(), start_frame)
-        indiv_mels = self.get_segmented_mels(self.mel_chunks.copy(), start_frame)
+        mels = self.crop_audio_window(self.mel.copy(), start_frame)
+        indiv_mels = self.get_segmented_mels(self.mel.copy(), start_frame)
 
         if indiv_mels is None:
             start_frame = 5
