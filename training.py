@@ -828,8 +828,9 @@ def main(model, writer):
             cropped, stablized = torch.split(x, 3, dim=1)
             cropped = torch.cat([cropped[:, :, i] for i in range(lnet_T)], dim=0)
             stablized = torch.cat([stablized[:, :, i] for i in range(lnet_T)], dim=0)
+            preds = torch.cat([pred[:,:,i] for i in range(lnet_T)], dim=0)
             writer.add_images('predictions',
-                              pred,
+                              preds,
                               global_step=i
                               )
             writer.add_images('cropped',
