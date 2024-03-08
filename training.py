@@ -858,20 +858,17 @@ if __name__ == "__main__":
     seed = 0
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     # Dataset and Dataloader setup
-    #train_dataset = Dataset(train_list, device)
-    #test_dataset = Dataset(val_list, device)
-    args.face = train_list[0]
-    args.audio = train_list[0].split('.')[0] + '.wav'
-    print(args.face, args.audio)
+    train_dataset = Dataset(train_list, device)
+    test_dataset = Dataset(val_list, device)
 
     writer = SummaryWriter('runs/lora')
 
-    # train_data_loader = data_utils.DataLoader(
-    #     train_dataset, batch_size=hparams.batch_size, shuffle=True)
-    #     #num_workers=hparams.num_workers)
-    # test_data_loader = data_utils.DataLoader(
-    #     test_dataset, batch_size=hparams.batch_size)
-    #     #num_workers=8)
+    train_data_loader = data_utils.DataLoader(
+       train_dataset, batch_size=hparams.batch_size, shuffle=True)
+        #num_workers=hparams.num_workers)
+    test_data_loader = data_utils.DataLoader(
+        test_dataset, batch_size=hparams.batch_size)
+        #num_workers=8)
 
 
     # Model
@@ -881,9 +878,9 @@ if __name__ == "__main__":
 
     print(checkpoint_dir, checkpoint_path)
 
-    #checkpoint_path = "checkpoints/Lnet.pth"
-    #if checkpoint_path is not None:
-    #    load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
+    checkpoint_path = "checkpoints/Lnet.pth"
+    if checkpoint_path is not None:
+       load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
     #checkpoint_path = "checkpoints/Pnet.pth"
     #load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
@@ -916,10 +913,9 @@ if __name__ == "__main__":
     #load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
     model = model.to(device)
-    main(model, writer)
-    #train(device, model, train_data_loader, test_data_loader, optimizer,
-    #      filenames=filenames,
-    #      checkpoint_dir=checkpoint_dir,
-    #      checkpoint_interval=hparams.syncnet_checkpoint_interval,
-    #      nepochs=hparams.nepochs,
-    #      writer=writer)
+    train(device, model, train_data_loader, test_data_loader, optimizer,
+         filenames=filenames,
+         checkpoint_dir=checkpoint_dir,
+         checkpoint_interval=hparams.syncnet_checkpoint_interval,
+         nepochs=hparams.nepochs,
+         writer=writer)
