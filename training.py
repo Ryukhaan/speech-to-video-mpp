@@ -599,16 +599,16 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         frame_batch.append(frame_to_save)
         full_frame_batch.append(full_frames[idx].copy())
 
-        # if len(img_batch) >= args.LNet_batch_size:
-        #     img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
-        #     img_masked = img_batch.copy()
-        #     img_original = img_batch.copy()
-        #     img_masked[:, args.img_size//2:] = 0
-        #     img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
-        #     mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
-        #
-        #     yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
-        #     img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
+        if len(img_batch) >= args.LNet_batch_size:
+            img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
+            img_masked = img_batch.copy()
+            img_original = img_batch.copy()
+            img_masked[:, args.img_size//2:] = 0
+            img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
+            mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
+
+            yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+            img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
 
     if len(img_batch) > 0:
         img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
@@ -617,13 +617,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         img_masked[:, args.img_size//2:] = 0
         img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
         mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
-    np.save('temp/' + 'img_batch.npy', img_batch)
-    np.save('temp/' + 'mel_batch.npy', mel_batch)
-    #np.save('temp/' + 'frame_batch.npy', img_batch)
-    #np.save('temp/' + 'coords_batch.npy', img_batch)
-    np.save('temp/' + 'img_orig_batch.npy', img_original)
-    #np.save('temp/' + 'full_frame_batch.npy', img_batch)
-    return img_batch, mel_batch, img_original
+        yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
 
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     #eval_steps = 1400
