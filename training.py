@@ -395,7 +395,7 @@ class Dataset(object):
         sub_full_frames = self.get_subframes(self.full_frames, start_frame)
         oy1, oy2, ox1, ox2 = self.coordinates
 
-        gen = datagen(stabilized_window.copy(), mels, sub_full_frames, None, (oy1, oy2, ox1, ox2))
+        gen = datagen(stabilized_window.copy(), indiv_mels, sub_full_frames, None, (oy1, oy2, ox1, ox2))
         img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch = gen
 
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(self.device)
