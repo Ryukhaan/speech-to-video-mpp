@@ -281,10 +281,10 @@ class Dataset(object):
         if start_frame < 1: return None
         return frames[start_frame:start_frame + lnet_T]
 
-    def get_segmented_window(self, start_frame):
-        assert lnet_T == 5
-        if start_frame < 1: return None
-        return self.full_frames[start_frame-2:start_frame+lnet_T-2]
+    #def get_segmented_window(self, start_frame):
+    #    assert lnet_T == 5
+    #    if start_frame < 1: return None
+    #    return self.full_frames[start_frame-2:start_frame+lnet_T-2]
 
     def get_segmented_codes(self, index, start_frame):
         assert lnet_T == 5
@@ -391,7 +391,7 @@ class Dataset(object):
             indiv_mels = self.get_segmented_mels(self.mel.copy(), start_frame)
 
         stabilized_window = self.get_subframes(self.imgs_enhanced, start_frame)
-        stabilized_window = self.prepare_window(stabilized_window)
+        #stabilized_window = self.prepare_window(stabilized_window)
 
         sub_full_frames = self.get_subframes(self.full_frames, start_frame)
         oy1, oy2, ox1, ox2 = self.coordinates
