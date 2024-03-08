@@ -396,7 +396,7 @@ class Dataset(object):
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
 
-        stabilized_window = self.get_subframes(self.enhanced_imgs(), start_frame)
+        stabilized_window = self.get_subframes(self.enhanced_imgs, start_frame)
         stabilized_window = self.prepare_window(stabilized_window)
 
         sub_full_frames = self.get_subframes(self.full_frames, start_frame)
