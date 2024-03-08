@@ -107,6 +107,7 @@ class Dataset(object):
         self.face_3dmm_extraction(save=False)
         self.hack_3dmm_expression(save=False)
         self.get_full_mels()
+        self.enhanced_imgs()
         #self.datagen()
 
     def read_full_video(self, index=0):
@@ -123,7 +124,146 @@ class Dataset(object):
             if y2 == -1: y2 = frame.shape[0]
             frame = frame[y1:y2, x1:x2]
             self.full_frames.append(frame)
-        print(len(self.full_frames))
+
+    def landmarks_estimate(self, nframes, save=False, start_frame=0):
+        print("[Step 0] Number of frames available for inference: " + str(len(nframes)))
+        # face detection & cropping, cropping the first frame as the style of FFHQ
+        # if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
+        croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+        full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in tqdm(nframes)]
+        full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512)  # Why 512 ?
+
+        clx, cly, crx, cry = crop
+        lx, ly, rx, ry = quad
+        lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
+        oy1, oy2, ox1, ox2 = cly + ly, min(cly + ry, nframes[0].shape[0]), clx + lx, min(clx + rx, nframes[0].shape[1])
+        self.coordinates = oy1, oy2, ox1, ox2
+        # original_size = (ox2 - ox1, oy2 - oy1)
+        self.frames_pil = [Image.fromarray(cv2.resize(frame, (256, 256))) for frame in full_frames_RGB]
+        # np.save(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', np.array(self.frames_pil))
+        # np.save(self.all_videos[self.idx].split('.')[0] + '_coordinates.npy', np.array(self.coordinates))
+        # else:
+        #    self.coordinates = np.load(self.all_videos[self.idx].split('.')[0] + '_coordinates.npy', allow_pickle=True)
+        #    self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', allow_pickle=True)
+        #    self.frames_pil = [np.array(frame) for frame in self.frames_pil]
+        #    self.frames_96pil = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.frames_pil])
+        # get the landmark according to the detected face.
+        # Change this one
+        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + '_landmarks.txt') or save:
+            torch.cuda.empty_cache()
+            print('[Step 1] Landmarks Extraction in Video.')
+            if self.kp_extractor is None:
+                self.kp_extractor = KeypointExtractor()
+            if not save:
+                self.lm = self.kp_extractor.extract_keypoint(self.frames_pil)
+            else:
+                self.lm = self.kp_extractor.extract_keypoint(self.frames_pil,
+                                                             self.all_videos[self.idx].split('.')[0] + '_landmarks.txt')
+        else:
+            self.lm = np.loadtxt(self.all_videos[self.idx].split('.')[0] + '_landmarks.txt').astype(np.float32)
+            self.lm = self.lm.reshape(-1, 68, 2)
+
+    def face_3dmm_extraction(self, save=False, start_frame=0):
+        torch.cuda.empty_cache()
+        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + "_coeffs.npy"):
+            if self.net_recon is None:
+                self.net_recon = load_face3d_net(self.args.face3d_net_path, device)
+            lm3d_std = load_lm3d('checkpoints/BFM')
+            video_coeffs = []
+            for idx in tqdm(range(len(self.frames_pil)), desc="[Step 2] 3DMM Extraction In Video:"):
+                frame = self.frames_pil[idx]
+                W, H = frame.size
+                lm_idx = self.lm[idx].reshape([-1, 2])
+                if np.mean(lm_idx) == -1:
+                    lm_idx = (lm3d_std[:, :2] + 1) / 2.
+                    lm_idx = np.concatenate([lm_idx[:, :1] * W, lm_idx[:, 1:2] * H], 1)
+                else:
+                    lm_idx[:, -1] = H - 1 - lm_idx[:, -1]
+
+                trans_params, im_idx, lm_idx, _ = align_img(frame, lm_idx, lm3d_std)
+                trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
+                im_idx_tensor = torch.tensor(np.array(im_idx) / 255., dtype=torch.float32).permute(2, 0, 1).to \
+                    (device).unsqueeze(0)
+                with torch.no_grad():
+                    coeffs = split_coeff(self.net_recon(im_idx_tensor))
+
+                pred_coeff = {key: coeffs[key].cpu().numpy() for key in coeffs}
+                pred_coeff = np.concatenate(
+                    [pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'], \
+                     pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
+                video_coeffs.append(pred_coeff)
+            self.semantic_npy = np.array(video_coeffs)[:, 0]
+            if save:
+                np.save(self.all_videos[self.idx].split('.')[0] + '_coeffs.npy', self.semantic_npy)
+        else:
+            self.semantic_npy = np.load(self.all_videos[self.idx].split('.')[0] + "_coeffs.npy").astype(np.float32)
+            # self.semantic_npy = self.semantic_npy[start_frame:start_frame+lnet_T]
+
+    def hack_3dmm_expression(self, save=False, start_frame=0):
+        expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
+
+        # Video Image Stabilized
+        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + '_stablized.npy'):
+            self.imgs = []
+            for idx in tqdm(range(len(self.frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
+                if self.args.one_shot:
+                    source_img = trans_image(self.frames_pil[0]).unsqueeze(0).to(device)
+                    semantic_source_numpy = self.semantic_npy[0:1]
+                else:
+                    source_img = trans_image(self.frames_pil[idx]).unsqueeze(0).to(device)
+                    semantic_source_numpy = self.semantic_npy[idx:idx + 1]
+                ratio = find_crop_norm_ratio(semantic_source_numpy, self.semantic_npy)
+                coeff = transform_semantic(self.semantic_npy, idx, ratio).unsqueeze(0).to(device)
+
+                # hacking the new expression
+                coeff[:, :64, :] = expression[None, :64, None].to(device)
+                with torch.no_grad():
+                    output = self.D_Net(source_img, coeff)
+                img_stablized = np.uint8 \
+                    ((output['fake_image'].squeeze(0).permute(1, 2, 0).cpu().clamp_(-1, 1).numpy() + 1) / 2. * 255)
+                self.imgs.append(cv2.cvtColor(img_stablized, cv2.COLOR_RGB2BGR))
+            if save:
+                np.save(self.all_videos[self.idx].split('.')[0] + '_stablized.npy', self.imgs)
+            # del D_Net, model
+            torch.cuda.empty_cache()
+        else:
+            self.imgs = np.load(self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
+            # self.imgs = self.imgs[:, :, :, ::-1]
+            # self.stabilized_imgs = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.stabilized_imgs])
+
+    def get_full_mels(self):
+        vidname = self.all_videos[0]
+        wavpath = vidname.split('.')[0] + '.wav'
+        wav = audio.load_wav(wavpath, hparams.sample_rate)
+        mel = audio.melspectrogram(wav)
+        if np.isnan(mel.reshape(-1)).sum() > 0:
+            raise ValueError(
+                'Mel contains nan! Using a TTS voice? Add a small epsilon noise to the wav file and try again')
+
+        mel_step_size, mel_idx_multiplier, i, self.mel_chunks = 16, 80. / self.fps, 0, []
+        while True:
+            start_idx = int(i * mel_idx_multiplier)
+            if start_idx + mel_step_size > len(mel[0]):
+                self.mel_chunks.append(mel[:, len(mel[0]) - mel_step_size:])
+                break
+            self.mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
+            i += 1
+        self.imgs = self.imgs[:len(self.mel_chunks)]
+        self.full_frames = self.full_frames[:len(self.mel_chunks)]
+        self.lm = self.lm[:len(self.mel_chunks)]
+
+    def enhanced_imgs(self):
+        #ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
+        #                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=4,
+        #                               model='GPEN-BFR-512', use_sr=False)
+        self.imgs_enhanced = []
+        for idx in tqdm(range(len(self.imgs)), desc='[Step 5] Reference Enhancement'):
+            img = self.imgs[idx]
+            # pred, _, _ = enhancer.process(img, aligned=True)
+            #pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
+            pred = cv2.resize(img, (384, 384))
+            self.imgs_enhanced.append(pred)
+        #del ref_enhancer
 
     # Weird function
     def get_frame_id(self, frame):
@@ -206,24 +346,6 @@ class Dataset(object):
         end_idx = start_idx + syncnet_mel_step_size
         return spec[start_idx: end_idx, :]
 
-    def get_full_mels(self):
-        vidname = self.all_videos[0]
-        wavpath = vidname.split('.')[0] + '.wav'
-        wav = audio.load_wav(wavpath, hparams.sample_rate)
-        mel = audio.melspectrogram(wav)
-        if np.isnan(mel.reshape(-1)).sum() > 0:
-            raise ValueError(
-                'Mel contains nan! Using a TTS voice? Add a small epsilon noise to the wav file and try again')
-
-        mel_step_size, mel_idx_multiplier, i, self.mel_chunks = 16, 80. / self.fps, 0, []
-        while True:
-            start_idx = int(i * mel_idx_multiplier)
-            if start_idx + mel_step_size > len(mel[0]):
-                self.mel_chunks.append(mel[:, len(mel[0]) - mel_step_size:])
-                break
-            self.mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
-            i += 1
-        print(len(self.mel_chunks))
     def get_segmented_mels(self, spec, start_frame):
         mels = []
         syncnet_mel_step_size = 16
@@ -251,110 +373,6 @@ class Dataset(object):
         x = np.asarray(window) / 255.
         x = np.transpose(x, (3, 0, 1, 2))
         return x
-
-    def landmarks_estimate(self, nframes, save=False, start_frame=0):
-        print("[Step 0] Number of frames available for inference: " + str(len(nframes)))
-        # face detection & cropping, cropping the first frame as the style of FFHQ
-        #if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
-        croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
-        full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in tqdm(nframes)]
-        full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
-
-        clx, cly, crx, cry = crop
-        lx, ly, rx, ry = quad
-        lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
-        oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, nframes[0].shape[0]), clx +lx, min(clx +rx, nframes[0].shape[1])
-        self.coordinates = oy1, oy2, ox1, ox2
-        # original_size = (ox2 - ox1, oy2 - oy1)
-        self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
-        #np.save(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', np.array(self.frames_pil))
-        #np.save(self.all_videos[self.idx].split('.')[0] + '_coordinates.npy', np.array(self.coordinates))
-        #else:
-        #    self.coordinates = np.load(self.all_videos[self.idx].split('.')[0] + '_coordinates.npy', allow_pickle=True)
-        #    self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', allow_pickle=True)
-        #    self.frames_pil = [np.array(frame) for frame in self.frames_pil]
-        #    self.frames_96pil = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.frames_pil])
-        # get the landmark according to the detected face.
-        # Change this one
-        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_landmarks.txt') or save:
-            torch.cuda.empty_cache()
-            print('[Step 1] Landmarks Extraction in Video.')
-            if self.kp_extractor is None:
-                self.kp_extractor = KeypointExtractor()
-            if not save:
-                self.lm = self.kp_extractor.extract_keypoint(self.frames_pil)
-            else:
-                self.lm = self.kp_extractor.extract_keypoint(self.frames_pil, self.all_videos[self.idx].split('.')[0] + '_landmarks.txt')
-        else:
-            self.lm = np.loadtxt( self.all_videos[self.idx].split('.')[0] +'_landmarks.txt').astype(np.float32)
-            self.lm = self.lm.reshape(-1, 68, 2)
-
-    def face_3dmm_extraction(self, save=False, start_frame=0):
-        torch.cuda.empty_cache()
-        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + "_coeffs.npy"):
-            if self.net_recon is None:
-                self.net_recon = load_face3d_net(self.args.face3d_net_path, device)
-            lm3d_std = load_lm3d('checkpoints/BFM')
-            video_coeffs = []
-            for idx in tqdm(range(len(self.frames_pil)), desc="[Step 2] 3DMM Extraction In Video:"):
-                frame = self.frames_pil[idx]
-                W, H = frame.size
-                lm_idx = self.lm[idx].reshape([-1, 2])
-                if np.mean(lm_idx) == -1:
-                    lm_idx = (lm3d_std[:, :2 ] +1) / 2.
-                    lm_idx = np.concatenate([lm_idx[:, :1] * W, lm_idx[:, 1:2] * H], 1)
-                else:
-                    lm_idx[:, -1] = H - 1 - lm_idx[:, -1]
-
-                trans_params, im_idx, lm_idx, _ = align_img(frame, lm_idx, lm3d_std)
-                trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
-                im_idx_tensor = torch.tensor(np.array(im_idx ) /255., dtype=torch.float32).permute(2, 0, 1).to \
-                    (device).unsqueeze(0)
-                with torch.no_grad():
-                    coeffs = split_coeff(self.net_recon(im_idx_tensor))
-
-                pred_coeff = {key :coeffs[key].cpu().numpy() for key in coeffs}
-                pred_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'], \
-                                             pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
-                video_coeffs.append(pred_coeff)
-            self.semantic_npy = np.array(video_coeffs)[: ,0]
-            if save:
-                np.save( self.all_videos[self.idx].split('.')[0] +'_coeffs.npy', self.semantic_npy)
-        else:
-            self.semantic_npy = np.load(self.all_videos[self.idx].split('.')[0] + "_coeffs.npy").astype(np.float32)
-            #self.semantic_npy = self.semantic_npy[start_frame:start_frame+lnet_T]
-
-    def hack_3dmm_expression(self, save=False, start_frame=0):
-        expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
-
-        # Video Image Stabilized
-        if not os.path.isfile( self.all_videos[self.idx].split('.')[0] + '_stablized.npy'):
-            self.imgs = []
-            for idx in tqdm(range(len(self.frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
-                if self.args.one_shot:
-                    source_img = trans_image(self.frames_pil[0]).unsqueeze(0).to(device)
-                    semantic_source_numpy = self.semantic_npy[0:1]
-                else:
-                    source_img = trans_image(self.frames_pil[idx]).unsqueeze(0).to(device)
-                    semantic_source_numpy = self.semantic_npy[idx:idx +1]
-                ratio = find_crop_norm_ratio(semantic_source_numpy, self.semantic_npy)
-                coeff = transform_semantic(self.semantic_npy, idx, ratio).unsqueeze(0).to(device)
-
-                # hacking the new expression
-                coeff[:, :64, :] = expression[None, :64, None].to(device)
-                with torch.no_grad():
-                    output = self.D_Net(source_img, coeff)
-                img_stablized = np.uint8 \
-                    ((output['fake_image'].squeeze(0).permute(1 ,2 ,0).cpu().clamp_(-1, 1).numpy() + 1 )/ 2. * 255)
-                self.imgs.append(cv2.cvtColor(img_stablized, cv2.COLOR_RGB2BGR))
-            if save:
-                np.save(self.all_videos[self.idx].split('.')[0] + '_stablized.npy', self.imgs)
-            #del D_Net, model
-            torch.cuda.empty_cache()
-        else:
-            self.stabilized_imgs = np.load( self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
-            self.stabilized_imgs = self.stabilized_imgs[:,:,:,::-1]
-            #self.stabilized_imgs = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.stabilized_imgs])
 
     def __len__(self):
         return len(self.frames_pil) - 4
