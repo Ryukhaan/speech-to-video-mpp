@@ -786,6 +786,7 @@ def main(model, writer):
     #restorer = GFPGANer(model_path='checkpoints/GFPGANv1.4.pth', upscale=1, arch='clean', \
     #                    channel_multiplier=2, bg_upsampler=None)
 
+    global global_step, global_epoch
     wavpath = args.audio
     wav = audio.load_wav(wavpath, hparams.sample_rate)
     orig_mel = audio.melspectrogram(wav).T
@@ -806,7 +807,6 @@ def main(model, writer):
 
         mel = torch.FloatTensor(np.asarray([crop_audio_window(orig_mel.copy(), i+n).T for n in range(B)])).unsqueeze(1)
         mel = mel.to(device)
-        print(mel.shape)
         indiv_mels = torch.FloatTensor([get_segmented_mels(orig_mel.copy(), i+n) for n in range(B)]).unsqueeze(2)
         indiv_mels = indiv_mels.to(device)
 
