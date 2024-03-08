@@ -255,25 +255,25 @@ class Dataset(object):
     def landmarks_estimate(self, nframes, save=False, start_frame=0):
         print("[Step 0] Number of frames available for inference: " + str(len(nframes)))
         # face detection & cropping, cropping the first frame as the style of FFHQ
-        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
-            croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
-            full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in tqdm(nframes)]
-            full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+        #if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
+        croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+        full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in tqdm(nframes)]
+        full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
 
-            clx, cly, crx, cry = crop
-            lx, ly, rx, ry = quad
-            lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
-            oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, nframes[0].shape[0]), clx +lx, min(clx +rx, nframes[0].shape[1])
-            self.coordinates = oy1, oy2, ox1, ox2
-            # original_size = (ox2 - ox1, oy2 - oy1)
-            self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
-            np.save(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', np.array(self.frames_pil))
-            np.save(self.all_videos[self.idx].split('.')[0] + '_coordinates.npy', np.array(self.coordinates))
-        else:
-            self.coordinates = np.load(self.all_videos[self.idx].split('.')[0] + '_coordinates.npy', allow_pickle=True)
-            self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', allow_pickle=True)
-            self.frames_pil = [np.array(frame) for frame in self.frames_pil]
-            self.frames_96pil = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.frames_pil])
+        clx, cly, crx, cry = crop
+        lx, ly, rx, ry = quad
+        lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
+        oy1, oy2, ox1, ox2 = cly +ly, min(cly +ry, nframes[0].shape[0]), clx +lx, min(clx +rx, nframes[0].shape[1])
+        self.coordinates = oy1, oy2, ox1, ox2
+        # original_size = (ox2 - ox1, oy2 - oy1)
+        self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
+        #np.save(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', np.array(self.frames_pil))
+        #np.save(self.all_videos[self.idx].split('.')[0] + '_coordinates.npy', np.array(self.coordinates))
+        #else:
+        #    self.coordinates = np.load(self.all_videos[self.idx].split('.')[0] + '_coordinates.npy', allow_pickle=True)
+        #    self.frames_pil = np.load(self.all_videos[self.idx].split('.')[0] +'_cropped.npy', allow_pickle=True)
+        #    self.frames_pil = [np.array(frame) for frame in self.frames_pil]
+        #    self.frames_96pil = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.frames_pil])
         # get the landmark according to the detected face.
         # Change this one
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_landmarks.txt') or save:
