@@ -804,7 +804,7 @@ def main(model, writer):
         #mel = torch.FloatTensor([np.transpose(mel_batch[i+n:i+n+lnet_T].T, (3, 0, 2, 1)) for n in range(B)]).to(device)
         y = torch.FloatTensor([np.transpose(img_original[i+n:i+n+lnet_T], (3, 0, 1, 2)) for n in range(B)]).to(device) / 255.  # BGR -> RGB
 
-        mel = torch.FloatTensor(np.asarray([crop_audio_window(orig_mel.copy(), i+n) for n in range(B)]).T).unsqueeze(1)
+        mel = torch.FloatTensor(np.asarray([crop_audio_window(orig_mel.copy(), i+n).T for n in range(B)])).unsqueeze(1)
         mel = mel.to(device)
         print(mel.shape)
         indiv_mels = torch.FloatTensor([get_segmented_mels(orig_mel.copy(), i+n) for n in range(B)]).unsqueeze(2)
