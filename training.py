@@ -345,6 +345,7 @@ class Dataset(object):
         syncnet_mel_step_size = 16
         start_idx = int(80. * (start_frame / float(hparams.fps)))
         end_idx = start_idx + syncnet_mel_step_size
+        print(spec.shape, start_idx, end_idx)
         return spec[start_idx: end_idx, :]
 
     def get_segmented_mels(self, spec, start_frame):
