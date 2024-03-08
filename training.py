@@ -251,6 +251,7 @@ class Dataset(object):
         self.imgs = self.imgs[:len(self.mel_chunks)]
         self.full_frames = self.full_frames[:len(self.mel_chunks)]
         self.lm = self.lm[:len(self.mel_chunks)]
+        print(len(self.mel_chunks), self.mel_chunks[0].shape)
 
     def get_enhanced_imgs(self):
         #ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
