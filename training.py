@@ -796,7 +796,8 @@ def main(model, writer):
     running_loss = 0.
     print(img_batch.shape, mel_batch.shape, img_original.shape)
     B = args.LNet_batch_size
-    for i in tqdm(range(0, img_batch.shape[0]-5, B), desc='[Step 6] Training'):
+    prog_bar = tqdm(range(0, img_batch.shape[0]-5, B), desc='[Step 6] Training')
+    for i in prog_bar:
         cv2.imwrite("results/extract{}.png".format(i), img_original[i])
 
 
@@ -824,6 +825,7 @@ def main(model, writer):
         running_loss += loss.item()
 
         writer.add_scalar('Loss/train', running_loss / (i + 1), i)
+        prog_bar.set_description('Loss: {:.4f} at {}'.format(running_loss / (i + 1), global_step))
         if i % 10 == 0:
             cropped, stablized = torch.split(x, 3, dim=1)
             cropped = torch.cat([cropped[:, :, i] for i in range(lnet_T)], dim=0)
