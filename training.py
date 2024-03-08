@@ -234,9 +234,9 @@ class Dataset(object):
     def get_full_mels(self):
         vidname = self.all_videos[0]
         wavpath = vidname.split('.')[0] + '.wav'
-        self.wav = audio.load_wav(wavpath, hparams.sample_rate)
+        wav = audio.load_wav(wavpath, hparams.sample_rate)
         self.mel = audio.melspectrogram(wav)
-        if np.isnan(mel.reshape(-1)).sum() > 0:
+        if np.isnan(self.mel.reshape(-1)).sum() > 0:
             raise ValueError(
                 'Mel contains nan! Using a TTS voice? Add a small epsilon noise to the wav file and try again')
 
