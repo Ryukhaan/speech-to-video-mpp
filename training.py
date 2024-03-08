@@ -806,6 +806,7 @@ def main(model, writer):
 
         mel = torch.FloatTensor(np.asarray([crop_audio_window(orig_mel.copy(), i+n) for n in range(B)]).T).unsqueeze(1)
         mel = mel.to(device)
+        print(mel.shape)
         indiv_mels = torch.FloatTensor([get_segmented_mels(orig_mel.copy(), i+n) for n in range(B)]).unsqueeze(2)
         indiv_mels = indiv_mels.to(device)
 
