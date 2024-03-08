@@ -577,6 +577,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         y1, y2, x1, x2 = coords
         refs.append(ff[y1: y2, x1:x2])
 
+    print(mels.shape)
     for i, m in enumerate(mels):
         print(m.shape)
         idx = 0 if args.static else i % len(frames)
@@ -593,7 +594,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         coords_batch.append(coords)
         frame_batch.append(frame_to_save)
         full_frame_batch.append(full_frames[idx].copy())
-        if len(img_batch) >= args.LNet_batch_size:
+        if len(img_batch) >= lnet_T:
             img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
             img_masked = img_batch.copy()
             img_original = img_batch.copy()
@@ -601,8 +602,8 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
             img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
             mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
 
-            yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
-            img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
+            return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+            #img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
 
     if len(img_batch) > 0:
         img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
@@ -611,7 +612,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         img_masked[:, args.img_size//2:] = 0
         img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
         mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
-        yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+        return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
 
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     #eval_steps = 1400
