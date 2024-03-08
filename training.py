@@ -345,7 +345,6 @@ class Dataset(object):
         syncnet_mel_step_size = 16
         start_idx = int(80. * (start_frame / float(hparams.fps)))
         end_idx = start_idx + syncnet_mel_step_size
-        print(len(spec), spec[0].shape, start_idx, end_idx)
         return spec[start_idx: end_idx, :]
 
     def get_segmented_mels(self, spec, start_frame):
@@ -579,6 +578,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         refs.append(ff[y1: y2, x1:x2])
 
     for i, m in enumerate(mels):
+        print(m.shape)
         idx = 0 if args.static else i % len(frames)
         frame_to_save = frames[idx].copy()
         face = refs[idx]
@@ -593,7 +593,6 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         coords_batch.append(coords)
         frame_batch.append(frame_to_save)
         full_frame_batch.append(full_frames[idx].copy())
-
         if len(img_batch) >= args.LNet_batch_size:
             img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
             img_masked = img_batch.copy()
