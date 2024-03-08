@@ -251,7 +251,6 @@ class Dataset(object):
         self.imgs = self.imgs[:len(self.mel_chunks)]
         self.full_frames = self.full_frames[:len(self.mel_chunks)]
         self.lm = self.lm[:len(self.mel_chunks)]
-        print(len(self.mel_chunks), self.mel_chunks[0].shape)
 
     def get_enhanced_imgs(self):
         #ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
@@ -389,6 +388,7 @@ class Dataset(object):
             mels = self.crop_audio_window(self.mel.copy(), start_frame)
             indiv_mels = self.get_segmented_mels(self.mel.copy(), start_frame)
 
+        print(indiv_mels.shape)
         stabilized_window = self.get_subframes(self.imgs_enhanced, start_frame)
         #stabilized_window = self.prepare_window(stabilized_window)
 
