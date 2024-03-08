@@ -256,6 +256,7 @@ class Dataset(object):
         #ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
         #                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=4,
         #                               model='GPEN-BFR-512', use_sr=False)
+        print(self.imgs.shape)
         self.imgs_enhanced = []
         for idx in tqdm(range(len(self.imgs)), desc='[Step 5] Reference Enhancement'):
             img = self.imgs[idx]
@@ -263,6 +264,7 @@ class Dataset(object):
             #pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
             pred = cv2.resize(img, (384, 384))
             self.imgs_enhanced.append(pred)
+        print(len(self.imgs_enhanced), self.imgs_enhanced[0].shape)
         #del ref_enhancer
 
     # Weird function
@@ -550,8 +552,8 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
     #base_name = args.face.split('/')[-1]
     refs = []
     image_size = 256
-    print(type(frames), frames[0].shape)
-    print(type(full_frames), full_frames[0].shape)
+    #print(type(frames), frames[0].shape)
+    #print(type(full_frames), full_frames[0].shape)
     # original frames
     kp_extractor = KeypointExtractor()
     fr_pil = [Image.fromarray(frame) for frame in frames]
