@@ -107,7 +107,7 @@ class Dataset(object):
         self.face_3dmm_extraction(save=False)
         self.hack_3dmm_expression(save=False)
         self.get_full_mels()
-        self.enhanced_imgs()
+        self.get_enhanced_imgs()
         #self.datagen()
 
     def read_full_video(self, index=0):
@@ -252,7 +252,7 @@ class Dataset(object):
         self.full_frames = self.full_frames[:len(self.mel_chunks)]
         self.lm = self.lm[:len(self.mel_chunks)]
 
-    def enhanced_imgs(self):
+    def get_enhanced_imgs(self):
         #ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
         #                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=4,
         #                               model='GPEN-BFR-512', use_sr=False)
@@ -396,7 +396,7 @@ class Dataset(object):
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
 
-        stabilized_window = self.get_subframes(self.enhanced_imgs, start_frame)
+        stabilized_window = self.get_subframes(self.imgs_enhanced, start_frame)
         stabilized_window = self.prepare_window(stabilized_window)
 
         sub_full_frames = self.get_subframes(self.full_frames, start_frame)
