@@ -234,8 +234,8 @@ class Dataset(object):
     def get_full_mels(self):
         vidname = self.all_videos[0]
         wavpath = vidname.split('.')[0] + '.wav'
-        wav = audio.load_wav(wavpath, hparams.sample_rate)
-        mel = audio.melspectrogram(wav)
+        self.wav = audio.load_wav(wavpath, hparams.sample_rate)
+        self.mel = audio.melspectrogram(wav)
         if np.isnan(mel.reshape(-1)).sum() > 0:
             raise ValueError(
                 'Mel contains nan! Using a TTS voice? Add a small epsilon noise to the wav file and try again')
@@ -243,10 +243,10 @@ class Dataset(object):
         mel_step_size, mel_idx_multiplier, i, self.mel_chunks = 16, 80. / self.fps, 0, []
         while True:
             start_idx = int(i * mel_idx_multiplier)
-            if start_idx + mel_step_size > len(mel[0]):
-                self.mel_chunks.append(mel[:, len(mel[0]) - mel_step_size:])
+            if start_idx + mel_step_size > len(self.mel[0]):
+                self.mel_chunks.append(self.mel[:, len(self.mel[0]) - mel_step_size:])
                 break
-            self.mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
+            self.mel_chunks.append(self.mel[:, start_idx: start_idx + mel_step_size])
             i += 1
         self.imgs = self.imgs[:len(self.mel_chunks)]
         self.full_frames = self.full_frames[:len(self.mel_chunks)]
@@ -379,22 +379,14 @@ class Dataset(object):
 
     def __getitem__(self, idx):
         start_frame = idx + 2
-        #nframes = self.get_segmented_window(start_frame)
-        vidname = self.all_videos[0]
 
-        wavpath = vidname.split('.')[0] + '.wav'
-        wav = audio.load_wav(wavpath, hparams.sample_rate)
-        orig_mel = audio.melspectrogram(wav).T
-        mel = self.crop_audio_window(orig_mel.copy(), start_frame)
-        indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
+        mels = self.crop_audio_window(self.mel.copy(), start_frame)
+        indiv_mels = self.get_segmented_mels(self.mel.copy(), start_frame)
+
         if indiv_mels is None:
             start_frame = 5
-            vidname = self.all_videos[0]
-            wavpath = vidname.split('.')[0] + '.wav'
-            wav = audio.load_wav(wavpath, hparams.sample_rate)
-            orig_mel = audio.melspectrogram(wav).T
-            mel = self.crop_audio_window(orig_mel.copy(), start_frame)
-            indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
+            mels = self.crop_audio_window(self.mel.copy(), start_frame)
+            indiv_mels = self.get_segmented_mels(self.mel.copy(), start_frame)
 
         stabilized_window = self.get_subframes(self.imgs_enhanced, start_frame)
         stabilized_window = self.prepare_window(stabilized_window)
@@ -402,7 +394,7 @@ class Dataset(object):
         sub_full_frames = self.get_subframes(self.full_frames, start_frame)
         oy1, oy2, ox1, ox2 = self.coordinates
 
-        gen = datagen(stabilized_window.copy(), mel, sub_full_frames, None, (oy1, oy2, ox1, ox2))
+        gen = datagen(stabilized_window.copy(), mels, sub_full_frames, None, (oy1, oy2, ox1, ox2))
         img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch = gen
 
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(self.device)
@@ -558,7 +550,8 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
     #base_name = args.face.split('/')[-1]
     refs = []
     image_size = 256
-
+    print(type(frames), frames[0].shape)
+    print(type(full_frames), full_frames[0].shape)
     # original frames
     kp_extractor = KeypointExtractor()
     fr_pil = [Image.fromarray(frame) for frame in frames]
