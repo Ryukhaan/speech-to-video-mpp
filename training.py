@@ -273,7 +273,8 @@ class Dataset(object):
             #pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
             pred = cv2.resize(img, (384, 384))
             self.imgs_enhanced.append(pred)
-        cv2.imwrite('temp/stabilized_0.png', self.imgs_enhanced[0])
+        for i in range(10):
+            cv2.imwrite('temp/stabilized_{}.png'.format(i), self.imgs_enhanced[i])
         #del ref_enhancer
 
     # Weird function
