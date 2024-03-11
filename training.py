@@ -409,6 +409,8 @@ class Dataset(object):
         indiv_mels = torch.FloatTensor(np.transpose(indiv_mels, (0,3,1,2)))
         #if stabilized_window.size(1) != lnet_T:
         #    return None, None, None, None
+        assert stabilized_window.size == torch.Size([6, 5, 96, 96])
+        assert img_original.size == torch.Size([3, 5, 96, 96])
         return stabilized_window, indiv_mels, mels, img_original
 
     def save_preprocess(self):
