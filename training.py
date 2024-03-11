@@ -273,6 +273,7 @@ class Dataset(object):
             #pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
             pred = cv2.resize(img, (384, 384))
             self.imgs_enhanced.append(pred)
+        cv2.imwrite('temp/stabilized_0.png', self.imgs_enhanced[0])
         #del ref_enhancer
 
     # Weird function
@@ -607,8 +608,8 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         oface = cv2.resize(oface, (args.img_size, args.img_size))
 
         #change face and oface in img and ref
-        img_batch.append(face)
-        ref_batch.append(oface)
+        img_batch.append(oface)
+        ref_batch.append(face)
         mel_batch.append(m)
         coords_batch.append(coords)
         frame_batch.append(frame_to_save)
