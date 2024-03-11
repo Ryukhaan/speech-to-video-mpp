@@ -408,8 +408,8 @@ class Dataset(object):
 
         mels = torch.FloatTensor(mels.T).unsqueeze(0)
         indiv_mels = torch.FloatTensor(np.transpose(indiv_mels, (0,3,1,2)))
-        if stabilized_window.size(1) != lnet_T:
-            return None, None, None, None
+        #if stabilized_window.size(1) != lnet_T:
+        #    return None, None, None, None
         return stabilized_window, indiv_mels, mels, img_original
 
     def save_preprocess(self):
@@ -508,10 +508,18 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 cropped, reference = torch.split(x, 3, dim=1)
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
                 reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
-                writer.add_figure('predictions',
-                                plot_predictions(x, y, pred),
-                                global_step=step
-                )
+                #writer.add_figure('predictions',
+                #                plot_predictions(x, y, pred),
+                #                global_step=step
+                #)
+                writer.add_images('original',
+                                  torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0),
+                                  global_step=step
+                                  )
+                writer.add_images('predictions',
+                                  torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0),
+                                  global_step=step
+                                  )
                 writer.add_images('cropped',
                                   cropped,
                                   global_step=step
