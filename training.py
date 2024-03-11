@@ -705,155 +705,6 @@ def print_trainable_parameters(model):
         f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param:.2f}"
     )
 
-
-def main(model, writer):
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    gc.collect()
-    torch.cuda.empty_cache()
-    print('[Info] Using {} for inference.'.format(device))
-    if not os.path.isfile('temp/' + 'img_batch.npy'):
-        preprocessor = preprocessing.Preprocessor(args)
-        preprocessor.reading_video()
-        preprocessor.landmarks_estimate()
-        preprocessor.face_3dmm_extraction()
-        preprocessor.hack_3dmm_expression()
-        frames_pil = preprocessor.frames_pil
-        full_frames = preprocessor.full_frames
-        fps = preprocessor.fps
-        imgs = preprocessor.imgs
-        lm = preprocessor.lm
-        oy1, oy2, ox1, ox2 = preprocessor.coordinates
-        del preprocessor.model
-        if not args.audio.endswith('.wav'):
-            command = 'ffmpeg -loglevel error -y -i {} -strict -2 {}'.format(args.audio,
-                                                                             'temp/{}/temp.wav'.format(args.tmp_dir))
-            subprocess.call(command, shell=True)
-            args.audio = 'temp/{}/temp.wav'.format(args.tmp_dir)
-        wav = audio.load_wav(args.audio, 16000)
-        mel = audio.melspectrogram(wav)
-        if np.isnan(mel.reshape(-1)).sum() > 0:
-            raise ValueError(
-                'Mel contains nan! Using a TTS voice? Add a small epsilon noise to the wav file and try again')
-
-        mel_step_size, mel_idx_multiplier, i, mel_chunks = 16, 80. / fps, 0, []
-        while True:
-            start_idx = int(i * mel_idx_multiplier)
-            if start_idx + mel_step_size > len(mel[0]):
-                mel_chunks.append(mel[:, len(mel[0]) - mel_step_size:])
-                break
-            mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
-            i += 1
-
-        print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
-        # imgs = imgs[:12]
-        imgs = imgs[:len(mel_chunks)]
-        full_frames = full_frames[:len(mel_chunks)]
-        lm = lm[:len(mel_chunks)]
-
-        # enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
-        #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
-        # ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
-        #                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=4,
-        #                               model='GPEN-BFR-512', use_sr=False)
-        # enhancer = FaceEnhancement(args, base_dir='checkpoints',
-        #                           in_size=2048, channel_multiplier=2, narrow=1, sr_scale=2,
-        #                           sr_model=None,
-        #                           model='GPEN-BFR-2048', use_sr=True)
-
-        imgs_enhanced = []
-        for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
-            img = imgs[idx]
-            # pred, _, _ = enhancer.process(img, aligned=True)
-            # pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
-            pred = cv2.resize(img, (args.img_size, args.img_size))
-            imgs_enhanced.append(pred)
-        gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
-
-    else:
-        img_batch = np.load('temp/' + 'img_batch.npy')
-        mel_batch = np.load('temp/' + 'mel_batch.npy')
-        #frame_batch = np.load('temp/' + 'frame_batch.npy')
-        #coords_batch = np.load('temp/' + 'coords_batch.npy')
-        img_original = np.load('temp/' + 'img_orig_batch.npy')
-        #full_frame_batch = np.load('temp/' + 'full_frame_batch.npy')
-
-
-    #del ref_enhancer
-    torch.cuda.empty_cache()
-
-    # frame_h, frame_w = gen[0][0].shape[:-1]
-    # if not args.cropped_image:
-    #     out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
-    #                           (2 * frame_w, 2 * frame_h))
-    # else:
-    #     out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
-    #                           (frame_w, frame_h))
-    # if args.up_face != 'original':
-    #     instance = GANimationModel()
-    #     instance.initialize()
-    #     instance.setup()
-
-    #restorer = GFPGANer(model_path='checkpoints/GFPGANv1.4.pth', upscale=1, arch='clean', \
-    #                    channel_multiplier=2, bg_upsampler=None)
-
-    global global_step, global_epoch
-    wavpath = args.audio
-    wav = audio.load_wav(wavpath, hparams.sample_rate)
-    orig_mel = audio.melspectrogram(wav).T
-
-    kp_extractor = KeypointExtractor()
-    loss_func = losses.LoraLoss(device)
-    running_loss = 0.
-    print(img_batch.shape, mel_batch.shape, img_original.shape)
-    B = args.LNet_batch_size
-    prog_bar = tqdm(range(0, img_batch.shape[0]-5, B), desc='[Step 6] Training')
-    for i in prog_bar:
-        cv2.imwrite("results/extract{}.png".format(i), img_original[i])
-
-
-        x = torch.FloatTensor([np.transpose([cv2.resize(image, (96,96)) for image in img_batch[i+n:i+n+lnet_T]], (3,0,1,2))
-             for n in range(B)]).to(device)
-        #mel = torch.FloatTensor([np.transpose(mel_batch[i+n:i+n+lnet_T].T, (3, 0, 2, 1)) for n in range(B)]).to(device)
-        y = torch.FloatTensor([np.transpose(img_original[i+n:i+n+lnet_T], (3, 0, 1, 2)) for n in range(B)]).to(device) / 255.  # BGR -> RGB
-
-        mel = torch.FloatTensor(np.asarray([crop_audio_window(orig_mel.copy(), i+n).T for n in range(B)])).unsqueeze(1)
-        mel = mel.to(device)
-        indiv_mels = torch.FloatTensor([get_segmented_mels(orig_mel.copy(), i+n) for n in range(B)]).unsqueeze(2)
-        indiv_mels = indiv_mels.to(device)
-
-        #x = F.interpolate(x, size=(96,96), mode='bilinear')
-        #incomplete, reference = torch.split(x, 3, dim=1)
-        pred = model(indiv_mels, x)
-        y = y.to(device)
-        loss = loss_func(pred, y, mel)
-
-        loss.backward()
-        optimizer.step()
-
-        global_step += 1
-        #cur_session_steps = global_step - resumed_step
-        running_loss += loss.item()
-
-        writer.add_scalar('Loss/train', running_loss / (i + 1), i)
-        prog_bar.set_description('Loss: {:.4f} at {}'.format(running_loss / (i + 1), global_step))
-        if i % 10 == 0:
-            cropped, stablized = torch.split(x, 3, dim=1)
-            cropped = torch.cat([cropped[:, :, i] for i in range(lnet_T)], dim=0)
-            stablized = torch.cat([stablized[:, :, i] for i in range(lnet_T)], dim=0)
-            preds = torch.cat([pred[:,:,i] for i in range(lnet_T)], dim=0)
-            writer.add_images('predictions',
-                              preds,
-                              global_step=i
-                              )
-            writer.add_images('cropped',
-                              cropped,
-                              global_step=i
-                              )
-            writer.add_images('stablized',
-                              stablized,
-                              global_step=i
-                              )
-
 if __name__ == "__main__":
 
     use_cuda = torch.cuda.is_available()
@@ -883,14 +734,17 @@ if __name__ == "__main__":
 
     # Model
     model = LNet().to(device)
+    _, model = load_model(args, device)
+    model = model.low_res
+    for param in model.parameters():
+        param.requires_grad = True
     optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
                            lr=hparams.syncnet_lr)
 
-    print(checkpoint_dir, checkpoint_path)
-
-    checkpoint_path = "checkpoints/Lnet.pth"
-    if checkpoint_path is not None:
-       load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
+    #print(checkpoint_dir, checkpoint_path)
+    #checkpoint_path = "checkpoints/Lnet.pth"
+    #if checkpoint_path is not None:
+    #   load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
     #checkpoint_path = "checkpoints/Pnet.pth"
     #load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
 
