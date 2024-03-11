@@ -286,7 +286,6 @@ class Dataset(object):
 
     def get_subframes(self, frames, start_frame):
         assert lnet_T == 5
-        #if start_frame < 1: return None
         return frames[start_frame:start_frame + lnet_T]
 
     #def get_segmented_window(self, start_frame):
@@ -407,6 +406,8 @@ class Dataset(object):
 
         mels = torch.FloatTensor(mels.T).unsqueeze(0)
         indiv_mels = torch.FloatTensor(np.transpose(indiv_mels, (0,3,1,2)))
+        if stabilized_window.size(1) != lnet_T:
+            return None, None, None, None
         return stabilized_window, indiv_mels, mels, img_original
 
     def save_preprocess(self):
