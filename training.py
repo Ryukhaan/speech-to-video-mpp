@@ -393,12 +393,6 @@ class Dataset(object):
         mels = self.crop_audio_window(self.mel.copy(), start_frame)
         indiv_mels = self.get_subframes(self.mel_batch.copy(), start_frame)
 
-        #if indiv_mels is None:
-        #    start_frame = 5
-        #    mels = self.crop_audio_window(self.mel.copy(), start_frame)
-        #    indiv_mels = self.get_subframes(self.mel_batch.copy(), start_frame)
-
-
         stabilized_window = self.get_subframes(self.img_batch.copy(), start_frame)
         # BGR -> RGB
         #stabilized_window[:, :,:, :3] = np.flip(stabilized_window[:,:,:,:3], axis=3)
@@ -486,7 +480,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch):
         running_loss = 0.
         for step, (x, indiv_mel, mel, y) in prog_bar:
-            if x is None: continue
+            #if x is None: continue
 
             model.train()
             optimizer.zero_grad()
@@ -495,8 +489,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             indiv_mel = indiv_mel.to(device)
 
             pred = model(indiv_mel, x)
-            if pred.shape != torch.Size([2, 3, 5, 96, 96]):
-                continue
+            #if pred.shape != torch.Size([2, 3, 5, 96, 96]):
+            #    continue
             mel = mel.to(device)
             pred = pred.to(device)
             y = y.to(device)
@@ -556,7 +550,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     #while 1:
     prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1, leave=True)
     for step, (x, indiv_mel, mel, y) in prog_bar:
-        if x is None: continue
+
         model.train()
         optimizer.zero_grad()
 
@@ -564,8 +558,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
         indiv_mel = indiv_mel.to(device)
 
         pred = model(indiv_mel, x)
-        if pred.shape != torch.Size([2, 3, 5, 96, 96]):
-            continue
+
         mel = mel.to(device)
         pred = pred.to(device)
         y = y.to(device)
@@ -764,13 +757,13 @@ if __name__ == "__main__":
     )
 
     lora_l_decoder = get_peft_model(model.decoder, decoder_config)
-    lora_ae_encoder = get_peft_model(model.audio_encoder, audio_enc_config)
+    #lora_ae_encoder = get_peft_model(model.audio_encoder, audio_enc_config)
     model.decoder = lora_l_decoder
     for param in model.encoder.parameters():
         param.requires_grad = False
     #for param in model.decoder.parameters():
     #    param.requires_grad = False
-    model.audio_encoder = lora_ae_encoder
+    #model.audio_encoder = lora_ae_encoder
     print_trainable_parameters(model)
 
     #checkpoint_path = 'checkpoints/checkpoint_step_lora000290000.pth'
