@@ -109,7 +109,7 @@ class Dataset(object):
         self.get_full_mels()
         self.get_enhanced_imgs()
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + '_img_batch.npy'):
-            gen = datagen(self.imgs_enhanced, self.mel_chunks, self.full_frames, self.frames_pil, self.coordinates)
+            gen = datagen(self.imgs_enhanced, self.mel_chunks, self.full_frames, None, self.coordinates)
             self.img_batch, self.mel_batch, self.frame_batch, self.coords_batch, self.img_original, self.full_frame_batch = gen
             np.save(self.all_videos[self.idx].split('.')[0] + '_img_batch.npy', self.img_batch)
             np.save(self.all_videos[self.idx].split('.')[0] + '_mel_batch.npy', self.mel_batch)
