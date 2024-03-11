@@ -108,7 +108,7 @@ class Dataset(object):
         self.hack_3dmm_expression(save=False)
         self.get_full_mels()
         self.get_enhanced_imgs()
-        gen = datagen(self.imgs_enhanced, self.mels, self.full_frames, self.frames_pil, self.coordinates)
+        gen = datagen(self.imgs_enhanced, self.mel_chunks, self.full_frames, self.frames_pil, self.coordinates)
         self.img_batch, self.mel_batch, self.frame_batch, self.coords_batch, self.img_original, self.full_frame_batch = gen
 
     def read_full_video(self, index=0):
