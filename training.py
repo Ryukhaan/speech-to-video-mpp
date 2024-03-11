@@ -392,10 +392,10 @@ class Dataset(object):
             #indiv_mels = self.get_segmented_mels(self.mel.copy(), start_frame)
 
         stabilized_window = self.get_subframes(self.img_batch.copy(), start_frame)
-        stabilized_window = np.transpose(stabilized_window, (3, 0, 1, 2))
+        stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2)))
         #stabilized_window = self.prepare_window(stabilized_window)
 
-        img_original = torch.FloatTensor(self.get_subframes(self.img_original.copy(), start_frame))
+        img_original = self.get_subframes(self.img_original.copy(), start_frame)
         img_original = torch.FloatTensor(np.transpose(img_original, (3, 0, 1, 2)))
         #oy1, oy2, ox1, ox2 = self.coordinates
 
