@@ -292,7 +292,6 @@ class Dataset(object):
                 allow_pickle=True)
         codes = codes[start_frame: start_frame+lnet_T]
         codes = codes.reshape(-1, 32 * 15)
-        #print(codes.shape)
         return codes
 
     def get_segmented_phones(self, index, start_frame):
@@ -396,8 +395,8 @@ class Dataset(object):
         stabilized_window = np.transpose(stabilized_window, (3, 0, 1, 2))
         #stabilized_window = self.prepare_window(stabilized_window)
 
-        img_original = self.get_subframes(self.img_original.copy(), start_frame)
-        img_original = np.transpose(img_original, (3, 0, 1, 2))
+        img_original = torch.FloatTensor(self.get_subframes(self.img_original.copy(), start_frame))
+        img_original = torch.FloatTensor(np.transpose(img_original, (3, 0, 1, 2)))
         #oy1, oy2, ox1, ox2 = self.coordinates
 
         #gen = datagen(stabilized_window.copy(), indiv_mels, sub_full_frames, None, (oy1, oy2, ox1, ox2))
@@ -501,13 +500,13 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             model.train()
             optimizer.zero_grad()
 
-            #x = x.to(device)
-            #indiv_mel = indiv_mel.to(device)
+            x = x.to(device)
+            indiv_mel = indiv_mel.to(device)
             #incomplete, reference = torch.split(x, 3, dim=1)
             pred = model(indiv_mel, x)
             if pred.shape != torch.Size([2, 3, 5, 96, 96]):
                 continue
-            #mel = mel.to(device)
+            mel = mel.to(device)
             pred = pred.to(device)
             y = y.to(device)
             loss = loss_func(pred, y, mel)
@@ -581,7 +580,6 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         refs.append(ff[y1: y2, x1:x2])
 
     for i, m in enumerate(mels):
-        print(m.shape)
         idx = 0 if args.static else i % len(frames)
         frame_to_save = frames[idx].copy()
         face = refs[idx]
