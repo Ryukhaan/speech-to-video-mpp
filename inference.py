@@ -140,8 +140,8 @@ def main():
     kp_extractor = KeypointExtractor()
     idx = 0
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(tqdm(gen, desc='[Step 6] Lip Synthesis:', total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
-        cv2.imwrite("./temp/incomp.png", img_batch[0][:, :, :3])
-        cv2.imwrite("./temp/reference.png", img_batch[0][:, :, 3:])
+        cv2.imwrite("./temp/incomp.png", 255.*img_batch[0][:, :, :3])
+        cv2.imwrite("./temp/reference.png", 255.*img_batch[0][:, :, 3:])
         cv2.imwrite("./temp/orig.png", img_original[0][:, :, :3])
         print(img_original.max(), img_original.min())
         print(img_batch[0][:, :, :3].max(), img_batch[0][:, :, :3].min())
