@@ -106,8 +106,8 @@ class ENet(nn.Module):
 
         inp_detach = inp.detach().cpu().numpy()
         g_detach = gt_sequences.detach().cpu().numpy()
-        cv2.imwrite("./temp/inp_detach.png", 255. * inp_detach[0])
-        cv2.imwrite("./temp/g_detach.png", 255. * g_detach[0])
+        cv2.imwrite("./temp/inp_detach.png", 255. * inp_detach[0].reshape(96,96,3))
+        cv2.imwrite("./temp/g_detach.png", 255. * g_detach[0].reshape(96,96,3))
         print(g_detach[0].min(), g_detach[0].max())
         print(inp_detach[0].min(), inp_detach[0].max())
 
@@ -123,7 +123,7 @@ class ENet(nn.Module):
             out = low_res_img
 
         out_detach = out.detach().cpu().numpy()
-        cv2.imwrite("./temp/out_detach.png", 255. * out_detach[0])
+        cv2.imwrite("./temp/out_detach.png", 255. * out_detach[0].reshape(96,96,3))
         print(out_detach[0].min(), out_detach[0].max())
 
         p2d = (2,2,2,2)
