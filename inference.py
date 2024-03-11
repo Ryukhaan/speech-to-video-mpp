@@ -310,9 +310,9 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         face = cv2.resize(face, (args.img_size, args.img_size))
         oface = cv2.resize(oface, (args.img_size, args.img_size))
 
-        cv2.imwrite("/temp/sframe.png", frame_to_save)
-        cv2.imwrite("/temp/face.png", face)
-        cv2.imwrite("/temp/oface.png", oface)
+        cv2.imwrite("./temp/sframe.png", frame_to_save)
+        cv2.imwrite("./temp/face.png", face)
+        cv2.imwrite("./temp/oface.png", oface)
         img_batch.append(oface)
         ref_batch.append(face) 
         mel_batch.append(m)
