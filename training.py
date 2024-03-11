@@ -403,13 +403,13 @@ class Dataset(object):
         # BGR -> RGB
         stabilized_window[:, :,:, :3] = np.flip(stabilized_window[:,:,:,:3], axis=3)
         stabilized_window[:, :,:, 3:] = np.flip(stabilized_window[:,:,:,3:], axis=3)
-        stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2))) / 255.
+        stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2)))
         stabilized_window = F.interpolate(stabilized_window, size=(96, 96), mode='bilinear')
 
 
         img_original = self.get_subframes(self.img_original.copy(), start_frame)
         img_original[:,:,:,:] = img_original[:,:,:,::-1]
-        img_original = torch.FloatTensor(np.transpose(img_original, (3, 0, 1, 2))) / 255.
+        img_original = torch.FloatTensor(np.transpose(img_original, (3, 0, 1, 2)))
 
         mels = torch.FloatTensor(mels.T).unsqueeze(0)
         indiv_mels = torch.FloatTensor(np.transpose(indiv_mels, (0,3,1,2)))
@@ -487,6 +487,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         running_loss = 0.
         for step, (x, indiv_mel, mel, y) in prog_bar:
             if x is None: continue
+
             model.train()
             optimizer.zero_grad()
 
@@ -501,14 +502,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             y = y.to(device)
             loss = loss_func(pred, y, mel)
 
-            loss.backward()
-            optimizer.step()
-
-            global_step += 1
-            cur_session_steps = global_step - resumed_step
-            running_loss += loss.item()
-
-            writer.add_scalar('Loss/train', running_loss / (step+1), step)
             if step % 10 == 0:
                 cropped, reference = torch.split(x, 3, dim=1)
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
@@ -529,6 +522,16 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                                   255.*reference,
                                   global_step=step
                                   )
+
+            loss.backward()
+            optimizer.step()
+
+            global_step += 1
+            cur_session_steps = global_step - resumed_step
+            running_loss += loss.item()
+
+            writer.add_scalar('Loss/train', running_loss / (step+1), step)
+
         #if global_step == 1 or global_step % checkpoint_interval == 0:
         #    save_checkpoint(
         #        model, optimizer, global_step, checkpoint_dir, global_epoch)
