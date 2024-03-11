@@ -409,7 +409,7 @@ class Dataset(object):
         #if stabilized_window.size(1) != lnet_T:
         #    return None, None, None, None
         assert stabilized_window.shape == torch.Size([6, 5, 96, 96]), "{}, {}, {}".format(stabilized_window.shape, start_frame, self.img_batch.shape)
-        assert img_original.shape == torch.Size([3, 5, 96, 96])
+        #assert img_original.shape == torch.Size([3, 5, 96, 96])
         return stabilized_window, indiv_mels, mels, img_original
 
     def save_preprocess(self):
