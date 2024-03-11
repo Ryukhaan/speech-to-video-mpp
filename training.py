@@ -588,7 +588,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
     kp_extractor = KeypointExtractor()
     fr_pil = [Image.fromarray(frame) for frame in frames]
     #fr_pil = frames.copy()
-    lms = kp_extractor.extract_keypoint(fr_pil, 'temp/'+'temp_x12_landmarks.txt')
+    lms = kp_extractor.extract_keypoint(fr_pil, 'temp/' + 'x12_landmarks.txt')
     frames_pil = [ (lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
     crops, orig_images, quads  = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
     inverse_transforms = [calc_alignment_coefficients(quad + 0.5, [[0, 0], [0, image_size], [image_size, image_size], [image_size, 0]]) for quad in quads]
@@ -617,6 +617,9 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         oface = cv2.resize(oface, (args.img_size, args.img_size))
 
         #change face and oface in img and ref
+        cv2.imwrite("./temp/sframe.png", frame_to_save)
+        cv2.imwrite("./temp/face.png", face)
+        cv2.imwrite("./temp/oface.png", oface)
         img_batch.append(oface)
         ref_batch.append(face)
         mel_batch.append(m)
