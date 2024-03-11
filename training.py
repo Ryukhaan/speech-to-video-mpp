@@ -401,14 +401,14 @@ class Dataset(object):
 
         stabilized_window = self.get_subframes(self.img_batch.copy(), start_frame)
         # BGR -> RGB
-        stabilized_window[:, :,:, :3] = np.flip(stabilized_window[:,:,:,:3], axis=3)
-        stabilized_window[:, :,:, 3:] = np.flip(stabilized_window[:,:,:,3:], axis=3)
+        #stabilized_window[:, :,:, :3] = np.flip(stabilized_window[:,:,:,:3], axis=3)
+        #stabilized_window[:, :,:, 3:] = np.flip(stabilized_window[:,:,:,3:], axis=3)
         stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2)))
         stabilized_window = F.interpolate(stabilized_window, size=(96, 96), mode='bilinear')
 
 
         img_original = self.get_subframes(self.img_original.copy(), start_frame)
-        img_original[:,:,:,:] = img_original[:,:,:,::-1]
+        #img_original[:,:,:,:] = img_original[:,:,:,::-1]
         img_original = torch.FloatTensor(np.transpose(img_original, (3, 0, 1, 2)))
 
         mels = torch.FloatTensor(mels.T).unsqueeze(0)
@@ -507,19 +507,19 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
                 reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
                 writer.add_images('2_original',
-                                  torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0),
+                                  torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0)[:,::-1],
                                   global_step=step
                                   )
                 writer.add_images('1_predictions',
-                                  torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0),
+                                  torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:,::-1],
                                   global_step=step
                                   )
                 writer.add_images('3_cropped',
-                                  cropped,
+                                  cropped[:,::-1],
                                   global_step=step
                                   )
                 writer.add_images('4_reference',
-                                  reference,
+                                  reference[:,::-1],
                                   global_step=step
                                   )
 
