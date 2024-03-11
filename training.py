@@ -409,7 +409,7 @@ class Dataset(object):
 
         img_original = self.get_subframes(self.img_original.copy(), start_frame)
         #img_original[:,:,:,:] = img_original[:,:,:,::-1]
-        img_original = torch.FloatTensor(np.transpose(img_original, (3, 0, 1, 2)))
+        img_original = torch.FloatTensor(np.transpose(img_original, (3, 0, 1, 2))) / 255.
 
         mels = torch.FloatTensor(mels.T).unsqueeze(0)
         indiv_mels = torch.FloatTensor(np.transpose(indiv_mels, (0,3,1,2)))
