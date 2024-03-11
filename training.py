@@ -515,11 +515,11 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                                   global_step=step
                                   )
                 writer.add_images('3_cropped',
-                                  255.*cropped,
+                                  cropped,
                                   global_step=step
                                   )
                 writer.add_images('4_reference',
-                                  255.*reference,
+                                  reference,
                                   global_step=step
                                   )
 
