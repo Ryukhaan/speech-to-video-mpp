@@ -108,8 +108,16 @@ class Dataset(object):
         self.hack_3dmm_expression(save=False)
         self.get_full_mels()
         self.get_enhanced_imgs()
-        gen = datagen(self.imgs_enhanced, self.mel_chunks, self.full_frames, self.frames_pil, self.coordinates)
-        self.img_batch, self.mel_batch, self.frame_batch, self.coords_batch, self.img_original, self.full_frame_batch = gen
+        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + '_img_batch.npy'):
+            gen = datagen(self.imgs_enhanced, self.mel_chunks, self.full_frames, self.frames_pil, self.coordinates)
+            self.img_batch, self.mel_batch, self.frame_batch, self.coords_batch, self.img_original, self.full_frame_batch = gen
+            np.save(self.all_videos[self.idx].split('.')[0] + '_img_batch.npy', self.img_batch)
+            np.save(self.all_videos[self.idx].split('.')[0] + '_mel_batch.npy', self.mel_batch)
+            np.save(self.all_videos[self.idx].split('.')[0] + '_img_orig.npy', self.img_original)
+        else:
+            self.img_batch = np.load(self.all_videos[self.idx].split('.')[0] + '_img_batch.npy', allow_pickle=True)
+            self.mel_batch = np.load(self.all_videos[self.idx].split('.')[0] + '_mel_batch.npy', allow_pickle=True)
+            self.img_original = np.load(self.all_videos[self.idx].split('.')[0] + '_img_orig.npy', allow_pickle=True)
 
     def read_full_video(self, index=0):
         self.full_frames = []
@@ -375,7 +383,7 @@ class Dataset(object):
         return x
 
     def __len__(self):
-        return len(self.frames_pil) - 4
+        return len(self.mel_chunks)
 
     def __getitem__(self, idx):
         start_frame = idx
@@ -423,7 +431,7 @@ class Dataset(object):
         # #phones = torch.IntTensor(phones)
         # x = torch.FloatTensor(x)
         mels = torch.FloatTensor(mels.T).unsqueeze(0)
-        indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
+        indiv_mels = torch.FloatTensor(indiv_mels)
         return stabilized_window, indiv_mels, mels, img_original
         #return x, indiv_mels, mel, y
 
