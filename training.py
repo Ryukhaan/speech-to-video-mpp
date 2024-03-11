@@ -512,6 +512,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             optimizer.zero_grad()
 
             x = x.to(device)
+            x = F.interpolate(x, size=(96,96), mode='bilinear')
             indiv_mel = indiv_mel.to(device)
             #incomplete, reference = torch.split(x, 3, dim=1)
             pred = model(indiv_mel, x)
