@@ -120,9 +120,9 @@ class Dataset(object):
             self.img_original = np.load(self.all_videos[self.idx].split('.')[0] + '_img_orig.npy', allow_pickle=True)
 
     def read_full_video(self, index=0):
-        self.full_frames = []
         video_stream = cv2.VideoCapture(self.all_videos[index])
         self.fps = video_stream.get(cv2.CAP_PROP_FPS)
+        self.full_frames = []
         while True:
             still_reading, frame = video_stream.read()
             if not still_reading:
@@ -271,7 +271,7 @@ class Dataset(object):
             img = self.imgs[idx]
             # pred, _, _ = enhancer.process(img, aligned=True)
             #pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
-            pred = cv2.resize(img, (384, 384))
+            pred = cv2.resize(img, (256, 256))
             self.imgs_enhanced.append(pred)
         for i in range(10):
             cv2.imwrite('temp/stabilized_{}.png'.format(i), self.imgs_enhanced[i])
