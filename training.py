@@ -401,8 +401,8 @@ class Dataset(object):
 
         stabilized_window = self.get_subframes(self.img_batch.copy(), start_frame)
         # BGR -> RGB
-        stabilized_window[:, :,:, :3] = stabilized_window[:,:,:, 2:-1:-1]
-        stabilized_window[:, :,:, 3:] = stabilized_window[:,:,:, 6:2:-1]
+        stabilized_window[:, :,:, :3] = stabilized_window[:,:,:, :3][::-1]
+        stabilized_window[:, :,:, 3:] = stabilized_window[:,:,:, 3:][::-1]
         stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2)))
         stabilized_window = F.interpolate(stabilized_window, size=(96, 96), mode='bilinear')
 
