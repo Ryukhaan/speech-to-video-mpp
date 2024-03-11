@@ -513,10 +513,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 cropped, reference = torch.split(x, 3, dim=1)
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
                 reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
-                #writer.add_figure('predictions',
-                #                plot_predictions(x, y, pred),
-                #                global_step=step
-                #)
                 writer.add_images('2_original',
                                   torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0),
                                   global_step=step
@@ -526,11 +522,11 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                                   global_step=step
                                   )
                 writer.add_images('3_cropped',
-                                  cropped,
+                                  255.*cropped,
                                   global_step=step
                                   )
                 writer.add_images('4_reference',
-                                  reference,
+                                  255.*reference,
                                   global_step=step
                                   )
         #if global_step == 1 or global_step % checkpoint_interval == 0:
