@@ -517,19 +517,19 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 #                plot_predictions(x, y, pred),
                 #                global_step=step
                 #)
-                writer.add_images('original',
+                writer.add_images('2_original',
                                   torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0),
                                   global_step=step
                                   )
-                writer.add_images('predictions',
+                writer.add_images('1_predictions',
                                   torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0),
                                   global_step=step
                                   )
-                writer.add_images('cropped',
+                writer.add_images('3_cropped',
                                   cropped,
                                   global_step=step
                                   )
-                writer.add_images('reference',
+                writer.add_images('4_reference',
                                   reference,
                                   global_step=step
                                   )
