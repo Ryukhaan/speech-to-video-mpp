@@ -145,7 +145,10 @@ def main():
         img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device)/255. # BGR -> RGB
         
         with torch.no_grad():
-            incomplete, reference = torch.split(img_batch, 3, dim=1) 
+            incomplete, reference = torch.split(img_batch, 3, dim=1)
+            cv2.imwrite("./temp/incomp.png", incomplete[0])
+            cv2.imwrite("./temp/reference.png", reference[0])
+            cv2.imwrite("./temp/im_orig.png", 255.*img_original[0])
             pred, low_res = preprocessor.model(mel_batch, img_batch, reference)
             pred = torch.clamp(pred, 0, 1)
 
