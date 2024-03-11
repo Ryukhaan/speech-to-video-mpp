@@ -115,14 +115,17 @@ class ENet(nn.Module):
             low_res_img, low_res_feat = self.low_res(audio_sequences, LNet_input)
             low_res_img.detach()
             low_res_feat.detach()
-            out = torch.cat([low_res_img, low_res_feat], dim=1) 
-
+            out = torch.cat([low_res_img, low_res_feat], dim=1)
         else:
             low_res_img = self.low_res(audio_sequences, LNet_input)
             low_res_img.detach()
             # 96 x 96
-            out = low_res_img 
-        
+            out = low_res_img
+
+        out_detach = out.detach().cpu().numpy()
+        cv2.imwrite("./temp/out_detach.png", 255. * out_detach[0])
+        print(out_detach[0].min(), out_detach[0].max())
+
         p2d = (2,2,2,2)
         out = F.pad(out, p2d, "reflect", 0)
         skip = out
