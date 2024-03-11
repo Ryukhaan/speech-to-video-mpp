@@ -389,8 +389,10 @@ class Dataset(object):
         start_frame = idx
 
         #mels = self.crop_audio_window(self.mel.copy(), start_frame)
-        mels = self.crop_audio_window(self.mel_batch.copy(), start_frame)
-        indiv_mels = self.get_segmented_mels(self.mel_batch.copy(), start_frame)
+        #mels = self.crop_audio_window(self.mel_batch.copy(), start_frame)
+        #indiv_mels = self.get_segmented_mels(self.mel_batch.copy(), start_frame)
+        mels = self.get_subframes(self.mel_batch.copy(), start_frame)
+        indiv_mels = self.get_subframes(self.mel_batch.copy(), start_frame)
 
         if indiv_mels is None:
             start_frame = 5
