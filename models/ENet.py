@@ -106,9 +106,9 @@ class ENet(nn.Module):
 
         inp_detach = inp.detach().cpu().numpy()
         g_detach = gt_sequences.detach().cpu().numpy()
-        print(inp_detach.shape)
-        cv2.imwrite("./temp/inp_detach.png", 255. * inp_detach[0].reshape(96,96,3))
-        cv2.imwrite("./temp/g_detach.png", 255. * g_detach[0].reshape(96,96,3))
+
+        cv2.imwrite("./temp/inp_detach.png", 255. * inp_detach[0].reshape(384,384,3))
+        cv2.imwrite("./temp/g_detach.png", 255. * g_detach[0].reshape(384,384,3))
         print(g_detach[0].min(), g_detach[0].max())
         print(inp_detach[0].min(), inp_detach[0].max())
 
