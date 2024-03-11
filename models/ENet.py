@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from models.base_blocks import ResBlock, StyleConv, ToRGB
 
+import cv2
 
 class ENet(nn.Module):
     def __init__(
@@ -102,7 +103,14 @@ class ENet(nn.Module):
         
         LNet_input = torch.cat([inp, gt_sequences], dim=1)
         LNet_input = F.interpolate(LNet_input, size=(96,96), mode='bilinear')
-        
+
+        inp_detach = inp.detach().cpu().numpy()
+        g_detach = gt_sequences.detach().cpu().numpy()
+        cv2.imwrite("./temp/inp_detach.png", 255. * inp_detach[0])
+        cv2.imwrite("./temp/g_detach.png", 255. * g_detach[0])
+        print(g_detach[0].min(), g_detach[0].max())
+        print(inp_detach[0].min(), inp_detach[0].max())
+
         if self.concat:
             low_res_img, low_res_feat = self.low_res(audio_sequences, LNet_input)
             low_res_img.detach()
