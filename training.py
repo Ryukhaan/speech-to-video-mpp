@@ -391,7 +391,7 @@ class Dataset(object):
         #mels = self.crop_audio_window(self.mel.copy(), start_frame)
         #mels = self.crop_audio_window(self.mel_batch.copy(), start_frame)
         #indiv_mels = self.get_segmented_mels(self.mel_batch.copy(), start_frame)
-        mels = self.get_subframes(self.mel_batch.copy(), start_frame)
+        mels = self.get_subframes(self.mel.copy(), start_frame)
         indiv_mels = self.get_subframes(self.mel_batch.copy(), start_frame)
 
         if indiv_mels is None:
@@ -433,7 +433,7 @@ class Dataset(object):
         # #codes = torch.FloatTensor(codes)
         # #phones = torch.IntTensor(phones)
         # x = torch.FloatTensor(x)
-        print(mels.shape, indiv_mels.shape, stabilized_window.shape, img_original.shape)
+        #print(mels.shape, indiv_mels.shape, stabilized_window.shape, img_original.shape)
         mels = torch.FloatTensor(np.transpose(mels, (0,3,1,2)))
         indiv_mels = torch.FloatTensor(np.transpose(indiv_mels, (0,3,1,2)))
         return stabilized_window, indiv_mels, mels, img_original
