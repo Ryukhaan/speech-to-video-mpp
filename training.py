@@ -403,6 +403,7 @@ class Dataset(object):
 
         stabilized_window = self.get_subframes(self.img_batch.copy(), start_frame)
         stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2)))
+        stabilized_window.interpolate(stabilized_window, size=(96, 96), mode='bilinear')
         #stabilized_window = self.prepare_window(stabilized_window)
 
         img_original = self.get_subframes(self.img_original.copy(), start_frame)
@@ -512,7 +513,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             optimizer.zero_grad()
 
             x = x.to(device)
-            x = F.interpolate(x, size=(96,96), mode='bilinear')
+            #x = F.interpolate(x, size=(96,96), mode='bilinear')
             indiv_mel = indiv_mel.to(device)
             #incomplete, reference = torch.split(x, 3, dim=1)
             pred = model(indiv_mel, x)
