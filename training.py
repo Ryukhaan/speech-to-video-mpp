@@ -403,7 +403,7 @@ class Dataset(object):
         # BGR -> RGB
         stabilized_window[:, :,:, :3] = np.flip(stabilized_window[:,:,:,:3], axis=3)
         stabilized_window[:, :,:, 3:] = np.flip(stabilized_window[:,:,:,3:], axis=3)
-        stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2)))
+        stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2))) / 255.
         stabilized_window = F.interpolate(stabilized_window, size=(96, 96), mode='bilinear')
 
 
