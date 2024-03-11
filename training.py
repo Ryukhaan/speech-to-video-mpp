@@ -399,7 +399,8 @@ class Dataset(object):
         #stabilized_window[:, :,:, 3:] = np.flip(stabilized_window[:,:,:,3:], axis=3)
         stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2)))
         stabilized_window = F.interpolate(stabilized_window, size=(96, 96), mode='bilinear')
-
+        if stabilized_window.size != torch.Size([6, 5, 96, 96]):
+            return None, None, None
 
         img_original = self.get_subframes(self.img_original.copy(), start_frame)
         #img_original[:,:,:,:] = img_original[:,:,:,::-1]
@@ -482,7 +483,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch):
         running_loss = 0.
         for step, (x, indiv_mel, mel, y) in prog_bar:
-            #if x is None: continue
+            if x is None: continue
 
             model.train()
             optimizer.zero_grad()
