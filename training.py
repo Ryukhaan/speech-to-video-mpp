@@ -433,7 +433,7 @@ class Dataset(object):
         # #codes = torch.FloatTensor(codes)
         # #phones = torch.IntTensor(phones)
         # x = torch.FloatTensor(x)
-        #print(mels.shape, indiv_mels.shape, stabilized_window.shape, img_original.shape)
+        print(mels.shape, indiv_mels.shape, stabilized_window.shape, img_original.shape)
         mels = torch.FloatTensor(np.transpose(mels, (0,3,1,2)))
         indiv_mels = torch.FloatTensor(np.transpose(indiv_mels, (0,3,1,2)))
         return stabilized_window, indiv_mels, mels, img_original
