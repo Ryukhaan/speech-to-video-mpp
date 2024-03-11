@@ -108,7 +108,7 @@ class Dataset(object):
         self.hack_3dmm_expression(save=False)
         self.get_full_mels()
         self.get_enhanced_imgs()
-        #self.datagen()
+        self.img_batch, self.mel_batch, self.frame_batch, self.coords_batch, self.img_original, self.full_frame_batch = self.datagen()
 
     def read_full_video(self, index=0):
         self.full_frames = []
@@ -276,7 +276,7 @@ class Dataset(object):
 
     def get_subframes(self, frames, start_frame):
         assert lnet_T == 5
-        if start_frame < 1: return None
+        #if start_frame < 1: return None
         return frames[start_frame:start_frame + lnet_T]
 
     #def get_segmented_window(self, start_frame):
@@ -286,10 +286,10 @@ class Dataset(object):
 
     def get_segmented_codes(self, index, start_frame):
         assert lnet_T == 5
-        if start_frame < 1: return None
+        #if start_frame < 1: return None
         codes = np.load(self.all_videos[index].split('.')[0] + "_codes.npy",
                 allow_pickle=True)
-        codes = codes[start_frame-2: start_frame+lnet_T-2]
+        codes = codes[start_frame: start_frame+lnet_T]
         codes = codes.reshape(-1, 32 * 15)
         #print(codes.shape)
         return codes
@@ -344,16 +344,16 @@ class Dataset(object):
         syncnet_mel_step_size = 16
         start_idx = int(80. * (start_frame / float(hparams.fps)))
         end_idx = start_idx + syncnet_mel_step_size
-        return spec[start_idx: end_idx, :]
+        return spec[start_idx:end_idx, :]
 
     def get_segmented_mels(self, spec, start_frame):
         mels = []
         syncnet_mel_step_size = 16
         assert lnet_T == 5
         #start_frame_num = self.get_frame_id(start_frame) + 1 # 0-indexing ---> 1-indexing
-        if start_frame - 2 < 0: return None
+        #if start_frame - 2 < 0: return None
         for i in range(start_frame, start_frame + lnet_T):
-            m = self.crop_audio_window(spec, i - 2)
+            m = self.crop_audio_window(spec, i)
             if m.shape[0] != syncnet_mel_step_size:
                 return None
             mels.append(m.T)
@@ -378,29 +378,33 @@ class Dataset(object):
         return len(self.frames_pil) - 4
 
     def __getitem__(self, idx):
-        start_frame = idx + 2
+        start_frame = idx
 
-        mels = self.crop_audio_window(self.mel.copy(), start_frame)
-        indiv_mels = self.get_segmented_mels(self.mel.copy(), start_frame)
+        #mels = self.crop_audio_window(self.mel.copy(), start_frame)
+        mels = self.crop_audio_window(self.mel_batch.copy(), start_frame)
+        indiv_mels = self.get_segmented_mels(self.mel_batch.copy(), start_frame)
 
         if indiv_mels is None:
             start_frame = 5
-            mels = self.crop_audio_window(self.mel.copy(), start_frame)
-            indiv_mels = self.get_segmented_mels(self.mel.copy(), start_frame)
+            mels = self.crop_audio_window(self.mel_batch.copy(), start_frame)
+            indiv_mels = self.get_segmented_mels(self.mel_batch.copy(), start_frame)
+            #mels = self.crop_audio_window(self.mel.copy(), start_frame)
+            #indiv_mels = self.get_segmented_mels(self.mel.copy(), start_frame)
 
-        print(indiv_mels.shape)
-        stabilized_window = self.get_subframes(self.imgs_enhanced, start_frame)
+        stabilized_window = self.get_subframes(self.img_batch.copy(), start_frame)
+        stabilized_window = np.transpose(stabilized_window, (3, 0, 1, 2))
         #stabilized_window = self.prepare_window(stabilized_window)
 
-        sub_full_frames = self.get_subframes(self.full_frames, start_frame)
-        oy1, oy2, ox1, ox2 = self.coordinates
+        img_original = self.get_subframes(self.img_original.copy(), start_frame)
+        img_original = np.transpose(img_original, (3, 0, 1, 2))
+        #oy1, oy2, ox1, ox2 = self.coordinates
 
-        gen = datagen(stabilized_window.copy(), indiv_mels, sub_full_frames, None, (oy1, oy2, ox1, ox2))
-        img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch = gen
+        #gen = datagen(stabilized_window.copy(), indiv_mels, sub_full_frames, None, (oy1, oy2, ox1, ox2))
+        #img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch = gen
 
-        img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(self.device)
-        mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(self.device)
-        img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(self.device) / 255.
+        #img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(self.device)
+        #mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(self.device)
+        #img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(self.device) / 255.
 
         # nframes = self.get_subframes(self.frames_pil, start_frame)
         # masked_window = self.get_subframes(self.frames_96pil, start_frame)
@@ -418,9 +422,9 @@ class Dataset(object):
         # #codes = torch.FloatTensor(codes)
         # #phones = torch.IntTensor(phones)
         # x = torch.FloatTensor(x)
-        mel = torch.FloatTensor(mel.T).unsqueeze(0)
+        mels = torch.FloatTensor(mels.T).unsqueeze(0)
         indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
-        return img_batch, indiv_mels, mel_batch, img_original
+        return stabilized_window, indiv_mels, mels, img_original
         #return x, indiv_mels, mel, y
 
     def save_preprocess(self):
@@ -552,8 +556,6 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
     refs = []
     image_size = 256
 
-    print(type(mels), len(mels), mels[0].shape)
-
     # original frames
     kp_extractor = KeypointExtractor()
     fr_pil = [Image.fromarray(frame) for frame in frames]
@@ -577,7 +579,6 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         y1, y2, x1, x2 = coords
         refs.append(ff[y1: y2, x1:x2])
 
-    print(mels.shape)
     for i, m in enumerate(mels):
         print(m.shape)
         idx = 0 if args.static else i % len(frames)
@@ -594,16 +595,15 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         coords_batch.append(coords)
         frame_batch.append(frame_to_save)
         full_frame_batch.append(full_frames[idx].copy())
-        if len(img_batch) >= lnet_T:
-            img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
-            img_masked = img_batch.copy()
-            img_original = img_batch.copy()
-            img_masked[:, args.img_size//2:] = 0
-            img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
-            mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
-
-            return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
-            #img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
+        #if len(img_batch) >= lnet_T:
+        #    img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
+        #    img_masked = img_batch.copy()
+        #    img_original = img_batch.copy()
+        #    img_masked[:, args.img_size//2:] = 0
+        #    img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
+        #    mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
+        #    return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+        #    #img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
 
     if len(img_batch) > 0:
         img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
