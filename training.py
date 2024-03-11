@@ -399,8 +399,6 @@ class Dataset(object):
         #stabilized_window[:, :,:, 3:] = np.flip(stabilized_window[:,:,:,3:], axis=3)
         stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2)))
         stabilized_window = F.interpolate(stabilized_window, size=(96, 96), mode='bilinear')
-        if stabilized_window.size != torch.Size([6, 5, 96, 96]):
-            return None, None, None
 
         img_original = self.get_subframes(self.img_original.copy(), start_frame)
         #img_original[:,:,:,:] = img_original[:,:,:,::-1]
@@ -410,7 +408,7 @@ class Dataset(object):
         indiv_mels = torch.FloatTensor(np.transpose(indiv_mels, (0,3,1,2)))
         #if stabilized_window.size(1) != lnet_T:
         #    return None, None, None, None
-        assert stabilized_window.size == torch.Size([6, 5, 96, 96]), print(stabilized_window.shape)
+        assert stabilized_window.size == torch.Size([6, 5, 96, 96]), print(stabilized_window.shape, start_frame, self.img_batch.shape)
         assert img_original.size == torch.Size([3, 5, 96, 96]), print(img_original.shape)
         return stabilized_window, indiv_mels, mels, img_original
 
