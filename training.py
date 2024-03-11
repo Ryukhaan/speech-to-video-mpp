@@ -389,9 +389,6 @@ class Dataset(object):
     def __getitem__(self, idx):
         start_frame = idx
 
-        #mels = self.crop_audio_window(self.mel.copy(), start_frame)
-        #mels = self.crop_audio_window(self.mel_batch.copy(), start_frame)
-        #indiv_mels = self.get_segmented_mels(self.mel_batch.copy(), start_frame)
         mels = self.crop_audio_window(self.mel.copy(), start_frame)
         indiv_mels = self.get_subframes(self.mel_batch.copy(), start_frame)
 
@@ -399,46 +396,18 @@ class Dataset(object):
             start_frame = 5
             mels = self.crop_audio_window(self.mel.copy(), start_frame)
             indiv_mels = self.get_subframes(self.mel_batch.copy(), start_frame)
-            #mels = self.crop_audio_window(self.mel.copy(), start_frame)
-            #indiv_mels = self.get_segmented_mels(self.mel.copy(), start_frame)
 
         stabilized_window = self.get_subframes(self.img_batch.copy(), start_frame)
         stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2)))
         stabilized_window = F.interpolate(stabilized_window, size=(96, 96), mode='bilinear')
-        #stabilized_window = self.prepare_window(stabilized_window)
+
 
         img_original = self.get_subframes(self.img_original.copy(), start_frame)
-        img_original = torch.FloatTensor(np.transpose(img_original, (3, 0, 1, 2)))
-        #oy1, oy2, ox1, ox2 = self.coordinates
+        img_original = torch.FloatTensor(np.transpose(img_original, (3, 0, 1, 2))) / 255.
 
-        #gen = datagen(stabilized_window.copy(), indiv_mels, sub_full_frames, None, (oy1, oy2, ox1, ox2))
-        #img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch = gen
-
-        #img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(self.device)
-        #mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(self.device)
-        #img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(self.device) / 255.
-
-        # nframes = self.get_subframes(self.frames_pil, start_frame)
-        # masked_window = self.get_subframes(self.frames_96pil, start_frame)
-        # #masked_window = np.asarray([cv2.resize(frame, (96,96)) for frame in masked_window])
-        #
-        # window = self.prepare_window(nframes)
-        # masked_window[:, window.shape[2] //2:] = 0.
-        # masked_window = self.prepare_window(masked_window)
-        #
-        # x = np.concatenate([masked_window, stabilized_window], axis=0)
-        #
-        # y = window.copy()
-        # y = torch.FloatTensor(y)
-        #
-        # #codes = torch.FloatTensor(codes)
-        # #phones = torch.IntTensor(phones)
-        # x = torch.FloatTensor(x)
-        print(mels.shape, indiv_mels.shape, stabilized_window.shape, img_original.shape)
         mels = torch.FloatTensor(mels.T).unsqueeze(0)
         indiv_mels = torch.FloatTensor(np.transpose(indiv_mels, (0,3,1,2)))
         return stabilized_window, indiv_mels, mels, img_original
-        #return x, indiv_mels, mel, y
 
     def save_preprocess(self):
         self.D_Net, self.model = load_model(self.args, device)
@@ -514,9 +483,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             optimizer.zero_grad()
 
             x = x.to(device)
-            #x = F.interpolate(x, size=(96,96), mode='bilinear')
             indiv_mel = indiv_mel.to(device)
-            #incomplete, reference = torch.split(x, 3, dim=1)
+
             pred = model(indiv_mel, x)
             if pred.shape != torch.Size([2, 3, 5, 96, 96]):
                 continue
@@ -564,6 +532,41 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 model, optimizer, global_step, checkpoint_dir, global_epoch
             )
         global_epoch += 1
+
+def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
+    #eval_steps = 1400
+    print('Evaluating for {} steps'.format(global_step))
+    losses_list = []
+    loss_func = losses.LoraLoss(device)
+    #while 1:
+    prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1, leave=True)
+    for step, (x, indiv_mel, mel, y) in prog_bar:
+        if x is None: continue
+        model.train()
+        optimizer.zero_grad()
+
+        x = x.to(device)
+        indiv_mel = indiv_mel.to(device)
+
+        pred = model(indiv_mel, x)
+        if pred.shape != torch.Size([2, 3, 5, 96, 96]):
+            continue
+        mel = mel.to(device)
+        pred = pred.to(device)
+        y = y.to(device)
+        loss = loss_func(pred, y, mel)
+
+        loss.backward()
+        optimizer.step()
+
+        losses_list.append(loss.item())
+
+        #if step > eval_steps: break
+
+    averaged_loss = sum(losses_list) / len(losses_list)
+    print(averaged_loss)
+
+    return averaged_loss
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
     #base_name = args.face.split('/')[-1]
@@ -626,38 +629,6 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
         mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
         return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
-
-def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
-    #eval_steps = 1400
-    print('Evaluating for {} steps'.format(global_step))
-    losses_list = []
-    loss_func = losses.LoraLoss(device)
-    #while 1:
-    prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1, leave=True)
-    for step, (x, indiv_mel, mel, y) in prog_bar:
-        if x is None:
-            continue
-        model.eval()
-
-        optimizer.zero_grad()
-
-        x = x.to(device)
-        indiv_mel = indiv_mel.to(device)
-        y = y.to(device)
-        pred = model(indiv_mel, x)
-        if pred.shape != torch.Size([2, 3, 5, 96, 96]):
-            continue
-        mel = mel.to(device)
-        loss = loss_func(pred, y, mel)
-
-        losses_list.append(loss.item())
-
-        #if step > eval_steps: break
-
-    averaged_loss = sum(losses_list) / len(losses_list)
-    print(averaged_loss)
-
-    return averaged_loss
 
 def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch, prefix=''):
     checkpoint_path = join(
