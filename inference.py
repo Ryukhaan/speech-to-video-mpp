@@ -140,15 +140,19 @@ def main():
     kp_extractor = KeypointExtractor()
     idx = 0
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(tqdm(gen, desc='[Step 6] Lip Synthesis:', total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
+        cv2.imwrite("./temp/incomp.png", img_batch[0][:, :, :3])
+        cv2.imwrite("./temp/reference.png", img_batch[0][:, :, 3:])
+        cv2.imwrite("./temp/orig.png", img_original[0][:, :, :3])
+        print(img_original.max(), img_original.min())
+        print(img_batch[0][:, :, :3].max(), img_batch[0][:, :, :3].min())
+        print(img_batch[0][:, :, 3:].max(), img_batch[0][:, :, :3].min())
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
         img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device)/255. # BGR -> RGB
         
         with torch.no_grad():
             incomplete, reference = torch.split(img_batch, 3, dim=1)
-            cv2.imwrite("./temp/incomp.png", incomplete[0])
-            cv2.imwrite("./temp/reference.png", reference[0])
-            cv2.imwrite("./temp/im_orig.png", 255.*img_original[0])
+
             pred, low_res = preprocessor.model(mel_batch, img_batch, reference)
             pred = torch.clamp(pred, 0, 1)
 
