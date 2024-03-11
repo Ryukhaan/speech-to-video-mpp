@@ -507,19 +507,19 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
                 reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
                 writer.add_images('2_original',
-                                  torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0)[:,::-1],
+                                  torch.flip(torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0), 1),
                                   global_step=step
                                   )
                 writer.add_images('1_predictions',
-                                  torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:,::-1],
+                                  torch.flip(torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:,::-1], 1),
                                   global_step=step
                                   )
                 writer.add_images('3_cropped',
-                                  cropped[:,::-1],
+                                  torch.flip(cropped, 1),
                                   global_step=step
                                   )
                 writer.add_images('4_reference',
-                                  reference[:,::-1],
+                                  torch.flip(reference, 1),
                                   global_step=step
                                   )
 
