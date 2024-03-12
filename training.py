@@ -776,7 +776,7 @@ if __name__ == "__main__":
     ]
     optimizer = Adafactor(optimizer_grouped_parameters) #lr=hparams.syncnet_lr
 
-    discriminator = UNetDiscriminatorSN(3, num_feat=4)
+    discriminator = UNetDiscriminatorSN(3, num_feat=4).to(device)
     optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=0.0002)
     #print(checkpoint_dir, checkpoint_path)
     #checkpoint_path = "checkpoints/Lnet.pth"
