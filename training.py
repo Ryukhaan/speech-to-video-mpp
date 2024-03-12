@@ -549,19 +549,19 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 cropped, reference = torch.split(x, 3, dim=1)
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
                 reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
-                writer.add_images('2_original',
+                writer.add_images('Loss/2_original',
                                   torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
                                   global_step=global_step
                                   )
-                writer.add_images('1_predictions',
+                writer.add_images('Loss/1_predictions',
                                   torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
                                   global_step=global_step
                                   )
-                writer.add_images('3_cropped',
+                writer.add_images('Loss/3_cropped',
                                   cropped[:,[2,1,0]],
                                   global_step=global_step
                                   )
-                writer.add_images('4_reference',
+                writer.add_images('Loss/4_reference',
                                   reference[:,[2,1,0]],
                                   global_step=global_step
                                   )
@@ -573,7 +573,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                                 'discr_loss' : sum(disc_loss) / len(disc_loss)
                             },
                            global_step)
-        writer.add_scalar('Loss/discriminator', disc_loss[-1] / len(disc_loss), global_step)
+        #writer.add_scalar('Loss/discriminator', disc_loss[-1] / len(disc_loss), global_step)
 
         with torch.no_grad():
             avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=writer)
