@@ -512,7 +512,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             y = y.to(device)
 
             # Extract validity predictions from discriminator
-            pred_real = disc_model(pred)
+            pred_real = disc_model(pred).detach()
             pred_fake = disc_model(y)
 
             # Adversarial loss (relativistic average GAN)
@@ -545,6 +545,10 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             #  Train Discriminator
             # ---------------------
             optimizer_D.zero_grad()
+
+            pred_real = disc_model(y)
+            pred_fake = disc_model(pred.detach())
+
             # Adversarial loss for real and fake images (relativistic average GAN)
             loss_real = criterion_GAN(pred_real - pred_fake.mean(0, keepdim=True), valid)
             loss_fake = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), fake)
