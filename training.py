@@ -2,7 +2,7 @@ import glob
 from os.path import dirname, join, basename, isfile
 
 from peft import LoraConfig, get_peft_model
-from transformers import AdamW
+from transformers import AdamW, Adafactor
 
 import json
 import gc
@@ -98,7 +98,7 @@ class Dataset(object):
         self.full_frames = []
         self.idx = 0
         self.fps = self.args.fps
-        self.in_size = 192
+        self.in_size = 96
         self.initialize()
 
 
@@ -744,7 +744,7 @@ if __name__ == "__main__":
          'weight_decay': 0.01},
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
-    optimizer = AdamW(model.parameters(), lr=hparams.syncnet_lr)
+    optimizer = Adafactor(optimizer_grouped_parameters, lr=hparams.syncnet_lr)
     #print(checkpoint_dir, checkpoint_path)
     #checkpoint_path = "checkpoints/Lnet.pth"
     #if checkpoint_path is not None:
