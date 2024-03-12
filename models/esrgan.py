@@ -36,7 +36,7 @@ class UNetDiscriminatorSN(nn.Module):
         # extra convolutions
         self.conv7 = norm(nn.Conv2d(num_feat, num_feat, 3, 1, 1, bias=False))
         self.conv8 = norm(nn.Conv2d(num_feat, num_feat, 3, 1, 1, bias=False))
-        self.conv9 = nn.Conv2d(num_feat, 1, 3, 1, 1)
+        self.conv9 = nn.Conv2d(num_feat, num_in_ch, 3, 1, 1)
 
     def forward(self, x):
 
