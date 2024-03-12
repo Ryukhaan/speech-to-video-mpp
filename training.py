@@ -479,8 +479,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     global global_step, global_epoch
 
     # Adversarial ground truths
-    valid = torch.autograd.Variable(torch.FloatTensor(np.ones((lnet_T*hparams.batch_size, 3, 96, 96))), requires_grad=False).to(device)
-    fake = torch.autograd.Variable(torch.FloatTensor(np.zeros((lnet_T*hparams.batch_size, 3, 96, 96))), requires_grad=False).to(device)
+    valid = torch.FloatTensor(np.ones((lnet_T*hparams.batch_size, 3, 96, 96))).to(device)
+    fake = torch.FloatTensor(np.zeros((lnet_T*hparams.batch_size, 3, 96, 96))).to(device)
 
     resumed_step = global_step
     loss_func = losses.LoraLoss(device)
