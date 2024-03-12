@@ -388,7 +388,7 @@ class Dataset(object):
         return x
 
     def __len__(self):
-        return 10 #len(self.mel_chunks) - 5
+        return 12 #len(self.mel_chunks) - 5
 
     def __getitem__(self, idx):
         start_frame = np.random.randint(0, len(self.mel_chunks) - 5) #idx
