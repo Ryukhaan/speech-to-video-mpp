@@ -391,7 +391,7 @@ class Dataset(object):
         return 10 #len(self.mel_chunks) - 5
 
     def __getitem__(self, idx):
-        start_frame = np.randon.randint(0, len(self.mel_chunks) - 5) #idx
+        start_frame = np.random.randint(0, len(self.mel_chunks) - 5) #idx
 
         mels = self.crop_audio_window(self.mel.copy(), start_frame)
         indiv_mels = self.get_subframes(self.mel_batch.copy(), start_frame)
