@@ -576,7 +576,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         #        eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
 
             prog_bar.set_description('Loss: {:.4f} at {}'.format(running_loss[-1], global_step))
-        avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
+        avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=writer)
         if avg_eval_loss < best_eval_loss:
             save_checkpoint(
                 model, optimizer, global_step, checkpoint_dir, global_epoch
