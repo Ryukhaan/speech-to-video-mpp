@@ -477,6 +477,11 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
           discriminator=(None,None)):
 
     global global_step, global_epoch
+
+    # Adversarial ground truths
+    valid = torch.autograd.Variable(torch.FloatTensor(np.ones((hparams.batch_size, 3, 96, 96))), requires_grad=False)
+    fake = torch.autograd.Variable(torch.FloatTensor(np.zeros((hparams.batch_size, 3, 96, 96))), requires_grad=False)
+
     resumed_step = global_step
     loss_func = losses.LoraLoss(device)
     criterion_GAN = torch.nn.BCEWithLogitsLoss().to(device)
@@ -511,7 +516,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             pred_fake = disc_model(y)
 
             # Adversarial loss (relativistic average GAN)
-            loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True))
+            loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
 
             loss = loss_func(pred, y, mel) + loss_GAN
 
@@ -543,8 +548,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             #  Train Discriminator
             # ---------------------
             # Adversarial loss for real and fake images (relativistic average GAN)
-            loss_real = criterion_GAN(pred_real - pred_fake.mean(0, keepdim=True))
-            loss_fake = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True))
+            loss_real = criterion_GAN(pred_real - pred_fake.mean(0, keepdim=True), valid)
+            loss_fake = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), fake)
             # Total loss
             loss_D = (loss_real + loss_fake) / 2
             loss_D.backward()
