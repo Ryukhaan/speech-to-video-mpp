@@ -42,6 +42,8 @@ class UNetDiscriminatorSN(nn.Module):
 
         if len(x.size()) > 4:
             x = torch.cat([x[:, :, i] for i in range(x.size(2))], dim=0)
+        if x.size(3) > 96:
+            x = F.interpolate(x, size=(96,96), mode='bilinear')
         # downsample
         x0 = F.leaky_relu(self.conv0(x), negative_slope=0.2, inplace=True)
         x1 = F.leaky_relu(self.conv1(x0), negative_slope=0.2, inplace=True)
