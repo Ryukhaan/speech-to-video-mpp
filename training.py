@@ -486,13 +486,14 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     loss_func = losses.LoraLoss(device)
     criterion_GAN = torch.nn.BCEWithLogitsLoss().to(device)
     disc_model, optimizer_D = discriminator
-    prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader), leave=True)
+
     if writer is None:
         writer = SummaryWriter('runs/lora')
     best_eval_loss = 100.
     for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch):
         running_loss = []
         disc_loss = []
+        prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader), leave=True)
         for step, (x, indiv_mel, mel, y) in prog_bar:
             if x is None: continue
 
@@ -576,7 +577,9 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         #        eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
 
             prog_bar.set_description('Loss: {:.4f} at {}'.format(running_loss[-1], global_step))
-        avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=writer)
+
+        with torch.no_grad():
+            avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=writer)
         if avg_eval_loss < best_eval_loss:
             save_checkpoint(
                 model, optimizer, global_step, checkpoint_dir, global_epoch
@@ -592,18 +595,17 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, wri
     for step, (x, indiv_mel, mel, y) in prog_bar:
 
         model.eval()
-        with torch.no_grad():
-            x = x.to(device)
-            indiv_mel = indiv_mel.to(device)
-            pred = model(indiv_mel, x)
+        x = x.to(device)
+        indiv_mel = indiv_mel.to(device)
+        pred = model(indiv_mel, x)
 
-            mel = mel.to(device)
-            pred = pred.to(device)
-            y = y.to(device)
-            loss = loss_func(pred, y, mel)
+        mel = mel.to(device)
+        pred = pred.to(device)
+        y = y.to(device)
+        loss = loss_func(pred, y, mel)
 
-            loss_tot += loss.item()
-            writer.add_scalar('Loss/train', loss.item(), global_step)
+        loss_tot += loss.item()
+        writer.add_scalar('Loss/train', loss.item(), global_step)
 
         #if step > eval_steps: break
 
