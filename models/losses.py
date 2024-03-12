@@ -92,7 +92,7 @@ class TotalVariationLoss(torch.nn.Module):
          res1 = diff1.abs().sum([1, 2, 3])
          res2 = diff2.abs().sum([1, 2, 3])
          #score = res1 + res2
-         return torch.add(res1, res2).mean().backward()
+         return torch.add(res1, res2).mean()
 
 class LoraLoss(torch.nn.Module):
     def __init__(self, device):
