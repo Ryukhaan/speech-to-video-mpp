@@ -563,8 +563,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             running_loss.append(loss.item())
             disc_loss.append(loss_D.item())
 
-            writer.add_scalar('Loss/train', running_loss / len(running_loss), step)
-            writer.add_scalar('Loss/discriminator', disc_loss / len(disc_loss), step)
+            writer.add_scalar('Loss/train', sum(running_loss) / len(running_loss), step)
+            writer.add_scalar('Loss/discriminator', sum(disc_loss) / len(disc_loss), step)
 
         #if global_step == 1 or global_step % checkpoint_interval == 0:
         #    save_checkpoint(
