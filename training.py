@@ -524,19 +524,19 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
                 writer.add_images('2_original',
                                   torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
-                                  global_step=step
+                                  global_step=global_step
                                   )
                 writer.add_images('1_predictions',
                                   torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
-                                  global_step=step
+                                  global_step=global_step
                                   )
                 writer.add_images('3_cropped',
                                   cropped[:,[2,1,0]],
-                                  global_step=step
+                                  global_step=global_step
                                   )
                 writer.add_images('4_reference',
                                   reference[:,[2,1,0]],
-                                  global_step=step
+                                  global_step=global_step
                                   )
             loss.backward(retain_graph=True)
             optimizer.step()
@@ -564,8 +564,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             disc_loss.append(loss_D.item())
 
             m_running = sum(running_loss) / len(running_loss)
-            writer.add_scalar('Loss/train', running_loss[-1], step)
-            writer.add_scalar('Loss/discriminator', disc_loss[-1] / len(disc_loss), step)
+            writer.add_scalar('Loss/train', running_loss[-1], global_step)
+            writer.add_scalar('Loss/discriminator', disc_loss[-1] / len(disc_loss), global_step)
 
         #if global_step == 1 or global_step % checkpoint_interval == 0:
         #    save_checkpoint(
@@ -611,7 +611,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, wri
 
         losses_list.append(loss.item())
 
-        writer.add_scalar('Loss/train', losses_list[-1], step)
+        writer.add_scalar('Loss/train', losses_list[-1], global_step)
 
         #if step > eval_steps: break
 
