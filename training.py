@@ -98,7 +98,7 @@ class Dataset(object):
         self.full_frames = []
         self.idx = 0
         self.fps = self.args.fps
-        self.in_size = 256
+        self.in_size = 192
         self.initialize()
 
 
