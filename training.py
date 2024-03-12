@@ -37,6 +37,7 @@ import torchaudio
 from sklearn.model_selection import train_test_split
 
 from models.LNet import LNet
+from models.esrgan import UNetDiscriminatorSN
 import pickle
 from models import losses
 import preprocessing.facing as preprocessing
@@ -472,11 +473,13 @@ def get_segmented_mels(spec, start_frame):
     return mels
 
 def train(device, model, train_data_loader, test_data_loader, optimizer,
-          checkpoint_dir=None, checkpoint_interval=None, nepochs=None, filenames=None, writer=None):
+          checkpoint_dir=None, checkpoint_interval=None, nepochs=None, filenames=None, writer=None,
+          discriminator=(None,None)):
 
     global global_step, global_epoch
     resumed_step = global_step
     loss_func = losses.LoraLoss(device)
+    criterion_GAN = torch.nn.BCEWithLogitsLoss().to(device)
     prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader) + 1, leave=True)
     if writer is None:
         writer = SummaryWriter('runs/lora')
@@ -486,19 +489,29 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         for step, (x, indiv_mel, mel, y) in prog_bar:
             if x is None: continue
 
+            # ---------------------
+            #  Train Generator
+            # ---------------------
             model.train()
             optimizer.zero_grad()
 
             x = x.to(device)
             indiv_mel = indiv_mel.to(device)
-
             pred = model(indiv_mel, x)
-            #if pred.shape != torch.Size([2, 3, 5, 96, 96]):
-            #    continue
+
+
             mel = mel.to(device)
             pred = pred.to(device)
             y = y.to(device)
-            loss = loss_func(pred, y, mel)
+
+            # Extract validity predictions from discriminator
+            pred_real = discriminator(pred)
+            pred_fake = discriminator(y)
+
+            # Adversarial loss (relativistic average GAN)
+            loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True))
+
+            loss = loss_func(pred, y, mel) + loss_GAN
 
             if step % 10 == 0:
                 cropped, reference = torch.split(x, 3, dim=1)
@@ -523,6 +536,17 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             loss.backward()
             optimizer.step()
+
+            # ---------------------
+            #  Train Discriminator
+            # ---------------------
+            # Adversarial loss for real and fake images (relativistic average GAN)
+            loss_real = criterion_GAN(pred_real - pred_fake.mean(0, keepdim=True))
+            loss_fake = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True))
+            # Total loss
+            loss_D = (loss_real + loss_fake) / 2
+            loss_D.backward()
+            optimizer_D.step()
 
             global_step += 1
             cur_session_steps = global_step - resumed_step
@@ -746,6 +770,9 @@ if __name__ == "__main__":
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
     optimizer = Adafactor(optimizer_grouped_parameters) #lr=hparams.syncnet_lr
+
+    discriminator = UNetDiscriminatorSN(device)
+    optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=0.0002)
     #print(checkpoint_dir, checkpoint_path)
     #checkpoint_path = "checkpoints/Lnet.pth"
     #if checkpoint_path is not None:
@@ -787,4 +814,5 @@ if __name__ == "__main__":
          checkpoint_dir=checkpoint_dir,
          checkpoint_interval=hparams.syncnet_checkpoint_interval,
          nepochs=hparams.nepochs,
-         writer=writer)
+         writer=writer,
+          discriminator=(discriminator, optimizer_D))
