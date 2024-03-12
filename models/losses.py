@@ -107,8 +107,8 @@ class LoraLoss(torch.nn.Module):
         self.tv_loss = TotalVariationLoss(device)
         self.lambda_1 = 1.
         self.lambda_p = 1.
-        self.lambda_sync = 0.3
-        self.lambda_tv = 1.
+        self.lambda_sync = 1.
+        self.lambda_tv = 1e-5
 
     def forward(self, face_pred, face_true, audio_seq):
         B = audio_seq.size(0)
