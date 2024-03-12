@@ -591,24 +591,19 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, wri
     prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader), leave=True)
     for step, (x, indiv_mel, mel, y) in prog_bar:
 
-        #model.train()
         model.eval()
-        #optimizer.zero_grad()
+        with torch.no_grad():
+            x = x.to(device)
+            indiv_mel = indiv_mel.to(device)
+            pred = model(indiv_mel, x)
 
-        x = x.to(device)
-        indiv_mel = indiv_mel.to(device)
+            mel = mel.to(device)
+            pred = pred.to(device)
+            y = y.to(device)
+            loss = loss_func(pred, y, mel)
 
-        pred = model(indiv_mel, x)
-
-        mel = mel.to(device)
-        pred = pred.to(device)
-        y = y.to(device)
-        loss = loss_func(pred, y, mel)
-
-        #loss.backward()
-        #optimizer.step()
-        loss_tot += loss.item()
-        writer.add_scalar('Loss/train', loss.item(), global_step)
+            loss_tot += loss.item()
+            writer.add_scalar('Loss/train', loss.item(), global_step)
 
         #if step > eval_steps: break
 
