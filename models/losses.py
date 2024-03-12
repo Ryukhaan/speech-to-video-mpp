@@ -107,6 +107,7 @@ class LoraLoss(torch.nn.Module):
         self.lambda_1 = 1.
         self.lambda_p = 1.
         self.lambda_sync = 0.3
+        self.lambda_tv = 0.01
 
     def forward(self, face_pred, face_true, audio_seq):
         B = audio_seq.size(0)
@@ -128,5 +129,8 @@ class LoraLoss(torch.nn.Module):
         l1_val = self.L1(y_pred_up, y_true).to(self.device)
         lp_val = self.L_perceptual(y_pred, y_true_96).to(self.device)
         lsync_val = self.lip_sync_loss(audio_seq, face_pred).to(self.device)
-        tv_val = self.tv_loss(y_pred).to(self.device)
-        return self.lambda_1 * l1_val + self.lambda_sync * lsync_val + self.lambda_p * lp_val + tv_val
+        tv_val = self.tv_loss(y_pred_up).to(self.device)
+        return self.lambda_1 * l1_val \
+            + self.lambda_sync * lsync_val \
+            + self.lambda_p * lp_val \
+            + self.lambda_tv * tv_val
