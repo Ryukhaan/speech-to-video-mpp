@@ -486,7 +486,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     loss_func = losses.LoraLoss(device)
     criterion_GAN = torch.nn.BCEWithLogitsLoss().to(device)
     disc_model, optimizer_D = discriminator
-    prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader) + 1, leave=True)
+    prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader), leave=True)
     if writer is None:
         writer = SummaryWriter('runs/lora')
     best_eval_loss = 100.
@@ -583,13 +583,13 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             )
         global_epoch += 1
 
-def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
+def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=None):
     #eval_steps = 1400
     print('Evaluating for {} steps'.format(global_step))
     losses_list = []
     loss_func = losses.LoraLoss(device)
     #while 1:
-    prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1, leave=True)
+    prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader), leave=True)
     for step, (x, indiv_mel, mel, y) in prog_bar:
 
         #model.train()
@@ -610,6 +610,8 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
         #optimizer.step()
 
         losses_list.append(loss.item())
+
+        writer.add_scalar('Loss/train', losses_list[-1], step)
 
         #if step > eval_steps: break
 
