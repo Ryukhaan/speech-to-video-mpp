@@ -107,8 +107,8 @@ class LoraLoss(torch.nn.Module):
         self.L1 = torch.nn.L1Loss()
         self.L_perceptual = PerceptualLoss(device) #VGGPerceptualLoss()
         self.tv_loss = TotalVariationLoss(device)
-        self.ssim_loss = SSIM(data_range=1.0)
-        self.lambda_1 = 1.
+        self.ssim_loss = SSIM(data_range=1.0, win_size=9)
+        self.lambda_1 = 2.
         self.lambda_p = 1.
         self.lambda_sync = .3
         self.lambda_tv = 0.
