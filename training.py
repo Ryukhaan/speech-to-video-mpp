@@ -563,7 +563,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             running_loss.append(loss.item())
             disc_loss.append(loss_D.item())
 
-            writer.add_scalar('Loss/train', sum(running_loss) / len(running_loss), step)
+            m_running = sum(running_loss) / len(running_loss)
+            writer.add_scalar('Loss/train', m_running, step)
             writer.add_scalar('Loss/discriminator', sum(disc_loss) / len(disc_loss), step)
 
         #if global_step == 1 or global_step % checkpoint_interval == 0:
@@ -574,7 +575,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         #    with torch.no_grad():
         #        eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
 
-            prog_bar.set_description('Loss: {:.4f} at {}'.format(running_loss / (step + 1), global_step))
+            prog_bar.set_description('Loss: {:.4f} at {}'.format(m_running, global_step))
         avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
         if avg_eval_loss < best_eval_loss:
             save_checkpoint(
