@@ -90,45 +90,8 @@ class TotalVariationLoss(torch.nn.Module):
 
          res1 = diff1.abs().sum([1, 2, 3])
          res2 = diff2.abs().sum([1, 2, 3])
-         score = res1 + res2
-         return score
-
-class LNetLoss(torch.nn.Module):
-    def __init__(self):
-        super(LNetLoss, self).__init__()
-        use_cuda = torch.cuda.is_available()
-        self.device = torch.device("cuda" if use_cuda else "cpu")
-        self.lip_sync_loss = LipSyncLoss(device=self.device)
-        self.lip_sync_loss.load_network("./checkpoints/lipsync_expert.pth")
-
-    def forward(self, face_pred, face_true, audio_seq, T=5):
-        lambda_1 = .5
-        lambda_p = 1.
-        lambda_sync = 0.3
-        B, T, C, Hin, Win = face_pred.shape
-        H, W = Hin, Win
-        resizer = torchvision.transforms.Resize((H, W))
-        y_pred = torch.zeros((B, T, C, H, W))
-        y_true = torch.zeros((B, C, T, H, W))
-
-        for i in range(T):
-            y_pred[:,i,:,:,:] = resizer(face_pred[:,i, : ,:, :])
-            y_true[:, :, i, :, :] = resizer(face_true[:, :, i, :, :])
-        L1 = torch.nn.L1Loss()
-        L_perceptual = VGGPerceptualLoss()
-        l1_ = 0.
-        lp_ = 0.
-        for i in range(T):
-            l1_ += L1(y_pred[:,i,:,:,:], y_true[:,:,i,:,:])
-            lp_ += L_perceptual(y_pred[:,i,:,:,:], y_true[:,:,i,:,:])
-        l1_val = l1_ / T
-        lp_val = lp_ / T
-
-
-        # L_sync = 0.0
-        lsync_val = self.lip_sync_loss(audio_seq, y_pred.view(-1, T*C, H, W), y_true)
-        #print(l1_val, lp_val, lsync_val)
-        return lambda_1 * l1_val + lambda_p * lp_val + lambda_sync * lsync_val
+         #score = res1 + res2
+         return torch.add(res1, res2)
 
 class LoraLoss(torch.nn.Module):
     def __init__(self, device):
