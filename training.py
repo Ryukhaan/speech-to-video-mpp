@@ -517,9 +517,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             # Adversarial loss (relativistic average GAN)
             loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
-
             loss = loss_func(pred, y, mel) + loss_GAN
-
             if step % 10 == 0:
                 cropped, reference = torch.split(x, 3, dim=1)
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
@@ -540,7 +538,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                                   reference[:,[2,1,0]],
                                   global_step=step
                                   )
-
             loss.backward()
             optimizer.step()
 
@@ -555,7 +552,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             loss_fake = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), fake)
             # Total loss
             loss_D = (loss_real + loss_fake) / 2
-            loss_D.backward()
+            loss_D.backward(retain_graph=True)
             optimizer_D.step()
 
 
