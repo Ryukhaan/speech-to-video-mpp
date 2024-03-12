@@ -79,6 +79,20 @@ class PerceptualLoss(torch.nn.Module):
         loss = F.mse_loss(vgg_sr, vgg_hr)
         return loss
 
+class TotalVariationLoss(torch.nn.Module):
+     def __init__(self, device):
+         self.device = device
+
+     def forward(self, y_pred):
+         """Compute total variation statistics on current batch."""
+         diff1 = y_pred[..., 1:, :] - y_pred[..., :-1, :]
+         diff2 = y_pred[..., :, 1:] - y_pred[..., :, :-1]
+
+         res1 = diff1.abs().sum([1, 2, 3])
+         res2 = diff2.abs().sum([1, 2, 3])
+         score = res1 + res2
+         return score
+
 class LNetLoss(torch.nn.Module):
     def __init__(self):
         super(LNetLoss, self).__init__()
@@ -125,6 +139,7 @@ class LoraLoss(torch.nn.Module):
 
         self.L1 = torch.nn.L1Loss()
         self.L_perceptual = PerceptualLoss(device) #VGGPerceptualLoss()
+        self.tv_loss = TotalVariationLoss(device)
         self.lambda_1 = 1.
         self.lambda_p = 1.
         self.lambda_sync = 0.3
@@ -149,5 +164,5 @@ class LoraLoss(torch.nn.Module):
         l1_val = self.L1(y_pred_up, y_true).to(self.device)
         lp_val = self.L_perceptual(y_pred, y_true_96).to(self.device)
         lsync_val = self.lip_sync_loss(audio_seq, face_pred).to(self.device)
-
-        return self.lambda_1 * l1_val + self.lambda_sync * lsync_val + self.lambda_p * lp_val
+        tv_val = self.tv_loss(y_pred).to(self.device)
+        return self.lambda_1 * l1_val + self.lambda_sync * lsync_val + self.lambda_p * lp_val + tv_val
