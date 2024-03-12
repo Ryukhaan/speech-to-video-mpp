@@ -81,6 +81,7 @@ class PerceptualLoss(torch.nn.Module):
 
 class TotalVariationLoss(torch.nn.Module):
      def __init__(self, device):
+         super(TotalVariationLoss, self).__init__()
          self.device = device
 
      def forward(self, y_pred):
