@@ -2,6 +2,7 @@ import glob
 from os.path import dirname, join, basename, isfile
 
 from peft import LoraConfig, get_peft_model
+from transformers import AdamW
 
 import json
 import gc
@@ -732,9 +733,16 @@ if __name__ == "__main__":
     model = model.low_res
     for param in model.parameters():
         param.requires_grad = True
-    optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
-                           lr=hparams.syncnet_lr)
+    #optimizer = optim.Adam([p for p in model.parameters() if p.requires_grad],
+    #                       lr=hparams.syncnet_lr)
 
+    no_decay = ['bias', 'LayerNorm.weight']
+    optimizer_grouped_parameters = [
+        {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
+         'weight_decay': 0.01},
+        {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
+    ]
+    optimizer = AdamW(model.parameters(), lr=hparams.syncnet_lr)
     #print(checkpoint_dir, checkpoint_path)
     #checkpoint_path = "checkpoints/Lnet.pth"
     #if checkpoint_path is not None:
@@ -745,7 +753,7 @@ if __name__ == "__main__":
     # Lora Config
     decoder_config = LoraConfig(
         r=16,
-        lora_alpha=8,
+        lora_alpha=16,
         target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
         lora_dropout=0.1,
         bias="none",
