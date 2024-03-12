@@ -586,9 +586,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=None):
     #eval_steps = 1400
     print('Evaluating for {} steps'.format(global_step))
-    losses_list = []
+    loss_tot = 0.
     loss_func = losses.LoraLoss(device)
-    #while 1:
     prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader), leave=True)
     for step, (x, indiv_mel, mel, y) in prog_bar:
 
@@ -608,16 +607,12 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, wri
 
         #loss.backward()
         #optimizer.step()
-
-        losses_list.append(loss.item())
-
-        writer.add_scalar('Loss/train', losses_list[-1], global_step)
+        loss_tot += loss.item()
+        writer.add_scalar('Loss/train', loss.item(), global_step)
 
         #if step > eval_steps: break
 
-    averaged_loss = sum(losses_list) / len(losses_list)
-    print(averaged_loss)
-
+    averaged_loss = loss_tot / len(len(test_data_loader))
     return averaged_loss
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
