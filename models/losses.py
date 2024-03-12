@@ -29,8 +29,7 @@ class LipSyncLoss(torch.nn.Module):
         return loss
 
     def forward(self, audio, y_pred):
-        print(y_pred.shape)
-        y_pred = y_pred[:,:,y_pred.size(2)//2:]
+        y_pred = torch.permute(y_pred[:,:,y_pred.size(2)//2:], (1,0,2,3))
         #y_pred = y_pred[:, :, :, y_pred.size(3)//2:]
         #y_pred = torch.cat([y_pred[:, :, i] for i in range(self.number_of_frames)], dim=1)
         audio_emb, video_emb = self.net(audio, y_pred)
@@ -112,7 +111,6 @@ class LoraLoss(torch.nn.Module):
         self.lambda_tv = 0.001
 
     def forward(self, face_pred, face_true, audio_seq):
-        print(face_pred.shape)
         B = audio_seq.size(0)
         input_dim_size = len(face_pred.size())
         Hin, Win = face_pred.shape[-2:]
