@@ -110,7 +110,7 @@ class LoraLoss(torch.nn.Module):
         self.ssim_loss = SSIM(data_range=1.0)
         self.lambda_1 = 1.
         self.lambda_p = 1.
-        self.lambda_sync = .5
+        self.lambda_sync = .3
         self.lambda_tv = 0.
         self.lambda_ssim = 0.1
 
@@ -138,7 +138,7 @@ class LoraLoss(torch.nn.Module):
         y_true_96 = resizer_96(y_true)
 
         l1_val = self.L1(y_pred_up, y_true).to(self.device)
-        lssim_val = self.ssim_loss(y_true, y_pred_up).to(self.device)
+        lssim_val = self.ssim_loss(y_true_96, y_pred_96).to(self.device)
         lp_val = self.L_perceptual(y_pred_96, y_true_96).to(self.device)
         lsync_val = self.lip_sync_loss(audio_seq, face_seq).to(self.device)
         tv_val = self.tv_loss(y_pred_up).to(self.device)
