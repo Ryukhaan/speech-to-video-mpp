@@ -538,7 +538,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                                   reference[:,[2,1,0]],
                                   global_step=step
                                   )
-            loss.backward()
+            loss.backward(retain_graph=True)
             optimizer.step()
 
             # ---------------------
@@ -546,8 +546,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             # ---------------------
             optimizer_D.zero_grad()
             # Adversarial loss for real and fake images (relativistic average GAN)
-            pred_real = disc_model(pred)
-            pred_fake = disc_model(y)
             loss_real = criterion_GAN(pred_real - pred_fake.mean(0, keepdim=True), valid)
             loss_fake = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), fake)
             # Total loss
