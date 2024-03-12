@@ -486,7 +486,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         writer = SummaryWriter('runs/lora')
     best_eval_loss = 100.
     for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch):
-        running_loss = 0.
+        running_loss = []
+        disc_loss = []
         for step, (x, indiv_mel, mel, y) in prog_bar:
             if x is None: continue
 
@@ -549,11 +550,14 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             loss_D.backward()
             optimizer_D.step()
 
+
             global_step += 1
             cur_session_steps = global_step - resumed_step
-            running_loss += loss.item()
+            running_loss.append(loss.item())
+            disc_loss.append(loss_D.item())
 
-            writer.add_scalar('Loss/train', running_loss / (step+1), step)
+            writer.add_scalar('Loss/train', running_loss / len(running_loss), step)
+            writer.add_scalar('Loss/discriminator', disc_loss / len(disc_loss), step)
 
         #if global_step == 1 or global_step % checkpoint_interval == 0:
         #    save_checkpoint(
