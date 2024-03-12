@@ -5,6 +5,8 @@ import numpy
 import torch.nn.functional as F
 from models.syncnet import SyncNet_color
 
+from models.ssim import SSIM
+
 class LipSyncLoss(torch.nn.Module):
     def __init__(self, device):
         super(LipSyncLoss, self).__init__()
@@ -105,10 +107,12 @@ class LoraLoss(torch.nn.Module):
         self.L1 = torch.nn.L1Loss()
         self.L_perceptual = PerceptualLoss(device) #VGGPerceptualLoss()
         self.tv_loss = TotalVariationLoss(device)
+        self.ssim_loss = SSIM(data_range=1.0)
         self.lambda_1 = 1.
         self.lambda_p = 1.
-        self.lambda_sync = 1.
+        self.lambda_sync = .5
         self.lambda_tv = 1e-5
+        self.lambda_ssim = 1.
 
     def forward(self, face_pred, face_true, audio_seq):
         B = audio_seq.size(0)
@@ -134,10 +138,12 @@ class LoraLoss(torch.nn.Module):
         y_true_96 = resizer_96(y_true)
 
         l1_val = self.L1(y_pred_up, y_true).to(self.device)
+        lssim_val = self.ssim_loss(y_pred_96, y_true_96).to(self.device)
         lp_val = self.L_perceptual(y_pred_96, y_true_96).to(self.device)
         lsync_val = self.lip_sync_loss(audio_seq, face_seq).to(self.device)
         tv_val = self.tv_loss(y_pred_up).to(self.device)
         return self.lambda_1 * l1_val \
             + self.lambda_sync * lsync_val \
             + self.lambda_p * lp_val \
-            + self.lambda_tv * tv_val
+            + self.lambda_tv * tv_val \
+            + self.lambda_ssim * lssim_val
