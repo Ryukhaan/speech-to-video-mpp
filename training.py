@@ -517,7 +517,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             # Adversarial loss (relativistic average GAN)
             loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
-            loss = loss_func(pred, y, mel) + loss_GAN
+            loss = loss_func(pred, y, mel) + 5e-3 * loss_GAN
             if step % 10 == 0:
                 cropped, reference = torch.split(x, 3, dim=1)
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
@@ -784,7 +784,7 @@ if __name__ == "__main__":
     ]
     optimizer = Adafactor(optimizer_grouped_parameters) #lr=hparams.syncnet_lr
 
-    discriminator = UNetDiscriminatorSN(3, num_feat=4).to(device)
+    discriminator = UNetDiscriminatorSN(3, num_feat=16).to(device)
     optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=0.0002)
     #print(checkpoint_dir, checkpoint_path)
     #checkpoint_path = "checkpoints/Lnet.pth"
