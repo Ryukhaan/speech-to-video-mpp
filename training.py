@@ -545,7 +545,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             running_loss.append(loss.item())
             disc_loss.append(loss_D.item())
 
-            if step % len(train_data_loader) == 0:
+            if step == 0:
                 cropped, reference = torch.split(x, 3, dim=1)
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
                 reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
@@ -578,6 +578,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         with torch.no_grad():
             avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=writer)
         if avg_eval_loss < best_eval_loss:
+            best_eval_loss = avg_eval_loss
             save_checkpoint(
                 model, optimizer, global_step, checkpoint_dir, global_epoch
             )
