@@ -809,6 +809,7 @@ if __name__ == "__main__":
     #    param.requires_grad = False
     model.audio_encoder = lora_ae_encoder
     print_trainable_parameters(model)
+    print_trainable_parameters(discriminator)
 
     #checkpoint_path = 'checkpoints/checkpoint_step_lora000290000.pth'
     #load_checkpoint(checkpoint_path, model, optimizer, reset_optimizer=False)
