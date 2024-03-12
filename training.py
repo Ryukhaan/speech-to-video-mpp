@@ -687,7 +687,7 @@ def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch, prefix=''):
         "global_step": step,
         "global_epoch": epoch,
     }, checkpoint_path)
-    print("Saved checkpoint:", checkpoint_path)
+    #print("Saved checkpoint:", checkpoint_path)
 
 def _load(checkpoint_path):
     if use_cuda:
