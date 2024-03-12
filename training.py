@@ -399,7 +399,8 @@ class Dataset(object):
         #stabilized_window[:, :,:, :3] = np.flip(stabilized_window[:,:,:,:3], axis=3)
         #stabilized_window[:, :,:, 3:] = np.flip(stabilized_window[:,:,:,3:], axis=3)
         stabilized_window = torch.FloatTensor(np.transpose(stabilized_window, (3, 0, 1, 2)))
-        stabilized_window = F.interpolate(stabilized_window, size=(96, 96), mode='bilinear')
+        #96 x 96
+        stabilized_window = F.interpolate(stabilized_window, size=(128, 128), mode='bilinear')
 
         img_original = self.get_subframes(self.img_original.copy(), start_frame)
         #img_original[:,:,:,:] = img_original[:,:,:,::-1]
