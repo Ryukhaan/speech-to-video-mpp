@@ -388,10 +388,10 @@ class Dataset(object):
         return x
 
     def __len__(self):
-        return len(self.mel_chunks) - 5
+        return 10 #len(self.mel_chunks) - 5
 
     def __getitem__(self, idx):
-        start_frame = idx
+        start_frame = np.randon.randint(0, len(self.mel_chunks) - 5) #idx
 
         mels = self.crop_audio_window(self.mel.copy(), start_frame)
         indiv_mels = self.get_subframes(self.mel_batch.copy(), start_frame)
@@ -518,7 +518,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             # Adversarial loss (relativistic average GAN)
             loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
             loss = loss_func(pred, y, mel) + 5e-3 * loss_GAN
-            if step % 10 == 0:
+            if step % 2 == 0:
                 cropped, reference = torch.split(x, 3, dim=1)
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
                 reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
@@ -564,8 +564,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             disc_loss.append(loss_D.item())
 
             m_running = sum(running_loss) / len(running_loss)
-            writer.add_scalar('Loss/train', m_running, step)
-            writer.add_scalar('Loss/discriminator', sum(disc_loss) / len(disc_loss), step)
+            writer.add_scalar('Loss/train', running_loss[-1], step)
+            writer.add_scalar('Loss/discriminator', disc_loss[-1] / len(disc_loss), step)
 
         #if global_step == 1 or global_step % checkpoint_interval == 0:
         #    save_checkpoint(
@@ -575,7 +575,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         #    with torch.no_grad():
         #        eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
 
-            prog_bar.set_description('Loss: {:.4f} at {}'.format(m_running, global_step))
+            prog_bar.set_description('Loss: {:.4f} at {}'.format(running_loss[-1], global_step))
         avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
         if avg_eval_loss < best_eval_loss:
             save_checkpoint(
