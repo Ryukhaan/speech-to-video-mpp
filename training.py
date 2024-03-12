@@ -480,6 +480,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     resumed_step = global_step
     loss_func = losses.LoraLoss(device)
     criterion_GAN = torch.nn.BCEWithLogitsLoss().to(device)
+    disc_model, optimizer_D = discriminator
     prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader) + 1, leave=True)
     if writer is None:
         writer = SummaryWriter('runs/lora')
@@ -505,8 +506,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             y = y.to(device)
 
             # Extract validity predictions from discriminator
-            pred_real = discriminator(pred)
-            pred_fake = discriminator(y)
+            pred_real = disc_model(pred)
+            pred_fake = disc_model(y)
 
             # Adversarial loss (relativistic average GAN)
             loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True))
