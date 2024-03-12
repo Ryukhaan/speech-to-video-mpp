@@ -744,7 +744,7 @@ if __name__ == "__main__":
          'weight_decay': 0.01},
         {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
-    optimizer = Adafactor(optimizer_grouped_parameters, lr=hparams.syncnet_lr)
+    optimizer = Adafactor(optimizer_grouped_parameters) #lr=hparams.syncnet_lr
     #print(checkpoint_dir, checkpoint_path)
     #checkpoint_path = "checkpoints/Lnet.pth"
     #if checkpoint_path is not None:
