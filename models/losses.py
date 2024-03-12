@@ -108,11 +108,11 @@ class LoraLoss(torch.nn.Module):
         self.L_perceptual = PerceptualLoss(device) #VGGPerceptualLoss()
         self.tv_loss = TotalVariationLoss(device)
         self.ssim_loss = SSIM(data_range=1.0, win_size=9)
-        self.lambda_1 = 2.
+        self.lambda_1 = 1.
         self.lambda_p = 1.
         self.lambda_sync = .3
         self.lambda_tv = 0.
-        self.lambda_ssim = 0.1
+        self.lambda_ssim = 0.01
 
     def forward(self, face_pred, face_true, audio_seq):
         B = audio_seq.size(0)
