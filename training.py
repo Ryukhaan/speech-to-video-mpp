@@ -555,8 +555,9 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1, leave=True)
     for step, (x, indiv_mel, mel, y) in prog_bar:
 
-        model.train()
-        optimizer.zero_grad()
+        #model.train()
+        model.eval()
+        #optimizer.zero_grad()
 
         x = x.to(device)
         indiv_mel = indiv_mel.to(device)
@@ -568,8 +569,8 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
         y = y.to(device)
         loss = loss_func(pred, y, mel)
 
-        loss.backward()
-        optimizer.step()
+        #loss.backward()
+        #optimizer.step()
 
         losses_list.append(loss.item())
 
