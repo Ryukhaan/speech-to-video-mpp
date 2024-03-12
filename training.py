@@ -545,7 +545,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             running_loss.append(loss.item())
             disc_loss.append(loss_D.item())
 
-            if step == 0:
+            if global_step % 3 == 0:
                 cropped, reference = torch.split(x, 3, dim=1)
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
                 reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
