@@ -111,7 +111,7 @@ class LoraLoss(torch.nn.Module):
         self.lambda_1 = 1.
         self.lambda_p = 1.
         self.lambda_sync = .5
-        self.lambda_tv = 1e-5
+        self.lambda_tv = 0.
         self.lambda_ssim = 1.
 
     def forward(self, face_pred, face_true, audio_seq):
