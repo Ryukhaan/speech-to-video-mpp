@@ -547,6 +547,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             # ---------------------
             #  Train Discriminator
             # ---------------------
+            optimizer_D.zero_grad()
+
             # Adversarial loss for real and fake images (relativistic average GAN)
             loss_real = criterion_GAN(pred_real - pred_fake.mean(0, keepdim=True), valid)
             loss_fake = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), fake)
