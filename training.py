@@ -519,26 +519,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             # Adversarial loss (relativistic average GAN)
             loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
             loss = loss_func(pred, y, mel) + 5e-3 * loss_GAN
-            if step % 2 == 0:
-                cropped, reference = torch.split(x, 3, dim=1)
-                cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
-                reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
-                writer.add_images('2_original',
-                                  torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
-                                  global_step=global_step
-                                  )
-                writer.add_images('1_predictions',
-                                  torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
-                                  global_step=global_step
-                                  )
-                writer.add_images('3_cropped',
-                                  cropped[:,[2,1,0]],
-                                  global_step=global_step
-                                  )
-                writer.add_images('4_reference',
-                                  reference[:,[2,1,0]],
-                                  global_step=global_step
-                                  )
+
             loss.backward(retain_graph=True)
             optimizer.step()
 
@@ -564,19 +545,35 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             running_loss.append(loss.item())
             disc_loss.append(loss_D.item())
 
-            m_running = sum(running_loss) / len(running_loss)
-            writer.add_scalar('Loss/train', running_loss[-1], global_step)
-            writer.add_scalar('Loss/discriminator', disc_loss[-1] / len(disc_loss), global_step)
-
-        #if global_step == 1 or global_step % checkpoint_interval == 0:
-        #    save_checkpoint(
-        #        model, optimizer, global_step, checkpoint_dir, global_epoch)
-
-        #if global_step % hparams.syncnet_eval_interval == 0:
-        #    with torch.no_grad():
-        #        eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
+            if step % len(train_data_loader) == 0:
+                cropped, reference = torch.split(x, 3, dim=1)
+                cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
+                reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
+                writer.add_images('2_original',
+                                  torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('1_predictions',
+                                  torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('3_cropped',
+                                  cropped[:,[2,1,0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('4_reference',
+                                  reference[:,[2,1,0]],
+                                  global_step=global_step
+                                  )
 
             prog_bar.set_description('Loss: {:.4f} at {}'.format(running_loss[-1], global_step))
+
+        writer.add_scalars('Loss/train', {
+                                'train_loss' : sum(running_loss) / len(running_loss),
+                                'discr_loss' : sum(disc_loss) / len(disc_loss)
+                            },
+                           global_step)
+        writer.add_scalar('Loss/discriminator', disc_loss[-1] / len(disc_loss), global_step)
 
         with torch.no_grad():
             avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=writer)
@@ -588,10 +585,13 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=None):
     #eval_steps = 1400
-    print('Evaluating for {} steps'.format(global_step))
-    loss_tot = 0.
+    #print('Evaluating for {} steps'.format(global_step))
+    loss_tot = []
     loss_func = losses.LoraLoss(device)
-    prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader), leave=True)
+    prog_bar = tqdm(enumerate(test_data_loader),
+                    total=len(test_data_loader),
+                    leave=True,
+                    desc='Evaluating for {} steps'.format(global_step))
     for step, (x, indiv_mel, mel, y) in prog_bar:
 
         model.eval()
@@ -604,12 +604,10 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, wri
         y = y.to(device)
         loss = loss_func(pred, y, mel)
 
-        loss_tot += loss.item()
-        writer.add_scalar('Loss/train', loss.item(), global_step)
+        loss_tot.append(loss.item())
 
-        #if step > eval_steps: break
-
-    averaged_loss = loss_tot / len(test_data_loader)
+    averaged_loss = sum(loss_tot) / len(test_data_loader)
+    writer.add_scalars('Loss/train', { 'test_loss' : averaged_loss}, global_step)
     return averaged_loss
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
