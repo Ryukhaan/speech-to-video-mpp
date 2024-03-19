@@ -765,7 +765,7 @@ if __name__ == "__main__":
 
 
     # Model
-    model = LNet().to(device)
+    #model = LNet().to(device)
     _, model = load_model(args, device)
     model = model.low_res
     for param in model.parameters():
