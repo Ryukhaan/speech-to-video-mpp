@@ -36,6 +36,27 @@ args = options()
 
 import preprocessing.facing as preprocessing
 
+def make_mask(points, ff, ix, iy, ox, oy, apply_dilatation=True, idx=0):
+    mask = np.zeros_like(ff)
+    # Create Nose Mask
+    for j, (x, y) in enumerate(points):
+        xi, yi = int(ix * x + ox), int(iy * y + oy)
+        xj, yj = int(ix * points[j - 1][0] + ox), int(iy * points[j - 1][1] + oy)
+        cv2.line(mask, (xj, yj), (xi, yi), (255, 0, 0), 3)
+        #cv2.circle(mask, (xi, yi), 3, (0,255,0), 5)
+    # Imfill nose mask
+    #cv2.imwrite(f"./results/mask_{idx}.png", mask)
+    mask = mask[:, :, 0].astype(np.uint8)
+    h, w = mask.shape[:2]
+    fill_mask = np.zeros((h + 2, w + 2), np.uint8)
+    cv2.floodFill(mask, fill_mask, (0, 0), 255)
+    mask = cv2.bitwise_not(mask)
+    # Dilate to have less incoherence
+    if apply_dilatation:
+        element = np.ones((3, 3), dtype=np.uint8)
+        mask = cv2.dilate(mask, element, iterations=10)
+    return mask
+
 def main():    
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     gc.collect()
@@ -314,8 +335,37 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
             delta+=1
+
             if args.cropped_image:
-                #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
+                inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
+                inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
+
+                # Nose
+                nose_mask = make_mask(lm[idx][27:35 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                      apply_dilatation=True, idx=1)
+                # Right Eye
+                eye1 = make_mask(lm[idx][36:41 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                 apply_dilatation=True, idx=2)
+                # Left Eye
+                eye2 = make_mask(lm[idx][42:47 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                 apply_dilatation=True, idx=3)
+
+                removal_mask = np.logical_or.reduce((nose_mask, eye1, eye2))
+
+                # Bottom Face
+                bottom_mask = make_mask(lm[idx][0:16 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                                        apply_dilatation=False, idx=4)
+                bottom_mask = cv2.dilate(bottom_mask, np.array([[0, 1, 0], [0, 1, 0], [0, 0, 0]], dtype=np.uint8),
+                                         iterations=100)
+                # Bottom Face - All others
+                mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
+
+                for channel in range(ff.shape[2]):
+                    ff_masked = np.multiply(pf[:, :, channel], np.logical_not(mask))
+                    pp_masked = np.multiply(ff[:, :, channel], mask)
+                    pf[:, :, channel] = ff_masked + pp_masked
+
+                ff = pf.copy()
                 tmp_xf = cv2.resize(xf, (0,0), fx=2, fy=2)
                 pp, orig_face, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
                 pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
