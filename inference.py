@@ -298,7 +298,7 @@ def main():
             ff = xf.copy() 
             ff[y1:y2, x1:x2] = p
             
-            # month region enhancement by GFPGAN
+            # mouth region enhancement by GFPGAN
             cropped_faces, restored_faces, restored_img = restorer.enhance(
                 ff, has_aligned=False, only_center_face=True, paste_back=True)
                 # 0,   1,   2,   3,   4,   5,   6,   7,   8,  9, 10,  11,  12,
@@ -306,7 +306,6 @@ def main():
             mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mouse_mask = np.zeros_like(restored_img)
             tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
-            #enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
             mouse_mask[y1:y2, x1:x2]= cv2.resize(tmp_mask, (x2 - x1, y2 - y1))[:, :, np.newaxis] / 255.
 
             height, width = ff.shape[:2]
