@@ -299,6 +299,12 @@ def load_lora_model(args, device):
     model = load_lora_network(args).to(device)
     return D_Net, model
 
+def load_lora_model(args, device):
+    torch.cuda.empty_cache()
+    D_Net = load_DNet(args).to(device)
+    model = load_lora_network(args).to(device)
+    return D_Net, model
+
 def save_checkpoint(path, model):
     torch.save(model.state_dict(), path)
 

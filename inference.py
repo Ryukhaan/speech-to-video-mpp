@@ -216,17 +216,19 @@ def main():
         i += 1
 
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
-    imgs = imgs[:len(mel_chunks)]
+    imgs = imgs[:12]
+    #imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
     lm = lm[:len(mel_chunks)]
 
     #enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
     ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
-                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=4,
-                               model='GPEN-BFR-512', use_sr=False)
+                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=2,
+                               model='rrdb_realesrnet_psnr', use_sr=False)
+
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
-                               in_size=2048, channel_multiplier=2, narrow=1, sr_scale=2,
+                               in_size=1024, channel_multiplier=2, narrow=1, sr_scale=2,
                                sr_model=None,
                                model='GPEN-BFR-2048', use_sr=True)
 
@@ -237,8 +239,8 @@ def main():
         pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False) #True
         imgs_enhanced.append(pred)
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1,oy2,ox1,ox2))
-
     del ref_enhancer
+
     torch.cuda.empty_cache()
 
     frame_h, frame_w = full_frames[0].shape[:-1]
