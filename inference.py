@@ -246,7 +246,7 @@ def main():
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
     ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
                                in_size=512, channel_multiplier=2, narrow=1, sr_scale=2,
-                               model='rrdb_realesrnet_psnr', use_sr=False)
+                               model='GPEN-BFR-512', use_sr=False)
 
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
                                in_size=1024, channel_multiplier=2, narrow=1, sr_scale=2,
