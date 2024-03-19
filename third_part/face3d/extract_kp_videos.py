@@ -15,13 +15,14 @@ from torch.multiprocessing import Pool, Process, set_start_method
 class KeypointExtractor():
     def __init__(self):
         torch.cuda.empty_cache()
-        self.detector = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D)   
+        # face_alignement.LandmarksType._2D = 1
+        self.detector = face_alignment.FaceAlignment(1)
 
     def extract_keypoint(self, images, name=None, info=True):
         if isinstance(images, list):
             keypoints = []
             if info:
-                i_range = tqdm(images,desc='landmark Det:')
+                i_range = images
             else:
                 i_range = images
 
@@ -33,7 +34,8 @@ class KeypointExtractor():
                     keypoints.append(current_kp[None])
 
             keypoints = np.concatenate(keypoints, 0)
-            np.savetxt(os.path.splitext(name)[0]+'.txt', keypoints.reshape(-1))
+            if name is not None:
+                np.savetxt(os.path.splitext(name)[0]+'.txt', keypoints.reshape(-1))
             return keypoints
         else:
             while True:

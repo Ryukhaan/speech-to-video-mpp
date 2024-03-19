@@ -12,6 +12,12 @@ class HParams:
 			raise AttributeError("'HParams' object has no attribute %s" % key)
 		return self.data[key]
 
+	def __str__(self):
+		return str(self.data)
+
+	def __repr__(self):
+		return repr(self.data)
+
 	def set_hparam(self, key, value):
 		self.data[key] = value
 
@@ -64,20 +70,20 @@ hparams = HParams(
 	img_size=96,
 	fps=25,
 	
-	batch_size=8,
+	batch_size=4,
 	initial_learning_rate=1e-4,
 	nepochs=300000,  ### ctrl + c, stop whenever eval loss is consistently greater than train loss for ~10 epochs
-	num_workers=20,
-	checkpoint_interval=3000,
-	eval_interval=3000,
+	num_workers=1,
+	checkpoint_interval=100,
+	eval_interval=300,
 	writer_interval=300,
     save_optimizer_state=True,
 
     syncnet_wt=0.0, # is initially zero, will be set automatically to 0.03 later. Leads to faster convergence. 
 	syncnet_batch_size=64,
 	syncnet_lr=1e-4,
-	syncnet_eval_interval=10000,
-	syncnet_checkpoint_interval=10000,
+	syncnet_eval_interval=1000,
+	syncnet_checkpoint_interval=1000,
 
 	disc_wt=0.07,
 	disc_initial_learning_rate=1e-4,

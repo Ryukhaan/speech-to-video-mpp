@@ -36,27 +36,6 @@ args = options()
 
 import preprocessing.facing as preprocessing
 
-def make_mask(points, ff, ix, iy, ox, oy, apply_dilatation=True, idx=0):
-    mask = np.zeros_like(ff)
-    # Create Nose Mask
-    for j, (x, y) in enumerate(points):
-        xi, yi = int(ix * x + ox), int(iy * y + oy)
-        xj, yj = int(ix * points[j - 1][0] + ox), int(iy * points[j - 1][1] + oy)
-        cv2.line(mask, (xj, yj), (xi, yi), (255, 0, 0), 3)
-        #cv2.circle(mask, (xi, yi), 3, (0,255,0), 5)
-    # Imfill nose mask
-    #cv2.imwrite(f"./results/mask_{idx}.png", mask)
-    mask = mask[:, :, 0].astype(np.uint8)
-    h, w = mask.shape[:2]
-    fill_mask = np.zeros((h + 2, w + 2), np.uint8)
-    cv2.floodFill(mask, fill_mask, (0, 0), 255)
-    mask = cv2.bitwise_not(mask)
-    # Dilate to have less incoherence
-    if apply_dilatation:
-        element = np.ones((3, 3), dtype=np.uint8)
-        mask = cv2.dilate(mask, element, iterations=10)
-    return mask
-
 def main():    
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     gc.collect()
@@ -74,6 +53,149 @@ def main():
     imgs = preprocessor.imgs
     lm = preprocessor.lm
     oy1, oy2, ox1, ox2 = preprocessor.coordinates
+    # base_name = args.face.split('/')[-1]
+    # # Image or Video ?
+    # if os.path.isfile(args.face) and args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
+    #     args.static = True
+    # if not os.path.isfile(args.face):
+    #     raise ValueError('--face argument must be a valid path to video/image file')
+    # elif args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
+    #     full_frames = [cv2.imread(args.face)]
+    #     fps = args.fps
+    # else:
+    #     video_stream = cv2.VideoCapture(args.face)
+    #     fps = video_stream.get(cv2.CAP_PROP_FPS)
+    #
+    #     full_frames = []
+    #     while True:
+    #         still_reading, frame = video_stream.read()
+    #         if not still_reading:
+    #             video_stream.release()
+    #             break
+    #         y1, y2, x1, x2 = args.crop
+    #         if x2 == -1: x2 = frame.shape[1]
+    #         if y2 == -1: y2 = frame.shape[0]
+    #         frame = frame[y1:y2, x1:x2]
+    #         full_frames.append(frame)
+    #
+    # print ("[Step 0] Number of frames available for inference: "+str(len(full_frames)))
+    # # face detection & cropping, cropping the first frame as the style of FFHQ
+    # croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+    # full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in full_frames]
+    # full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512) # Why 512 ?
+    #
+    # clx, cly, crx, cry = crop
+    # lx, ly, rx, ry = quad
+    # lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
+    # oy1, oy2, ox1, ox2 = cly+ly, min(cly+ry, full_frames[0].shape[0]), clx+lx, min(clx+rx, full_frames[0].shape[1])
+    # # original_size = (ox2 - ox1, oy2 - oy1)
+    # frames_pil = [Image.fromarray(cv2.resize(frame,(256,256))) for frame in full_frames_RGB]
+    #
+    # # get the landmark according to the detected face.
+    # if not os.path.isfile('temp/'+base_name+'_landmarks.txt') or args.re_preprocess:
+    #     torch.cuda.empty_cache()
+    #     print('[Step 1] Landmarks Extraction in Video.')
+    #     kp_extractor = KeypointExtractor()
+    #     lm = kp_extractor.extract_keypoint(frames_pil, './temp/'+base_name+'_landmarks.txt')
+    # else:
+    #     print('[Step 1] Using saved landmarks.')
+    #     lm = np.loadtxt('temp/'+base_name+'_landmarks.txt').astype(np.float32)
+    #     lm = lm.reshape([len(full_frames), -1, 2])
+    #
+    # if not os.path.isfile('temp/'+base_name+'_coeffs.npy') or args.exp_img is not None or args.re_preprocess:
+    #     torch.cuda.empty_cache()
+    #     net_recon = load_face3d_net(args.face3d_net_path, device)
+    #     lm3d_std = load_lm3d('checkpoints/BFM')
+    #
+    #     video_coeffs = []
+    #     for idx in tqdm(range(len(frames_pil)), desc="[Step 2] 3DMM Extraction In Video:"):
+    #         frame = frames_pil[idx]
+    #         W, H = frame.size
+    #         lm_idx = lm[idx].reshape([-1, 2])
+    #         if np.mean(lm_idx) == -1:
+    #             lm_idx = (lm3d_std[:, :2]+1) / 2.
+    #             lm_idx = np.concatenate([lm_idx[:, :1] * W, lm_idx[:, 1:2] * H], 1)
+    #         else:
+    #             lm_idx[:, -1] = H - 1 - lm_idx[:, -1]
+    #
+    #         trans_params, im_idx, lm_idx, _ = align_img(frame, lm_idx, lm3d_std)
+    #         trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
+    #         im_idx_tensor = torch.tensor(np.array(im_idx)/255., dtype=torch.float32).permute(2, 0, 1).to(device).unsqueeze(0)
+    #         with torch.no_grad():
+    #             coeffs = split_coeff(net_recon(im_idx_tensor))
+    #
+    #         pred_coeff = {key:coeffs[key].cpu().numpy() for key in coeffs}
+    #         pred_coeff = np.concatenate([pred_coeff['id'], pred_coeff['exp'], pred_coeff['tex'], pred_coeff['angle'],\
+    #                                      pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
+    #         video_coeffs.append(pred_coeff)
+    #     semantic_npy = np.array(video_coeffs)[:,0]
+    #     np.save('temp/'+base_name+'_coeffs.npy', semantic_npy)
+    # else:
+    #     print('[Step 2] Using saved coeffs.')
+    #     semantic_npy = np.load('temp/'+base_name+'_coeffs.npy').astype(np.float32)
+    #
+    # # generate the 3dmm coeff from a single image
+    # if args.exp_img is not None and ('.png' in args.exp_img or '.jpg' in args.exp_img):
+    #     print('extract the exp from',args.exp_img)
+    #     exp_pil = Image.open(args.exp_img).convert('RGB')
+    #     lm3d_std = load_lm3d('third_part/face3d/BFM')
+    #
+    #     W, H = exp_pil.size
+    #     kp_extractor = KeypointExtractor()
+    #     lm_exp = kp_extractor.extract_keypoint([exp_pil], 'temp/'+base_name+'_temp.txt')[0]
+    #     if np.mean(lm_exp) == -1:
+    #         lm_exp = (lm3d_std[:, :2] + 1) / 2.
+    #         lm_exp = np.concatenate(
+    #             [lm_exp[:, :1] * W, lm_exp[:, 1:2] * H], 1)
+    #     else:
+    #         lm_exp[:, -1] = H - 1 - lm_exp[:, -1]
+    #
+    #     trans_params, im_exp, lm_exp, _ = align_img(exp_pil, lm_exp, lm3d_std)
+    #     trans_params = np.array([float(item) for item in np.hsplit(trans_params, 5)]).astype(np.float32)
+    #     im_exp_tensor = torch.tensor(np.array(im_exp)/255., dtype=torch.float32).permute(2, 0, 1).to(device).unsqueeze(0)
+    #     with torch.no_grad():
+    #         expression = split_coeff(net_recon(im_exp_tensor))['exp'][0]
+    #     del net_recon
+    # elif args.exp_img == 'smile':
+    #     expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_mouth'])[0]
+    # else:
+    #     print('using expression center')
+    #     expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
+    #
+    # # load DNet, model(LNet and ENet)
+    # torch.cuda.empty_cache()
+    # D_Net, model = load_model(args, device)
+    #
+    # # Video Image Stabilized
+    # out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(args.tmp_dir),
+    #                       cv2.VideoWriter_fourcc(*'mp4v'), fps, (256, 256))
+    # if not os.path.isfile('temp/'+base_name+'_stablized.npy') or args.re_preprocess:
+    #     imgs = []
+    #     for idx in tqdm(range(len(frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
+    #         if args.one_shot:
+    #             source_img = trans_image(frames_pil[0]).unsqueeze(0).to(device)
+    #             semantic_source_numpy = semantic_npy[0:1]
+    #         else:
+    #             source_img = trans_image(frames_pil[idx]).unsqueeze(0).to(device)
+    #             semantic_source_numpy = semantic_npy[idx:idx+1]
+    #         ratio = find_crop_norm_ratio(semantic_source_numpy, semantic_npy)
+    #         coeff = transform_semantic(semantic_npy, idx, ratio).unsqueeze(0).to(device)
+    #
+    #         # hacking the new expression
+    #         coeff[:, :64, :] = expression[None, :64, None].to(device)
+    #         with torch.no_grad():
+    #             output = D_Net(source_img, coeff)
+    #         img_stablized = np.uint8((output['fake_image'].squeeze(0).permute(1,2,0).cpu().clamp_(-1, 1).numpy() + 1 )/2. * 255)
+    #         imgs.append(cv2.cvtColor(img_stablized,cv2.COLOR_RGB2BGR))
+    #
+    #         out.write(cv2.cvtColor(img_stablized,cv2.COLOR_RGB2BGR))
+    #     np.save('temp/'+base_name+'_stablized.npy',imgs)
+    #     del D_Net
+    # else:
+    #     print('[Step 3] Using saved stablized video.')
+    #     imgs = np.load('temp/'+base_name+'_stablized.npy')
+
+    #return 0
 
     if not args.audio.endswith('.wav'):
         command = 'ffmpeg -loglevel error -y -i {} -strict -2 {}'.format(args.audio, 'temp/{}/temp.wav'.format(args.tmp_dir))
@@ -93,9 +215,8 @@ def main():
         mel_chunks.append(mel[:, start_idx : start_idx + mel_step_size])
         i += 1
 
-    mel_chunks = mel_chunks[:20] # Change here length of inference video
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
-    #imgs = imgs[:len(mel_chunks)]
+    imgs = imgs[:len(mel_chunks)]
     full_frames = full_frames[:len(mel_chunks)]  
     lm = lm[:len(mel_chunks)]
 
@@ -109,26 +230,23 @@ def main():
                                sr_model=None,
                                model='GPEN-BFR-2048', use_sr=True)
 
-    imgs_enhanced = preprocessor.enhance_imgs(imgs, ref_enhancer)
-    imgs_enhanced = imgs_enhanced[:len(mel_chunks)]
-    #imgs_enhanced = []
-    #    for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
-    #        img = imgs[idx]
-    #        # pred, _, _ = enhancer.process(img, aligned=True)
-    #        pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
-    #        imgs_enhanced.append(pred)
+    imgs_enhanced = []
+    for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
+        img = imgs[idx]
+        #pred, _, _ = enhancer.process(img, aligned=True)
+        pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False) #True
+        imgs_enhanced.append(pred)
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1,oy2,ox1,ox2))
 
     del ref_enhancer
     torch.cuda.empty_cache()
 
     frame_h, frame_w = full_frames[0].shape[:-1]
-    #if not args.cropped_image:
-    #    out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps, (2*frame_w, 2*frame_h))
-    #else:
-    #    out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
-     #                         (frame_w, frame_h))
-    out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_w, frame_h))
+    if not args.cropped_image:
+        out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps, (2*frame_w, 2*frame_h))
+    else:
+        out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
+                              (frame_w, frame_h))
     if args.up_face != 'original':
         instance = GANimationModel()
         instance.initialize()
@@ -138,22 +256,13 @@ def main():
                         channel_multiplier=2, bg_upsampler=None)
 
     kp_extractor = KeypointExtractor()
-    idx = 0
     for i, (img_batch, mel_batch, frames, coords, img_original, f_frames) in enumerate(tqdm(gen, desc='[Step 6] Lip Synthesis:', total=int(np.ceil(float(len(mel_chunks)) / args.LNet_batch_size)))):
-        #cv2.imwrite("./temp/incomp.png", 255.*img_batch[0][:, :, :3])
-        #cv2.imwrite("./temp/reference.png", 255.*img_batch[0][:, :, 3:])
-        #cv2.imwrite("./temp/orig.png", img_original[0][:, :, :3])
-        #print(img_original.max(), img_original.min())
-        #print(img_batch[0][:, :, :3].max(), img_batch[0][:, :, :3].min())
-        #print(img_batch[0][:, :, 3:].max(), img_batch[0][:, :, :3].min())
-
         img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(device)
         mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(device)
         img_original = torch.FloatTensor(np.transpose(img_original, (0, 3, 1, 2))).to(device)/255. # BGR -> RGB
         
         with torch.no_grad():
-            incomplete, reference = torch.split(img_batch, 3, dim=1)
-
+            incomplete, reference = torch.split(img_batch, 3, dim=1) 
             pred, low_res = preprocessor.model(mel_batch, img_batch, reference)
             pred = torch.clamp(pred, 0, 1)
 
@@ -177,51 +286,16 @@ def main():
                 pred = pred * mask + cur_gen_faces * (1 - mask) 
         
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
-        incomplete = incomplete.cpu().numpy().transpose(0, 2, 3, 1) * 255.
-        print(pred.shape, incomplete.shape, reference.shape)
-        reference = reference.cpu().numpy().transpose(0, 2, 3, 1) * 255.
-        cv2.imwrite("./results/low_inp{}.png".format(idx), incomplete[0])
-        cv2.imwrite("./results/low_ref{}.png".format(idx), reference[0])
+
         torch.cuda.empty_cache()
         delta = 0
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
             y1, y2, x1, x2 = c
             p = cv2.resize(p.astype(np.uint8), (x2 - x1, y2 - y1))
-            cv2.imwrite("./results/low_out{}.png".format(idx), p)
-            ff = xf.copy()
+            
+            ff = xf.copy() 
             ff[y1:y2, x1:x2] = p
-            pf = xf.copy()
-            if args.cropped_image:
-                inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
-                inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
-
-                # Nose
-                nose_mask = make_mask(lm[idx][27:35 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                      apply_dilatation=True, idx=1)
-                # Right Eye
-                eye1 = make_mask(lm[idx][36:41 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                 apply_dilatation=True, idx=2)
-                # Left Eye
-                eye2 = make_mask(lm[idx][42:47 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                 apply_dilatation=True, idx=3)
-
-                removal_mask = np.logical_or.reduce((nose_mask, eye1, eye2))
-
-                # Bottom Face
-                bottom_mask = make_mask(lm[idx][0:16 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
-                                        apply_dilatation=False, idx=4)
-                bottom_mask = cv2.dilate(bottom_mask, np.array([[0, 1, 0], [0, 1, 0], [0, 0, 0]], dtype=np.uint8), iterations=140)
-                # Bottom Face - All others
-                mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
-
-
-                for channel in range(ff.shape[2]):
-                    ff_masked = np.multiply(pf[:,:,channel], np.logical_not(mask))
-                    pp_masked = np.multiply(ff[:,:,channel], mask)
-                    pf[:,:,channel] = ff_masked + pp_masked
-
-                ff = pf.copy()
-
+            
             # month region enhancement by GFPGAN
             cropped_faces, restored_faces, restored_img = restorer.enhance(
                 ff, has_aligned=False, only_center_face=True, paste_back=True)
@@ -230,39 +304,30 @@ def main():
             mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mouse_mask = np.zeros_like(restored_img)
             tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
-
+            #enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
             mouse_mask[y1:y2, x1:x2]= cv2.resize(tmp_mask, (x2 - x1, y2 - y1))[:, :, np.newaxis] / 255.
 
             height, width = ff.shape[:2]
             restored_img, ff, full_mask = [cv2.resize(x, (512, 512)) for x in (restored_img, ff, np.float32(mouse_mask))]
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
-            xf = cv2.resize(xf, (0,0), fx=2, fy=2)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
-            #print(pp.shape, xf.shape, c)
+
+            delta+=1
             if args.cropped_image:
-                '''
-                                        0: 'background' 1: 'skin'   2: 'nose'
-                                        3: 'eye_g'  4: 'l_eye'  5: 'r_eye'
-                                        6: 'l_brow' 7: 'r_brow' 8: 'l_ear'
-                                        9: 'r_ear'  10: 'mouth' 11: 'u_lip'
-                                        12: 'l_lip' 13: 'hair'  14: 'hat'
-                                        15: 'ear_r' 16: 'neck_l'    17: 'neck'
-                                        18: 'cloth'
-                '''
-                mm = [255,   0,   255,   255,   255,   255,   255,   255,   255,  255, 255, 255, 255, 0, 0, 0, 0, 0, 255]
-                pp, orig_faces, enhanced_faces = enhancer.process_withmask(pp, xf, mask=mask,
-                                                                           face_enhance=True,
-                                                                           possion_blending=True,
-                                                                           mm=mm)
-                pp = cv2.resize(pp, (frame_w, frame_h))
+                #pp, orig_faces, enhanced_faces = enhancer.process(pp, aligned=False)
+                tmp_xf = cv2.resize(xf, (0,0), fx=2, fy=2)
+                pp, orig_face, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True) # face=False
+                pp = cv2.resize(pp, (0,0), fx=0.5, fy=0.5)
+                ff = xf.copy()
+                ff[y1:y2, x1:x2] = pp[y1:y2, x1:x2]
+                assert ff.shape[0] == frame_h and ff.shape[1] == frame_w, print(ff.shape, frame_h, frame_w)
+                #cv2.imwrite("./results/{}.png".format(delta), pp)
+                out.write(ff)
             else:
-                pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True)
-            #print(pp.shape, 2*frame_w, 2*frame_h)
-            if idx <= 10:
-                #print(pp.shape, 2*frame_h, 2*frame_w)
-                cv2.imwrite("./results/out/{}.png".format(idx), pp)
-            idx += 1
-            out.write(pp)
+                tmp_xf = cv2.resize(xf, (0, 0), fx=2, fy=2)
+                pp, orig_faces, enhanced_faces = enhancer.process(pp, tmp_xf, bbox=c, face_enhance=True, possion_blending=True)
+
+                out.write(pp)
     out.release()
     
     if not os.path.isdir(os.path.dirname(args.outfile)):
@@ -318,9 +383,6 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         face = cv2.resize(face, (args.img_size, args.img_size))
         oface = cv2.resize(oface, (args.img_size, args.img_size))
 
-        cv2.imwrite("./temp/sframe.png", frame_to_save)
-        cv2.imwrite("./temp/face.png", face)
-        cv2.imwrite("./temp/oface.png", oface)
         img_batch.append(oface)
         ref_batch.append(face) 
         mel_batch.append(m)
@@ -338,6 +400,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 
             yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
             img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
+
     if len(img_batch) > 0:
         img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
         img_masked = img_batch.copy()

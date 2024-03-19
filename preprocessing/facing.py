@@ -40,7 +40,7 @@ class Preprocessor():
         self.args = args
         self.base_name = self.args.face.split('/')[-1]
         self.full_frames = []
-    def reading_video(self, limit=0):
+    def reading_video(self):
 
         # Image or Video ?
         if os.path.isfile(self.args.face) and self.args.face.split('.')[-1] in ['jpg', 'png', 'jpeg']:
@@ -69,8 +69,6 @@ class Preprocessor():
                 if y2 == -1: y2 = frame.shape[0]
                 frame = frame[y1:y2, x1:x2]
                 self.full_frames.append(frame)
-                if 0 < limit < len(self.full_frames):
-                    break
         print ("[Step 0] Number of frames available for inference:  " +str(len(self.full_frames)))
 
     def landmarks_estimate(self):
@@ -97,21 +95,6 @@ class Preprocessor():
             print('[Step 1] Using saved landmarks.')
             self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
-
-            #rgb_copy = np.array(self.frames_pil[10])
-            #rgb_fake = np.array(self.frames_pil[5])
-            #mask = np.zeros((rgb_copy.shape[0], rgb_copy.shape[1]), dtype=np.uint8)
-            #dst_pts = self.lm[10][3:14]
-            #for idx, (x, y) in enumerate(dst_pts):
-            #    xi, yi = int(x), int(y)
-            #    xj, yj = int(dst_pts[idx-1][0]), int(dst_pts[idx-1][1])
-            #    cv2.line(mask, (xj,yj), (xi,yi), 255, 3)
-            #cv2.floodFill(mask, None, (0,0), 255);
-            #mask = np.bitwise_not(mask)
-            #kernel = np.ones((5, 5), np.uint8)
-            #cv2.erode(mask, kernel)
-            #res = cv2.bitwise_and(rgb_copy, rgb_copy, mask=255-mask) + cv2.bitwise_and(rgb_fake, rgb_fake, mask=mask)
-            #cv2.imwrite('./landmarks.png', res[::-1])
 
     def face_3dmm_extraction(self):
         if not os.path.isfile('temp/ ' + self.base_name +'_coeffs.npy') \
@@ -187,7 +170,8 @@ class Preprocessor():
         # Video Image Stabilized
         out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(self.args.tmp_dir),
                               cv2.VideoWriter_fourcc(*'mp4v'), self.fps, (256, 256))
-        if not os.path.isfile('temp/' + self.base_name +'_stablized.npy') or self.args.re_preprocess:
+
+        if not os.path.isfile('temp/ ' + self.base_name +'_stablized.npy') or self.args.re_preprocess:
             self.imgs = []
             for idx in tqdm(range(len(self.frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
                 if self.args.one_shot:
@@ -215,17 +199,3 @@ class Preprocessor():
 
         #del D_Net, model
         torch.cuda.empty_cache()
-
-    def enhance_imgs(self, imgs, ref_enhancer):
-        imgs_enhanced = []
-        if not os.path.isfile('temp/' + self.base_name + '_enhanced.npy') or self.args.re_preprocess:
-            for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
-                img = imgs[idx]
-                # pred, _, _ = enhancer.process(img, aligned=True)
-                pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False)  # True
-                imgs_enhanced.append(pred)
-            np.save('temp/' + self.base_name + '_enhanced.npy', imgs_enhanced)
-        else:
-            print('[Step 5] Using enhanced images')
-            imgs_enhanced = np.load('temp/' + self.base_name + '_enhanced.npy')
-        return imgs_enhanced
