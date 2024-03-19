@@ -549,28 +549,28 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 cropped, reference = torch.split(x, 3, dim=1)
                 cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
                 reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
-                writer.add_images('Loss/2_original',
+                writer.add_images('2_original',
                                   torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
                                   global_step=global_step
                                   )
-                writer.add_images('Loss/1_predictions',
+                writer.add_images('1_predictions',
                                   torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
                                   global_step=global_step
                                   )
-                writer.add_images('Loss/3_cropped',
+                writer.add_images('3_cropped',
                                   cropped[:,[2,1,0]],
                                   global_step=global_step
                                   )
-                writer.add_images('Loss/4_reference',
+                writer.add_images('4_reference',
                                   reference[:,[2,1,0]],
                                   global_step=global_step
                                   )
 
             prog_bar.set_description('Loss: {:.4f} at {}'.format(running_loss[-1], global_step))
 
-        writer.add_scalars('Loss/train', {
-                                'train_loss' : sum(running_loss) / len(running_loss),
-                                'discr_loss' : sum(disc_loss) / len(disc_loss)
+        writer.add_scalars('train', {
+                                'vis_loss' : sum(running_loss) / len(running_loss),
+                                'dis_loss' : sum(disc_loss) / len(disc_loss)
                             },
                            global_step)
         #writer.add_scalar('Loss/discriminator', disc_loss[-1] / len(disc_loss), global_step)
@@ -581,6 +581,10 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             best_eval_loss = avg_eval_loss
             save_checkpoint(
                 model, optimizer, global_step, checkpoint_dir, global_epoch
+            )
+            checkpoint_disc_dir = checkpoint_dir + "_gan_disc.pth"
+            save_checkpoint(
+                disc_model, optimizer, global_step, checkpoint_disc_dir, global_epoch
             )
         global_epoch += 1
 
