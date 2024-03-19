@@ -362,11 +362,9 @@ def main():
 
             mouse_mask = np.zeros_like(restored_img)
             tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
-            print(tmp_mask.shape)
-            cv2.imwrite("./temp/tmp_mask.png", tmp_mask)
+
             mouse_mask[y1:y2, x1:x2]= cv2.resize(tmp_mask, (x2 - x1, y2 - y1))[:, :, np.newaxis] / 255.
-            print(mouse_mask.shape)
-            cv2.imwrite("./temp/mm.png", 255*mouse_mask)
+
             height, width = ff.shape[:2]
             restored_img, ff, full_mask = [cv2.resize(x, (512, 512)) for x in (restored_img, ff, np.float32(mouse_mask))]
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
@@ -377,7 +375,7 @@ def main():
                                            (restored_img, ff, np.float32(mouse_mask))]
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0, 255), (width, height)))
-
+            print(img.shape, pp.shape, xf.shape)
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
             out.write(pp)
 
