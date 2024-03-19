@@ -86,18 +86,18 @@ class Preprocessor():
         self.frames_pil = [Image.fromarray(cv2.resize(frame ,(256 ,256))) for frame in full_frames_RGB]
 
         # get the landmark according to the detected face.
-        if not os.path.isfile('temp/ ' + self.base_name +'_landmarks.txt') or self.args.re_preprocess:
+        if not os.path.isfile('temp/' + self.base_name +'_landmarks.txt') or self.args.re_preprocess:
             torch.cuda.empty_cache()
             print('[Step 1] Landmarks Extraction in Video.')
             kp_extractor = KeypointExtractor()
             self.lm = kp_extractor.extract_keypoint(self.frames_pil, './temp/ ' + self.base_name +'_landmarks.txt')
         else:
             print('[Step 1] Using saved landmarks.')
-            self.lm = np.loadtxt('temp/ ' + self.base_name +'_landmarks.txt').astype(np.float32)
+            self.lm = np.loadtxt('temp/' + self.base_name +'_landmarks.txt').astype(np.float32)
             self.lm = self.lm.reshape([len(self.full_frames), -1, 2])
 
     def face_3dmm_extraction(self):
-        if not os.path.isfile('temp/ ' + self.base_name +'_coeffs.npy') \
+        if not os.path.isfile('temp/' + self.base_name +'_coeffs.npy') \
             or self.args.exp_img is not None \
             or self.args.re_preprocess:
             torch.cuda.empty_cache()
@@ -127,11 +127,11 @@ class Preprocessor():
                                              pred_coeff['gamma'], pred_coeff['trans'], trans_params[None]], 1)
                 video_coeffs.append(pred_coeff)
             self.semantic_npy = np.array(video_coeffs)[: ,0]
-            np.save('temp/ ' + self.base_name +'_coeffs.npy', self.semantic_npy)
+            np.save('temp/' + self.base_name +'_coeffs.npy', self.semantic_npy)
             del net_recon
         else:
             print('[Step 2] Using saved coeffs.')
-            self.semantic_npy = np.load('temp/ ' + self.base_name +'_coeffs.npy').astype(np.float32)
+            self.semantic_npy = np.load('temp/' + self.base_name +'_coeffs.npy').astype(np.float32)
     def hack_3dmm_expression(self):
         net_recon = load_face3d_net(self.args.face3d_net_path, device)
 
@@ -174,7 +174,7 @@ class Preprocessor():
         out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(self.args.tmp_dir),
                               cv2.VideoWriter_fourcc(*'mp4v'), self.fps, (256, 256))
 
-        if not os.path.isfile('temp/ ' + self.base_name +'_stablized.npy') or self.args.re_preprocess:
+        if not os.path.isfile('temp/' + self.base_name +'_stablized.npy') or self.args.re_preprocess:
             self.imgs = []
             for idx in tqdm(range(len(self.frames_pil)), desc="[Step 3] Stablize the expression In Video:"):
                 if self.args.one_shot:
