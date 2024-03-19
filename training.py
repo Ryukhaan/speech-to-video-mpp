@@ -582,9 +582,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             save_checkpoint(
                 model, optimizer, global_step, checkpoint_dir, global_epoch
             )
-            checkpoint_disc_dir = checkpoint_dir + "_gan_disc.pth"
             save_checkpoint(
-                disc_model, optimizer, global_step, checkpoint_disc_dir, global_epoch
+                disc_model, optimizer, global_step, checkpoint_dir, global_epoch, prefix='disc'
             )
         global_epoch += 1
 
