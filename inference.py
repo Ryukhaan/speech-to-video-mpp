@@ -237,10 +237,10 @@ def main():
         i += 1
 
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
-    imgs = imgs[:12]
-    #imgs = imgs[:len(mel_chunks)]
-    full_frames = full_frames[:len(mel_chunks)]  
-    lm = lm[:len(mel_chunks)]
+    delta = 12 # len(mel_chunks)
+    imgs = imgs[:delta]
+    full_frames =  full_frames[:delta]
+    lm = lm[:delta]
 
     #enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
