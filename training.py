@@ -805,13 +805,15 @@ if __name__ == "__main__":
     )
 
     lora_l_decoder = get_peft_model(model.decoder, decoder_config)
-    lora_ae_encoder = get_peft_model(model.audio_encoder, audio_enc_config)
+    #lora_ae_encoder = get_peft_model(model.audio_encoder, audio_enc_config)
     model.decoder = lora_l_decoder
     for param in model.encoder.parameters():
         param.requires_grad = False
+    for param in model.audio.parameters():
+        param.requires_grad = True
     #for param in model.decoder.parameters():
     #    param.requires_grad = False
-    model.audio_encoder = lora_ae_encoder
+    #model.audio_encoder = lora_ae_encoder
     print_trainable_parameters(model)
     print_trainable_parameters(discriminator)
 
