@@ -311,7 +311,7 @@ def main():
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
 
         torch.cuda.empty_cache()
-        delta = 0
+        ip=0
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
             y1, y2, x1, x2 = c
             p = cv2.resize(p.astype(np.uint8), (x2 - x1, y2 - y1))
@@ -377,6 +377,8 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0, 255), (width, height)))
             xf = cv2.resize(xf, (1024,1024))
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
+            cv2.imwrite('temp/images/frame{}.png'.format(ip), pp)
+            ip+=1
             out.write(pp)
 
     out.release()
