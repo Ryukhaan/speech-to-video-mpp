@@ -168,7 +168,7 @@ class Preprocessor():
         if self.args.use_lora:
             self.D_Net, self.model = load_model(self.args, device)
         else:
-            self.D_Net, self.model = load_lora_model(self.arg, device)
+            self.D_Net, self.model = load_lora_model(self.args, device)
 
         # Video Image Stabilized
         out = cv2.VideoWriter('temp/{}/stabilized.mp4'.format(self.args.tmp_dir),

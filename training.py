@@ -611,7 +611,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, wri
         loss_tot.append(loss.item())
 
     averaged_loss = sum(loss_tot) / len(test_data_loader)
-    writer.add_scalars('Loss/train', { 'test_loss' : averaged_loss}, global_step)
+    writer.add_scalars('train', { 'test_loss' : averaged_loss}, global_step)
     return averaged_loss
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
