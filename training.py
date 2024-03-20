@@ -809,7 +809,7 @@ if __name__ == "__main__":
     model.decoder = lora_l_decoder
     for param in model.encoder.parameters():
         param.requires_grad = False
-    for param in model.audio.parameters():
+    for param in model.audio_encoder.parameters():
         param.requires_grad = True
     #for param in model.decoder.parameters():
     #    param.requires_grad = False
