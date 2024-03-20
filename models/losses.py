@@ -20,12 +20,12 @@ class LipSyncLoss(torch.nn.Module):
 
     def load_network(self, path):
         self.net = SyncNet_color()
-        self.optimizer = optim.Adam(self.net)
         checkpoint = torch.load(path)
         self.net.load_state_dict(checkpoint["state_dict"])
         #for param in self.net.parameters():
         #    param.requires_grad = False
         self.net = self.net.to(self.device)
+        self.optimizer = optim.Adam([p for p in self.net.parameters() if p.requires_grad])
 
     def cosine_loss(self, a, v, y):
         d = nn.functional.cosine_similarity(a, v)
