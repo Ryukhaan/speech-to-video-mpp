@@ -83,26 +83,6 @@ class PerceptualLoss(torch.nn.Module):
         loss = F.mse_loss(vgg_sr, vgg_hr)
         return loss
 
-class FIDLoss(torch.nn.Module):
-
-    def __init__(self, device):
-        super().__init__()
-        self.device = device
-
-     def forward(self, y_pred, y_true):
-         # calculate mean and covariance statistics
-         mu1, sigma1 = y_pred.mean(axis=0), torch.cov(y_pred)
-         mu2, sigma2 = y_true.mean(axis=0), torch.cov(y_true)
-         # calculate sum squared difference between means
-         ssdiff = torch.sum((mu1 - mu2) ** 2.0)
-         # calculate sqrt of product between cov
-         covmean = torch.sqrt(sigma1.dot(sigma2))
-         # check and correct imaginary numbers from sqrt
-         #if iscomplexobj(covmean):
-         #    covmean = covmean.real
-         # calculate score
-         fid = ssdiff + torch.trace(sigma1 + sigma2 - 2.0 * covmean)
-         return fid
 class TotalVariationLoss(torch.nn.Module):
      def __init__(self, device):
          super(TotalVariationLoss, self).__init__()
