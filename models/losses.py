@@ -3,8 +3,9 @@ from torch import nn
 import torchvision
 import numpy
 import torch.nn.functional as F
-from models.syncnet import SyncNet_color
+from torch import optim
 
+from models.syncnet import SyncNet_color
 from models.ssim import SSIM, MS_SSIM
 
 class LipSyncLoss(torch.nn.Module):
@@ -19,10 +20,11 @@ class LipSyncLoss(torch.nn.Module):
 
     def load_network(self, path):
         self.net = SyncNet_color()
+        self.optimizer = optim.Adam(self.net)
         checkpoint = torch.load(path)
         self.net.load_state_dict(checkpoint["state_dict"])
-        for param in self.net.parameters():
-            param.requires_grad = False
+        #for param in self.net.parameters():
+        #    param.requires_grad = False
         self.net = self.net.to(self.device)
 
     def cosine_loss(self, a, v, y):
@@ -31,12 +33,14 @@ class LipSyncLoss(torch.nn.Module):
         return loss
 
     def forward(self, audio, y_pred):
+        self.net.train()
+        self.optimizer.zero_grad()
         y_pred = y_pred[:,:,y_pred.size(2)//2:]
-        #y_pred = y_pred[:, :, :, y_pred.size(3)//2:]
-        #y_pred = torch.cat([y_pred[:, :, i] for i in range(self.number_of_frames)], dim=1)
         audio_emb, video_emb = self.net(audio, y_pred)
         y = torch.ones(y_pred.size(0), 1).float().to(self.device)
         p = self.cosine_loss(audio_emb, video_emb, y)
+        p.backward(retain_graph=True)
+        self.optimizer.step()
         return p
 
 
@@ -54,6 +58,7 @@ class PerceptualLoss(torch.nn.Module):
         #vgg_std = (0.229, 0.224, 0.225)
         #self.sub_mean = common.MeanShift(rgb_range, vgg_mean, vgg_std)
         self.vgg.requires_grad = False
+
     def forward(self, y_pred: torch.Tensor, y_true: torch.Tensor) -> torch.Tensor:
         """Compute VGG/Perceptual loss between Super-Resolved and High-Resolution
 
