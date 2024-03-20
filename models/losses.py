@@ -39,7 +39,8 @@ class LipSyncLoss(torch.nn.Module):
         audio_emb, video_emb = self.net(audio, y_pred)
         y = torch.ones(y_pred.size(0), 1).float().to(self.device)
         p = self.cosine_loss(audio_emb, video_emb, y)
-        p.backward()
+        q =  self.cosine_loss(audio_emb, video_emb, y)
+        q.backward()
         self.optimizer.step()
         return p
 
