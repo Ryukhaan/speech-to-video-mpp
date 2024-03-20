@@ -83,6 +83,26 @@ class PerceptualLoss(torch.nn.Module):
         loss = F.mse_loss(vgg_sr, vgg_hr)
         return loss
 
+class FIDLoss(torch.nn.Module):
+
+    def __init__(self, device):
+        super().__init__()
+        self.device = device
+
+     def forward(self, y_pred, y_true):
+         # calculate mean and covariance statistics
+         mu1, sigma1 = y_pred.mean(axis=0), torch.cov(y_pred)
+         mu2, sigma2 = y_true.mean(axis=0), torch.cov(y_true)
+         # calculate sum squared difference between means
+         ssdiff = torch.sum((mu1 - mu2) ** 2.0)
+         # calculate sqrt of product between cov
+         covmean = torch.sqrt(sigma1.dot(sigma2))
+         # check and correct imaginary numbers from sqrt
+         #if iscomplexobj(covmean):
+         #    covmean = covmean.real
+         # calculate score
+         fid = ssdiff + torch.trace(sigma1 + sigma2 - 2.0 * covmean)
+         return fid
 class TotalVariationLoss(torch.nn.Module):
      def __init__(self, device):
          super(TotalVariationLoss, self).__init__()
@@ -109,11 +129,11 @@ class LoraLoss(torch.nn.Module):
         self.L_perceptual = PerceptualLoss(device) #VGGPerceptualLoss()
         self.tv_loss = TotalVariationLoss(device)
         self.ssim_loss = MS_SSIM(data_range=1.0)
-        self.lambda_1 = 0.16
+        self.lambda_1 = 1.
         self.lambda_p = 1.
-        self.lambda_sync = .3
-        self.lambda_tv = 0.1
-        self.lambda_ssim = 0.84
+        self.lambda_sync = .4
+        #self.lambda_tv = 0.1
+        #self.lambda_ssim = 0.84
 
     def forward(self, face_pred, face_true, audio_seq):
         B = audio_seq.size(0)
@@ -146,5 +166,5 @@ class LoraLoss(torch.nn.Module):
         return self.lambda_1 * l1_val \
             + self.lambda_sync * lsync_val \
             + self.lambda_p * lp_val \
-            + self.lambda_ssim * lssim_val \
-            + self.lambda_tv * tv_val
+            #+ self.lambda_ssim * lssim_val \
+            #+ self.lambda_tv * tv_val
