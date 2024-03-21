@@ -498,7 +498,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             for b in range(pred.size(0)):
                 print(pred[b,:,0].squeeze().detach().cpu().numpy().shape)
-                fr_pil = [Image.fromarray((255 * pred[b,:,frame].squeeze().detach().cpu().numpy()).astype(np.uint8)) for frame in range(lnet_T)]
+                fr_pil = [Image.fromarray((255 * pred[b,:,frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(96,96,3)) for frame in range(lnet_T)]
                 pred_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
             pred_lms = torch.FloatTensor(pred_lms).to(device)
             loss_lm = nn.MSELoss()(lms[:,:,48:], pred_lms[:,:,48:])
