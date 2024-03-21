@@ -376,7 +376,7 @@ class Dataset(object):
 
         mels = self.crop_audio_window(self.mel.copy(), start_frame)
         indiv_mels = self.get_subframes(self.mel_batch.copy(), start_frame)
-
+        lms  = self.get_subframes(self.lm, start_frame)
         stabilized_window = self.get_subframes(self.img_batch.copy(), start_frame)
         # BGR -> RGB
         #stabilized_window[:, :,:, :3] = np.flip(stabilized_window[:,:,:,:3], axis=3)
@@ -395,7 +395,7 @@ class Dataset(object):
         #    return None, None, None, None
         assert stabilized_window.shape == torch.Size([6, 5, self.in_size, self.in_size]), "{}, {}, {}".format(stabilized_window.shape, start_frame, self.img_batch.shape)
         #assert img_original.shape == torch.Size([3, 5, 96, 96])
-        return stabilized_window, indiv_mels, mels, img_original
+        return stabilized_window, indiv_mels, mels, lms, img_original
 
     def save_preprocess(self):
         self.D_Net, self.model = load_model(self.args, device)
@@ -471,11 +471,12 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     if writer is None:
         writer = SummaryWriter('runs/lora')
     best_eval_loss = 100.
+    kp_extractor = KeypointExtractor()
     for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch):
         running_loss = []
         disc_loss = []
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader), leave=True)
-        for step, (x, indiv_mel, mel, y) in prog_bar:
+        for step, (x, indiv_mel, mel, lms, y) in prog_bar:
             if x is None: continue
 
             # ---------------------
@@ -491,7 +492,17 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             mel = mel.to(device)
             pred = pred.to(device)
+
             y = y.to(device)
+            # KeyPoint Extractor
+            pred_lms = np.array(pred.size(0), lnet_T, 68, 2)
+
+            for b in range(pred.size(0)):
+                fr_pil = [Image.fromarray(frame.detach().cpu().numpy()) for frame in pred]
+                pred_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
+            pred_lms = torch.FloatTensor(pred_lms).to(device)
+            loss_lm = nn.MSELoss()(lms[:,:,48:], pred_lms[:,:,48:])
+
 
             # Extract validity predictions from discriminator
             pred_real = disc_model(pred).detach()
@@ -567,6 +578,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 disc_model, optimizer, global_step, checkpoint_dir, global_epoch, prefix='disc'
             )
         global_epoch += 1
+    del kp_extractor.detector
 
 def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=None):
     #eval_steps = 1400
