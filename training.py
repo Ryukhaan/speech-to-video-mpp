@@ -774,7 +774,7 @@ if __name__ == "__main__":
     decoder_config = LoraConfig(
         r=32,
         lora_alpha=16,
-        target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
+        target_modules="all-linear",
         lora_dropout=0.1,
         bias="none",
     )
