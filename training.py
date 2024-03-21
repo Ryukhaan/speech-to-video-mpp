@@ -504,7 +504,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                     (255 * y[b, :, frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(384, 384, 3)) for
                     frame in range(lnet_T)]
                 true_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
-            print(pred_lms[0,0,48:], true_lms[0,0,48:])
             pred_lms = torch.FloatTensor(pred_lms).to(device) / 96.
             true_lms = torch.FloatTensor(true_lms).to(device) / 384.
             loss_lm = nn.MSELoss()(true_lms[:,:,48:], pred_lms[:,:,48:])
@@ -802,8 +801,8 @@ if __name__ == "__main__":
 
     # Lora Config
     decoder_config = LoraConfig(
-        r=32,
-        lora_alpha=16,
+        r=512,
+        lora_alpha=256,
         target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
         lora_dropout=0.1,
         bias="none",
