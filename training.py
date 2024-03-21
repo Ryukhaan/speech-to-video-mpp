@@ -492,13 +492,13 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             mel = mel.to(device)
             pred = pred.to(device)
-
+            print(pred.shape)
             y = y.to(device)
             # KeyPoint Extractor
             pred_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
 
             for b in range(pred.size(0)):
-                fr_pil = [Image.fromarray(frame.detach().cpu().numpy()) for frame in pred]
+                fr_pil = [Image.fromarray(frame.squeeze(0).detach().cpu().numpy()) for frame in pred]
                 pred_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
             pred_lms = torch.FloatTensor(pred_lms).to(device)
             loss_lm = nn.MSELoss()(lms[:,:,48:], pred_lms[:,:,48:])
