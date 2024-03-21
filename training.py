@@ -472,10 +472,10 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         writer = SummaryWriter('runs/lora')
     best_eval_loss = 100.
     kp_extractor = KeypointExtractor()
-    for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch):
+    for _ in tqdm(range(global_epoch, nepochs), total=nepochs-global_epoch, position=0):
         running_loss = []
         disc_loss = []
-        prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader), leave=True)
+        prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader), leave=True, position=1)
         for step, (x, indiv_mel, mel, lms, y) in prog_bar:
             if x is None: continue
 
@@ -586,7 +586,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, wri
     loss_func = losses.LoraLoss(device)
     prog_bar = tqdm(enumerate(test_data_loader),
                     total=len(test_data_loader),
-                    leave=True,
+                    leave=True, position=1,
                     desc='Evaluating for {} steps'.format(global_step))
     kp_extractor = KeypointExtractor()
     for step, (x, indiv_mel, mel, lms, y) in prog_bar:
