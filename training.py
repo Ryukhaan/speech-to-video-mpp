@@ -776,7 +776,6 @@ if __name__ == "__main__":
         lora_alpha=16,
         target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
         lora_dropout=0.1,
-        lora_mlp = True,
         bias="none",
     )
     audio_enc_config = LoraConfig(
