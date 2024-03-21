@@ -772,10 +772,11 @@ if __name__ == "__main__":
 
     # Lora Config
     decoder_config = LoraConfig(
-        r=16,
+        r=32,
         lora_alpha=16,
         target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
         lora_dropout=0.1,
+        lora_mlp = True,
         bias="none",
     )
     audio_enc_config = LoraConfig(
