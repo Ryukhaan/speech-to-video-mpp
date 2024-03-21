@@ -493,17 +493,15 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             mel = mel.to(device)
             pred = pred.to(device)
             y = y.to(device)
-            # KeyPoint Extractor
-            pred_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
 
+            # KeyPoint Extractor Loss
+            pred_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
             for b in range(pred.size(0)):
-                print(pred[b,:,0].squeeze().detach().cpu().numpy().shape)
                 fr_pil = [Image.fromarray((255 * pred[b,:,frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(96,96,3)) for frame in range(lnet_T)]
                 pred_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
             pred_lms = torch.FloatTensor(pred_lms).to(device)
             lms = lms.to(device)
             loss_lm = nn.MSELoss()(lms[:,:,48:], pred_lms[:,:,48:])
-
 
             # Extract validity predictions from discriminator
             pred_real = disc_model(pred).detach()
@@ -511,7 +509,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             # Adversarial loss (relativistic average GAN)
             loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
-            loss = loss_func(pred, y, mel) + 0.05 * loss_GAN
+            loss = loss_func(pred, y, mel) + 0.05 * loss_GAN + loss_lm
 
             loss.backward(retain_graph=True)
             optimizer.step()
