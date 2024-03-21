@@ -588,7 +588,8 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, wri
                     total=len(test_data_loader),
                     leave=True,
                     desc='Evaluating for {} steps'.format(global_step))
-    for step, (x, indiv_mel, mel, y) in prog_bar:
+    kp_extractor = KeypointExtractor()
+    for step, (x, indiv_mel, mel, lms, y) in prog_bar:
 
         model.eval()
         x = x.to(device)
@@ -598,10 +599,21 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, wri
         mel = mel.to(device)
         pred = pred.to(device)
         y = y.to(device)
-        loss = loss_func(pred, y, mel)
+
+        pred_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
+        for b in range(pred.size(0)):
+            fr_pil = [Image.fromarray(
+                (255 * pred[b, :, frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(96, 96, 3)) for
+                      frame in range(lnet_T)]
+            pred_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
+        pred_lms = torch.FloatTensor(pred_lms).to(device)
+        lms = lms.to(device)
+        loss_lm = nn.MSELoss()(lms[:, :, 48:], pred_lms[:, :, 48:])
+
+        loss = loss_func(pred, y, mel) + loss_lm
 
         loss_tot.append(loss.item())
-
+    del kp_extractor.detector
     averaged_loss = sum(loss_tot) / len(test_data_loader)
     writer.add_scalars('train', { 'test_loss' : averaged_loss}, global_step)
     return averaged_loss
