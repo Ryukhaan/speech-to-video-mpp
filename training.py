@@ -501,11 +501,11 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 fr_pil = [Image.fromarray((255 * pred[b,:,frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(96,96,3)) for frame in range(lnet_T)]
                 pred_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
                 fr_pil = [Image.fromarray(
-                    (255 * y[b, :, frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(96, 96, 3)) for
+                    (255 * y[b, :, frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(384, 384, 3)) for
                     frame in range(lnet_T)]
                 true_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
-            pred_lms = torch.FloatTensor(pred_lms).to(device)
-            true_lms = torch.FloatTensor(true_lms).to(device)
+            pred_lms = torch.FloatTensor(pred_lms).to(device) / 96.
+            true_lms = torch.FloatTensor(true_lms).to(device) / 384.
             loss_lm = nn.MSELoss()(true_lms[:,:,48:], pred_lms[:,:,48:])
 
             # Extract validity predictions from discriminator
