@@ -495,7 +495,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             y = y.to(device)
             # KeyPoint Extractor
-            pred_lms = np.array(pred.size(0), lnet_T, 68, 2)
+            pred_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
 
             for b in range(pred.size(0)):
                 fr_pil = [Image.fromarray(frame.detach().cpu().numpy()) for frame in pred]
