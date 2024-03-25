@@ -373,7 +373,8 @@ def main():
             #xf = cv2.resize(xf,  (0,0), fx=0.5, fy=0.5)
             pp = cv2.resize(pp,  (0,0), fx=0.5, fy=0.5)
 
-            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
+            mm = [255] * 19
+            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True, mm=mm)
             cv2.imwrite('./temp/images/frame{}.png'.format(ip), pp)
             ip+=1
             out.write(pp)
