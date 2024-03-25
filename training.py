@@ -80,22 +80,28 @@ class Dataset(object):
     def __init__(self, filenames, device):
         global args
         self.args = args
+        self.device = device
         self.all_videos = filenames #get_image_list(args.data_root, split)
         self.preprocessor = preprocessing.Preprocessor(args=None)
         self.net_recon = None
+
+        # Dictionary for phoneme
+        # Decrepated
         with open('./dictionary/english_mfa_v2_0_0.json', 'r') as file:
             self.dictionary = json.load(file)
         self.dictionary = self.dictionary['phones']
         self.dictionary.insert(0, 'spn')
-        self.kp_extractor = None
 
-        #self.D_Net, self.model = fu_load_model(self.args, device)
+        # Face detection
+        self.kp_extractor = None
         self.idx = 0
-        self.clip_model, self.preprocess_clip = clip.load("ViT-B/32", device=device)
-        #for param in self.clip_model.parameters():
-        #    param.required_grad = False
-        self.device = device
         self.croper = None
+
+        # Import CLIP for text encoding
+        self.clip_model, self.preprocess_clip = clip.load("ViT-B/32", device=device)
+        for param in self.clip_model.parameters():
+            param.required_grad = False
+
 
     # Weird function
     def get_frame_id(self, frame):
@@ -120,35 +126,31 @@ class Dataset(object):
 
     def get_segmented_window(self, start_frame):
         assert lnet_T == 5
-        if start_frame < 1: return None
-        #return np.asarray([cv2.resize(frame, (96,96)) for frame in \
-        #    self.full_frames[start_frame-2:start_frame+lnet_T-2]])
-        return self.full_frames[start_frame-2:start_frame+lnet_T-2]
+        if start_frame >= 0:
+            return None
+        return self.full_frames[start_frame:start_frame+lnet_T]
 
     def get_segmented_codes(self, index, start_frame):
         assert lnet_T == 5
-        if start_frame < 1: return None
+        if start_frame >= 0:
+            return None
         codes = np.load(self.all_videos[index].split('.')[0] + "_codes.npy",
                 allow_pickle=True)
-        codes = codes[start_frame-2: start_frame+lnet_T-2]
+        codes = codes[start_frame: start_frame+lnet_T]
         codes = codes.reshape(-1, 32 * 15)
-        #print(codes.shape)
         return codes
 
     def get_segmented_mels(self, spec, start_frame):
         mels = []
         syncnet_mel_step_size = 16
         assert lnet_T == 5
-        #start_frame_num = self.get_frame_id(start_frame) + 1 # 0-indexing ---> 1-indexing
-        if start_frame - 2 < 0: return None
+        if start_frame >= 0: return None
         for i in range(start_frame, start_frame + lnet_T):
             m = self.crop_audio_window(spec, i - 2)
             if m.shape[0] != syncnet_mel_step_size:
                 return None
             mels.append(m.T)
-
         mels = np.asarray(mels)
-
         return mels
 
     def get_segmented_phones(self, index, start_frame):
@@ -160,45 +162,13 @@ class Dataset(object):
             json_data = json.load(file)
         # Get Phones and words from json
         self.words = json_data['tiers']['words']['entries']
-        self.phones = json_data['tiers']['phones']
+        #self.phones = json_data['tiers']['phones']
 
-        # Load File WAV associated to the JSON
-        #samplerate, wav_data = wavfile.read(basefile + ".wav", 'r')
-        #milliseconds = len(wav_data) / samplerate * 1000
-        # Each phones = (start_in_s, end_in_s, phone_str)
-        #self.phones_per_ms = np.zeros(int(milliseconds), dtype=np.int32)
-        # for (start, end, phone) in self.phones['entries']:
-        #     # Some errors have been transcribed by MFA
-        #     if phone == "d̪":
-        #         phone = "ð"
-        #     if phone == "t̪":
-        #         phone = "θ"
-        #     if phone == "kʷ":
-        #         phone = "k"
-        #     if phone == "tʷ":
-        #         phone = "t"
-        #     if phone == "cʷ":
-        #         phone = "k"
-        #     if phone == "ɾʲ":
-        #         phone = "ɒ"
-        #     if phone == "ɾ̃":
-        #         phone = "θ"
-        #     if phone == "ɟʷ":
-        #         phone = "ɟ"
-        #     if phone == "ɡʷ":
-        #         phone = "ɡ"
-        #     if phone == "vʷ":
-        #         phone = "v"
-        #     self.phones_per_ms[int(1000 * start):int(1000 * end)] = self.dictionary.index(phone)
-        # self.phones_per_ms = np.pad(self.phones_per_ms, ((100, 100)), 'constant', constant_values=0)
-        m_fps = 1. / 25
-        #print(start_frame, milliseconds, self.phones_per_ms.shape)
-        #phones = self.phones_per_ms[100 + m_fps*(start_frame-2) : 100 + m_fps*(start_frame-2+lnet_T) ]
-
+        m_fps = 1. / self.args.fps
         text_array = []
         for i in range(lnet_T):
-            tmin = (start_frame - 2 + i) * m_fps
-            tmax = (start_frame - 2 + i + 1) * m_fps
+            tmin = (start_frame + i) * m_fps
+            tmax = (start_frame + i + 1) * m_fps
             tmp_word = []
             for (ts, te, word) in self.words:
                 if ts < tmax and te >= tmin:
@@ -210,14 +180,9 @@ class Dataset(object):
         return text_features
 
     def crop_audio_window(self, spec, start_frame):
-        # num_frames = (T x hop_size * fps) / sample_rate
         syncnet_mel_step_size = 16
-        #basefile = self.all_videos[index].split('.')[0]
-        #start_frame_num = self.get_frame_id(start_frame)
         start_idx = int(80. * (start_frame / float(hparams.fps)))
-
         end_idx = start_idx + syncnet_mel_step_size
-
         return spec[start_idx: end_idx, :]
 
     def prepare_window(self, window):
@@ -333,20 +298,26 @@ class Dataset(object):
         img_size = 384
         size = torch.Size([30, 96, 96])
         while True:
+            # Take a random video
             self.idx = np.random.randint(0, len(self.all_videos) - 1)
+
+            # Read full frames from that video
             vidname = self.all_videos[self.idx]
             frames = self.read_video(self.idx)
-            # Sure that nframe if >= 2 and lower than N - 3
-            start_frame = np.random.randint(3, len(frames) - 4)
 
-            #print(idx, self.all_videos[self.idx])
+            # Take a random frame
+            start_frame = np.random.randint(0, len(frames) - lnet_T)
+
+            # Get sub full frames
             nframes = self.get_segmented_window(start_frame)
-            codes  = self.get_segmented_codes(self.idx, start_frame)
-            try:
-                phones = self.get_segmented_phones(self.idx, start_frame)
-            except Exception as e:
-                continue
 
+            # Get Encodec features from audio
+            codes  = self.get_segmented_codes(self.idx, start_frame)
+
+            # Get CLIP features from text
+            phones = self.get_segmented_phones(self.idx, start_frame)
+
+            # Read WAV for Wav2Lip Sync Loss
             try:
                 wavpath = vidname.split('.')[0] + '.wav'
                 wav = audio.load_wav(wavpath, hparams.sample_rate)
@@ -357,14 +328,12 @@ class Dataset(object):
                 continue
             mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
+            # Get landmarks
             if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
                 continue
 
             nframes = self.full_frames_RGB
-            #try:
-            #    self.face_3dmm_extraction(save=False, start_frame=start_frame)
-            #except Exception as e:
-            #    continue
+            # Get Hack Image
             try:
                 self.hack_3dmm_expression(save=False, start_frame=start_frame)
             except Exception as e:
@@ -427,52 +396,55 @@ class Dataset(object):
             #self.face_3dmm_extraction(save=True)
             #self.hack_3dmm_expression(save=True)
 
-def matplotlib_imshow(img, one_channel=False):
-    if one_channel:
-        img = img.mean(dim=0)
-    img = img / 2 + 0.5     # unnormalize
-    npimg = img.numpy()
-    if one_channel:
-        plt.imshow(npimg, cmap="Greys")
-    else:
-        plt.imshow(np.transpose(npimg, (1, 2, 0)))
+def datagen(frames, mels, full_frames, frames_pil, cox):
+    img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
+    #base_name = args.face.split('/')[-1]
+    refs = []
+    image_size = 256
 
-def images_to_probs(net, images, code, phone):
-    '''
-    Generates predictions from a trained network and a list of images
-    '''
-    return net(code, phone, images)
+    # original frames
+    kp_extractor = KeypointExtractor()
 
+    fr_pil = [Image.fromarray(frame) for frame in frames]
+    #fr_pil = frames.copy()
+    lms = kp_extractor.extract_keypoint(fr_pil, 'temp/' + 'x12_landmarks.txt')
+    frames_pil = [ (lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
+    crops, orig_images, quads  = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
+    inverse_transforms = [calc_alignment_coefficients(quad + 0.5, [[0, 0], [0, image_size], [image_size, image_size], [image_size, 0]]) for quad in quads]
+    del kp_extractor.detector
 
-def plot_classes_preds(net, x, code, phone, images):
-    '''
-    Generates matplotlib Figure using a trained network, along with images
-    and labels from a batch, that shows the network's top prediction along
-    with its probability, alongside the actual label, coloring this
-    information based on whether the prediction was correct or not.
-    Uses the "images_to_probs" function.
-    '''
-    preds = images_to_probs(net, x, code, phone)
-    cropped, ref = torch.split(x, 3, dim=1)
-    ref = ref.detach().cpu().numpy()
-    preds = preds.detach().cpu().numpy()
-    images = images.detach().cpu().numpy()
-    # plot the images in the batch, along with predicted and true labels
-    fig, ax = plt.subplots(figsize=(9,16), layout='tight')
-    B, C, T, Hp, Wp = preds.shape
-    B, C, T, Hi, Wi = images.shape
-    full_img = np.zeros((3,B*(Hi+Hp),T*(Wp+Wi)))
-    for idx in range(B):
-        hp = idx * (Hi+Hp)
-        hi = hp + Hp
-        for t in range(T):
-            wp = t * (Wi+Wp)
-            wi = t * (Wi+Wp)
-            full_img[:, hp:hp+Hp, wp:wp+Wp] = preds[idx,:,t,:,:]
-            full_img[:, hp:hp + Hp, wp+Wp:wp+2*Wp] = ref[idx, ::-1, t, :, :]
-            full_img[:, hi:hi+Hi, wi:wi+Wi] = images[idx,:,t,:,:]
-    ax.imshow(np.transpose(full_img, (1, 2, 0)))
-    return fig
+    oy1,oy2,ox1,ox2 = cox
+    face_det_results = face_detect(full_frames, args, jaw_correction=True)
+
+    for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames, face_det_results):
+        imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
+            cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
+
+        ff = full_frame.copy()
+        ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
+        oface, coords = face_det
+        y1, y2, x1, x2 = coords
+        refs.append(ff[y1: y2, x1:x2])
+
+    for i, m in enumerate(mels):
+        idx = 0 if args.static else i % len(frames)
+        frame_to_save = frames[idx].copy()
+        face = refs[idx]
+        oface, coords = face_det_results[idx].copy()
+
+        face = cv2.resize(face, (args.img_size, args.img_size))
+        oface = cv2.resize(oface, (args.img_size, args.img_size))
+
+        #change face and oface in img and ref
+        cv2.imwrite("./temp/sframe.png", frame_to_save)
+        cv2.imwrite("./temp/face.png", face)
+        cv2.imwrite("./temp/oface.png", oface)
+        img_batch.append(oface)
+        ref_batch.append(face)
+        mel_batch.append(m)
+        coords_batch.append(coords)
+        frame_batch.append(frame_to_save)
+        full_frame_batch.append(full_frames[idx].copy())
 
 def get_crop_orig_images(full_frames, idx, all_videos, croper):
     # face detection & cropping, cropping the first frame as the style of FFHQ
