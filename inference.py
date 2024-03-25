@@ -249,9 +249,9 @@ def main():
                                model='GPEN-BFR-512', use_sr=False)
 
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
-                               in_size=1024, channel_multiplier=2, narrow=1, sr_scale=2,
+                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=2,
                                sr_model="realesrnet",
-                               model='GPEN-BFR-1024', use_sr=True)
+                               model='GPEN-BFR-512', use_sr=True)
 
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
@@ -374,7 +374,7 @@ def main():
             pp = cv2.resize(pp,  (0,0), fx=0.5, fy=0.5)
 
             mm = [255] * 19
-            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=False, mm=mm)
+            pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=False, mm=mm)
             cv2.imwrite('./temp/images/frame{}.png'.format(ip), pp)
             ip+=1
             out.write(pp)
