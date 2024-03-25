@@ -318,12 +318,11 @@ def main():
             
             ff = xf.copy() 
             ff[y1:y2, x1:x2] = p
-            pf = xf.copy()
 
             if args.cropped_image:
+                pf = xf.copy()
                 inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
                 inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
-
                 # Nose
                 nose_mask = make_mask(lm[idx][27:35 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
                                       apply_dilatation=True, idx=1)
@@ -355,10 +354,10 @@ def main():
             cropped_faces, restored_faces, restored_img = restorer.enhance(
                 ff, has_aligned=False, only_center_face=True, paste_back=True)
                 # 0,   1,   2,   3,   4,   5,   6,   7,   8,  9, 10,  11,  12,
-            if args.cropped_image:
-                mm =  [255, 0, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
-            else:
-                mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            #if args.cropped_image:
+            #    mm =  [255, 0, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            #else:
+            mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
 
             mouse_mask = np.zeros_like(restored_img)
             tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
