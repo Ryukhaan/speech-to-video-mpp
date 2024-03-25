@@ -88,7 +88,7 @@ class FaceEnhancement(object):
         mask = cv2.GaussianBlur(mask, (101, 101), 11) #4
         return mask.astype(np.float32)
 
-    def process(self, img, ori_img, face_enhance=True, bbox=None, possion_blending=False):
+    def process(self, img, ori_img, face_enhance=True, bbox=None, possion_blending=False, mm=None):
         orig_faces, enhanced_faces = [], []
 
         #if aligned:
@@ -140,7 +140,8 @@ class FaceEnhancement(object):
             '''
 
             # no ear, no neck, no hair&hat,  only face region
-            mm = [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            if mm is None:
+                mm = [0, 255, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             mask_sharp = self.faceparser.process(ef, mm)[0]/255.
             tmp_mask = self.mask_postprocess(mask_sharp)
 
