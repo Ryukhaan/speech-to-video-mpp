@@ -249,9 +249,9 @@ def main():
                                model='GPEN-BFR-512', use_sr=False)
 
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
-                               in_size=2048, channel_multiplier=2, narrow=1, sr_scale=2,
+                               in_size=1024, channel_multiplier=2, narrow=1, sr_scale=2,
                                sr_model=None,
-                               model='GPEN-BFR-2048', use_sr=True)
+                               model='GPEN-BFR-1024', use_sr=True)
 
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
@@ -370,7 +370,7 @@ def main():
             img = Laplacian_Pyramid_Blending_with_mask(restored_img, ff, full_mask[:, :, 0], 10)
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
             print(pp.shape, img.shape, restored_img.shape, xf.shape)
-            xf = cv2.resize(xf, (2048,2048))
+            #xf = cv2.resize(xf, (2048,2048))
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
             cv2.imwrite('./temp/images/frame{}.png'.format(ip), pp)
             ip+=1
