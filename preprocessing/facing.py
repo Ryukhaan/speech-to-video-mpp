@@ -165,9 +165,8 @@ class Preprocessor():
         del net_recon
         # load DNet, model(LNet and ENet)
         torch.cuda.empty_cache()
-        if self.args.use_lora:
+        if not self.args.use_lora:
             self.D_Net, self.model = load_model(self.args, device)
-            print(self.model)
         else:
             self.D_Net, self.model = load_lora_model(self.args, device)
 
