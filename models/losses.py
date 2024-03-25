@@ -111,7 +111,7 @@ class LoraLoss(torch.nn.Module):
         self.ssim_loss = MS_SSIM(data_range=1.0)
         self.lambda_1 = 1.
         self.lambda_p = 1.
-        self.lambda_sync = .01
+        self.lambda_sync = .3
         #self.lambda_tv = 0.1
         #self.lambda_ssim = 0.84
 
