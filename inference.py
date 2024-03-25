@@ -354,10 +354,10 @@ def main():
             cropped_faces, restored_faces, restored_img = restorer.enhance(
                 ff, has_aligned=False, only_center_face=True, paste_back=True)
                 # 0,   1,   2,   3,   4,   5,   6,   7,   8,  9, 10,  11,  12,
-            #if args.cropped_image:
-            #    mm =  [255, 0, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
-            #else:
-            mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            if args.cropped_image:
+                mm =  [255, 0, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
+            else:
+                mm = [0,   0,   0,   0,   0,   0,   0,   0,   0,  0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
 
             mouse_mask = np.zeros_like(restored_img)
             tmp_mask = enhancer.faceparser.process(restored_img[y1:y2, x1:x2], mm)[0]
@@ -370,8 +370,8 @@ def main():
             pp = np.uint8(cv2.resize(np.clip(img, 0 ,255), (width, height)))
 
             #c = [0.5 * p for p in c]
-            xf = cv2.resize(xf,  (0,0), fx=2, fy=2)
-            pp = cv2.resize(pp,  (0,0), fx=2, fy=2)
+            xf = cv2.resize(xf,  (0,0), fx=0.5, fy=0.5)
+            pp = cv2.resize(pp,  (0,0), fx=0.5, fy=0.5)
 
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=False, possion_blending=True)
             cv2.imwrite('./temp/images/frame{}.png'.format(ip), pp)
