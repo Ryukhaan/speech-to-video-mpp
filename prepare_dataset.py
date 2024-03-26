@@ -116,20 +116,20 @@ def get_frame_id(self, frame):
 def read_video(dataset, index, args):
     video_stream = cv2.VideoCapture(dataset[index])
     fps = video_stream.get(cv2.CAP_PROP_FPS)
-    if os.path.isfile(dataset[index].split('.')[0] + "_cropped.npy"):
-        full_frames = np.load(dataset[index].split('.')[0] + "_cropped.npy", allow_pickle=True)
-    else:
-        full_frames = []
-        while True:
-           still_reading, frame = video_stream.read()
-           if not still_reading:
-               video_stream.release()
-               break
-           y1, y2, x1, x2 = args.crop
-           if x2 == -1: x2 = frame.shape[1]
-           if y2 == -1: y2 = frame.shape[0]
-           frame = frame[y1:y2, x1:x2]
-           full_frames.append(frame)
+    #if os.path.isfile(dataset[index].split('.')[0] + "_cropped.npy"):
+    #    full_frames = np.load(dataset[index].split('.')[0] + "_cropped.npy", allow_pickle=True)
+    #else:
+    full_frames = []
+    while True:
+       still_reading, frame = video_stream.read()
+       if not still_reading:
+           video_stream.release()
+           break
+       y1, y2, x1, x2 = args.crop
+       if x2 == -1: x2 = frame.shape[1]
+       if y2 == -1: y2 = frame.shape[0]
+       frame = frame[y1:y2, x1:x2]
+       full_frames.append(frame)
     return full_frames, fps
 
 def get_segmented_phones(self, index, start_frame):
