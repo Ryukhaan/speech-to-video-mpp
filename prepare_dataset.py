@@ -351,7 +351,7 @@ def preprocess(dataset, args):
         imgs = hack_3dmm_expression(dataset, idx, frames_pil, semantic_npy, args, reprocess=args.re_preprocess)
 
         # Split mel-spectrogram into chunks
-        imgs, _, lm, mel_chunks = get_full_mels(dataset, idx, imgs, full_frames, lm, fps)
+        imgs, full_frames, lm, mel_chunks = get_full_mels(dataset, idx, imgs, full_frames, lm, fps)
 
         # Enhanced images
         imgs_enhanced = get_enhanced_imgs(imgs)
