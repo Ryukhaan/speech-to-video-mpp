@@ -66,7 +66,7 @@ warnings.filterwarnings("ignore")
 
 def options():
     parser = argparse.ArgumentParser(description='Inference code to lip-sync videos in the wild using Wav2Lip models')
-
+    parser.add_argument('--data_root', type=str, required=True)
     parser.add_argument('--DNet_path', type=str, default='checkpoints/DNet.pt')
     parser.add_argument('--face3d_net_path', type=str, default='checkpoints/face3d_pretrain_epoch_20.pth')
     parser.add_argument('--exp_img', type=str, help='Expression template. neutral, smile or image path', default=None)
