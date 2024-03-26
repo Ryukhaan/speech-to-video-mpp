@@ -102,7 +102,6 @@ class Dataset(object):
         for param in self.clip_model.parameters():
             param.required_grad = False
 
-
     # Weird function
     def get_frame_id(self, frame):
         return int(basename(frame).split('.')[0])
@@ -677,6 +676,27 @@ def load_checkpoint(path, model, optimizer, reset_optimizer=False, overwrite_glo
         global_epoch = checkpoint["global_epoch"]
 
     return model
+
+def make_all_temporary_files(dataset):
+    def initialize(self):
+        # if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
+        self.read_full_video()
+        self.landmarks_estimate(self.full_frames, save=False)
+        self.face_3dmm_extraction(save=False)
+        self.hack_3dmm_expression(save=False)
+        self.get_full_mels()
+        self.get_enhanced_imgs()
+        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + '_img_batch.npy'):
+            gen = datagen(self.imgs_enhanced, self.mel_chunks, self.full_frames, None, self.coordinates)
+            self.img_batch, self.mel_batch, self.frame_batch, self.coords_batch, self.img_original, self.full_frame_batch = gen
+            np.save(self.all_videos[self.idx].split('.')[0] + '_img_batch.npy', self.img_batch)
+            np.save(self.all_videos[self.idx].split('.')[0] + '_mel_batch.npy', self.mel_batch)
+            np.save(self.all_videos[self.idx].split('.')[0] + '_img_orig.npy', self.img_original)
+        else:
+            self.img_batch = np.load(self.all_videos[self.idx].split('.')[0] + '_img_batch.npy', allow_pickle=True)
+            self.mel_batch = np.load(self.all_videos[self.idx].split('.')[0] + '_mel_batch.npy', allow_pickle=True)
+            self.img_original = np.load(self.all_videos[self.idx].split('.')[0] + '_img_orig.npy', allow_pickle=True)
+
 
 if __name__ == "__main__":
     use_cuda = torch.cuda.is_available()
