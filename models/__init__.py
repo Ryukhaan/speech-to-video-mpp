@@ -52,7 +52,7 @@ def load_lora_network(args):
     torch.cuda.empty_cache()
     L_net = LNet()
     E_net = ENet(lnet=L_net)
-    model = load_checkpoint(args.ENet_path, E_net)
+    #model = load_checkpoint(args.ENet_path, E_net)
     decoder_config = LoraConfig(
         r=512,
         lora_alpha=256,
@@ -68,7 +68,8 @@ def load_lora_network(args):
     )
     lora_l_decoder = get_peft_model(E_net.low_res.decoder, decoder_config)
     model.low_res.decoder = lora_l_decoder
-    model = load_checkpoint(args.lora_path, model)
+
+    model = load_checkpoint(args.ENet_path, model)
 
     #for param in model.parameters():
     #    param.requires_grad = False
