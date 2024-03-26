@@ -66,7 +66,7 @@ def load_lora_network(args):
         target_modules=["conv_block.0"],
         lora_dropout=0.0
     )
-    lora_l_decoder = get_peft_model(model.low_res.decoder, decoder_config)
+    model = get_peft_model(model.low_res.decoder, decoder_config)
     model = load_checkpoint(args.lora_path, model)
 
     #for param in model.parameters():
