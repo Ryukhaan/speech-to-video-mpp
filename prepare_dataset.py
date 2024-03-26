@@ -68,6 +68,7 @@ def options():
     parser = argparse.ArgumentParser(description='Inference code to lip-sync videos in the wild using Wav2Lip models')
     parser.add_argument('--data_root', type=str, required=True)
     parser.add_argument('--DNet_path', type=str, default='checkpoints/DNet.pt')
+    parser.add_argument('--LNet_path', type=str, default='checkpoints/LNet.pth')
     parser.add_argument('--face3d_net_path', type=str, default='checkpoints/face3d_pretrain_epoch_20.pth')
     parser.add_argument('--exp_img', type=str, help='Expression template. neutral, smile or image path', default=None)
     parser.add_argument('--outfile', type=str, help='Video path to save result')
@@ -109,6 +110,8 @@ lnet_T = 5
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
+net_recon = load_face3d_net(args.face3d_net_path, device)
+D_Net, _ = load_model(args, device)
 # Weird function
 def get_frame_id(self, frame):
     return int(basename(frame).split('.')[0])
@@ -163,10 +166,10 @@ def landmarks_estimate(dataset, idx, nframes, reprocess=False):
         #lm = lm.reshape([lnet_T, -1, 2])
     return lm, coordinates, frames_pil
 
-def face_3dmm_extraction(dataset, idx, args, frames_pil, lm, reprocess=False):
+def face_3dmm_extraction(dataset, idx, args, frames_pil, lm, net_recon, reprocess=False):
     torch.cuda.empty_cache()
     if not os.path.isfile(dataset[idx].split('.')[0] + "_coeffs.npy") or reprocess:
-        net_recon = load_face3d_net(args.face3d_net_path, device)
+        #net_recon = load_face3d_net(args.face3d_net_path, device)
         lm3d_std = load_lm3d('checkpoints/BFM')
         video_coeffs = []
         for idx in range(len(frames_pil)):  # , desc="[Step 2] 3DMM Extraction In Video:"):
@@ -201,7 +204,7 @@ def face_3dmm_extraction(dataset, idx, args, frames_pil, lm, reprocess=False):
 
 def hack_3dmm_expression(dataset, idx, frames_pil, semantic_npy, args, reprocess=False):
     expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
-    D_Net, _ = load_model(args, device)
+    #D_Net, _ = load_model(args, device)
     # Video Image Stabilized
     if not os.path.isfile(dataset[idx].split('.')[0] + '_stablized.npy'):
         imgs = []
@@ -224,7 +227,7 @@ def hack_3dmm_expression(dataset, idx, frames_pil, semantic_npy, args, reprocess
             imgs.append(cv2.cvtColor(img_stablized, cv2.COLOR_RGB2BGR))
         if reprocess:
             np.save(dataset[idx].split('.')[0] + '_stablized.npy', imgs)
-        del D_Net
+        #del D_Net
         torch.cuda.empty_cache()
     else:
         imgs = np.load(dataset[idx].split('.')[0] + "_stablized.npy")
