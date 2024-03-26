@@ -50,11 +50,12 @@ def load_training_networks(args):
 
 def load_lora_network(args):
     torch.cuda.empty_cache()
-
     L_net = LNet()
+    E_net = ENet(lnet=L_net)
+
     decoder_config = LoraConfig(
-        r=16,
-        lora_alpha=16,
+        r=512,
+        lora_alpha=256,
         target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
         lora_dropout=0.1,
         bias="none",
@@ -65,14 +66,12 @@ def load_lora_network(args):
         target_modules=["conv_block.0"],
         lora_dropout=0.0
     )
-    lora_l_decoder = get_peft_model(L_net.decoder, decoder_config)
-    lora_ae_encode = get_peft_model(L_net.audio_encoder, audio_enc_config)
-    L_net.decoder = lora_l_decoder
-    L_net.audio_encoder = lora_ae_encode
-    L_net = load_checkpoint(args.LNet_path, L_net)
+    lora_l_decoder = get_peft_model(E_net.low_res.decoder, decoder_config)
+    E_net.low_res.decoder = lora_l_decoder
 
-    E_net = ENet(lnet=L_net)
     model = load_checkpoint(args.ENet_path, E_net)
+    for param in model.parameters():
+        param.requires_grad = False
     return model.eval()
 
 def load_DNet(args):

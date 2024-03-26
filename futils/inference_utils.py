@@ -67,6 +67,7 @@ def train_options():
 
     parser.add_argument('--use_lora', default=False, action='store_true',
                         help="Use LoRA model in inference")
+    parser.add_argument('--lora_path', type=str, default='checkpoints/Lora.pth')
     args = parser.parse_args()
     return args
 
@@ -112,6 +113,7 @@ def options():
                         help="Resize image for face detection")
     parser.add_argument('--use_lora', default=False, action='store_true',
                         help="Use LoRA model in inference")
+    parser.add_argument('--lora_path', type=str, default='checkpoints/Lora.pth')
 
     args = parser.parse_args()
     return args
@@ -291,12 +293,6 @@ def load_model(args, device):
     torch.cuda.empty_cache()
     D_Net = load_DNet(args).to(device)
     model = load_network(args).to(device)
-    return D_Net, model
-
-def load_lora_model(args, device):
-    torch.cuda.empty_cache()
-    D_Net = load_DNet(args).to(device)
-    model = load_lora_network(args).to(device)
     return D_Net, model
 
 def load_lora_model(args, device):
