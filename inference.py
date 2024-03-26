@@ -167,8 +167,8 @@ def main():
                 pred = pred * mask + cur_gen_faces * (1 - mask) 
         
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
-        if args.use_lora:
-            pred = pred[:,:,:,::-1]
+        #if args.use_lora:
+        #    pred = pred[:,:,:,::-1]
         torch.cuda.empty_cache()
         ip=0
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
@@ -236,6 +236,7 @@ def main():
             mm = [255] * 19
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True, mm=mm)
             cv2.imwrite('./temp/images/frame{}.png'.format(ip), pp)
+            cv2.imwrite('./temp/images/pred{}.png'.format(ip), p)
             ip+=1
             out.write(pp)
 
