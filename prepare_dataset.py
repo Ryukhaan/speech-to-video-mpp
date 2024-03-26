@@ -118,7 +118,6 @@ def read_video(dataset, index, args):
     fps = video_stream.get(cv2.CAP_PROP_FPS)
     if os.path.isfile(dataset[index].split('.')[0] + "_cropped.npy"):
         full_frames = np.load(dataset[index].split('.')[0] + "_cropped.npy", allow_pickle=True)
-        print(type(full_frames[0]))
     else:
         full_frames = []
         while True:
@@ -137,8 +136,9 @@ def landmarks_estimate(dataset, idx, nframes, reprocess=False):
     # face detection & cropping, cropping the first frame as the style of FFHQ
     croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
 
-    cv2.imwrite('/home/dremi/check.png', nframes[0])
-    full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
+    #cv2.imwrite('/home/dremi/check.png', nframes[0])
+    #full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
+    full_frames_RGB = [np.array(frame) for frame in nframes]
 
     # Why there was a try ?
     full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512)  # Why 512 ?
