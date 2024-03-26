@@ -138,7 +138,7 @@ def landmarks_estimate(dataset, idx, nframes, reprocess=False):
 
     #cv2.imwrite('/home/dremi/check.png', nframes[0])
     #full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
-    full_frames_RGB = [np.array(frame) for frame in nframes]
+    full_frames_RGB = [np.asarray(frame) for frame in nframes]
 
     # Why there was a try ?
     full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512)  # Why 512 ?
