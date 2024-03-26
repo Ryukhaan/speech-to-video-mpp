@@ -91,7 +91,7 @@ def read_video(dataset, index, args):
            if y2 == -1: y2 = frame.shape[0]
            frame = frame[y1:y2, x1:x2]
            full_frames.append(frame)
-    return full_frames
+    return full_frames, fps
 
 
 def get_segmented_mels(dataset, spec, start_frame):
@@ -234,7 +234,42 @@ def hack_3dmm_expression(dataset, idx, frames_pil, semantic_npy, args, reprocess
         torch.cuda.empty_cache()
     else:
         imgs = np.load(dataset[idx].split('.')[0] + "_stablized.npy")
+
     return imgs
+
+def get_full_mels(dataset, idx, imgs, full_frames, lm, fps):
+    vidname = dataset[idx]
+    wavpath = vidname.split('.')[0] + '.wav'
+    wav = audio.load_wav(wavpath, hparams.sample_rate)
+    mel = audio.melspectrogram(wav)
+    if np.isnan(mel.reshape(-1)).sum() > 0:
+        raise ValueError(
+            'Mel contains nan! Using a TTS voice? Add a small epsilon noise to the wav file and try again')
+
+    mel_step_size, mel_idx_multiplier, i, mel_chunks = 16, 80. / fps, 0, []
+    while True:
+        start_idx = int(i * mel_idx_multiplier)
+        if start_idx + mel_step_size > len(mel[0]):
+            mel_chunks.append(mel[:, len(mel[0]) - mel_step_size:])
+            break
+        mel_chunks.append(mel[:, start_idx: start_idx + mel_step_size])
+        i += 1
+    imgs = imgs[:len(mel_chunks)]
+    full_frames = full_frames[:len(mel_chunks)]
+    lm = lm[:len(mel_chunks)]
+    mel = mel.T
+
+    return imgs, full_frames, lm, mel_chunks
+
+def get_enhanced_imgs(imgs):
+    #ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
+    #                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=4,
+    #                               model='GPEN-BFR-512', use_sr=False)
+    imgs_enhanced = []
+    for idx in range(len(imgs)):
+        pred = cv2.resize(imgs[idx], (256, 256))
+        imgs_enhanced.append(pred)
+    return imgs_enhanced
 
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
@@ -304,22 +339,22 @@ def preprocess(dataset, args):
     # if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
     for idx in tqdm(range(len(dataset))):
         # Read the full frame from the video idx
-        full_frames = read_video(dataset, idx, args)
+        full_frames, fps = read_video(dataset, idx, args)
 
         # Get landmarks with face detection (already save
         lm, coordinates, frames_pil = landmarks_estimate(dataset, idx, full_frames, reprocess=args.re_preprocess)
 
         # Get 3DMM features
-        face_3dmm_extraction(dataset, idx, args, frames_pil, lm, reprocess=args.re_preprocess)
+        semantic_npy = face_3dmm_extraction(dataset, idx, args, frames_pil, lm, reprocess=args.re_preprocess)
 
         # Hack the 3DMM features to have neutral face
-        hack_3dmm_expression(dataset, idx, frames_pil, semantic_npy, args, reprocess=args.re_preprocess)
+        imgs = hack_3dmm_expression(dataset, idx, frames_pil, semantic_npy, args, reprocess=args.re_preprocess)
 
         # Split mel-spectrogram into chunks
-        mel_chunks = get_full_mels()
+        imgs, _, lm, mel_chunks = get_full_mels(dataset, idx, imgs, full_frames, lm, fps)
 
         # Enhanced images
-        imgs_enhanced = get_enhanced_imgs()
+        imgs_enhanced = get_enhanced_imgs(imgs)
 
         # Recrop face according to mel chunks
         gen = datagen(imgs_enhanced, mel_chunks, full_frames, None, coordinates)
