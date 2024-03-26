@@ -573,14 +573,14 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
         with torch.no_grad():
             avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=writer)
-        if avg_eval_loss < best_eval_loss:
-            best_eval_loss = avg_eval_loss
-            save_checkpoint(
-                model, optimizer, global_step, checkpoint_dir, global_epoch
-            )
-            save_checkpoint(
-                disc_model, optimizer, global_step, checkpoint_dir, global_epoch, prefix='disc'
-            )
+            if avg_eval_loss < best_eval_loss:
+                best_eval_loss = avg_eval_loss
+                save_checkpoint(
+                    model, optimizer, global_step, checkpoint_dir, global_epoch
+                )
+                save_checkpoint(
+                    disc_model, optimizer, global_step, checkpoint_dir, global_epoch, prefix='disc'
+                )
         global_epoch += 1
     del kp_extractor.detector
 

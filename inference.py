@@ -245,13 +245,14 @@ def main():
     #enhancer = FaceEnhancement(base_dir='checkpoints', size=1024, model='GPEN-BFR-1024', use_sr=False, \
     #                           sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
     ref_enhancer = FaceEnhancement(args, base_dir='checkpoints',
-                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=2, sr_model=None,
-                               model='GPEN-BFR-512', use_sr=False)
+                               in_size=512, channel_multiplier=2, narrow=1,
+                                sr_scale=2, sr_model=None, use_sr=False,
+                               model='GPEN-BFR-512',)
 
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
-                               in_size=512, channel_multiplier=2, narrow=1, sr_scale=1,
-                               sr_model="realesrnet",
-                               model='GPEN-BFR-512', use_sr=True)
+                               in_size=512, channel_multiplier=2, narrow=1,
+                               sr_model="realesrnet", sr_scale=1, use_sr=True,
+                               model='GPEN-BFR-512')
 
     imgs_enhanced = []
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
@@ -371,7 +372,7 @@ def main():
 
             #c = [0.5 * p for p in c]
             #xf = cv2.resize(xf,  (0,0), fx=0.5, fy=0.5)
-            pp = cv2.resize(pp,  (0,0), fx=0.5, fy=0.5)
+            #pp = cv2.resize(pp,  (0,0), fx=0.5, fy=0.5)
 
             mm = [255] * 19
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=False, mm=mm)
