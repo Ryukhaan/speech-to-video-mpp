@@ -197,7 +197,7 @@ def main():
                 bottom_mask = make_mask(lm[idx][0:16 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
                                         apply_dilatation=False, idx=4)
                 bottom_mask = cv2.dilate(bottom_mask, np.array([[0, 1, 0], [0, 1, 0], [0, 0, 0]], dtype=np.uint8),
-                                         iterations=100)
+                                         iterations=10)
                 # Bottom Face - All others
                 mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
 
