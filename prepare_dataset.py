@@ -165,7 +165,7 @@ def landmarks_estimate(dataset, idx, nframes, reprocess=False):
         #lm = lm.reshape([lnet_T, -1, 2])
     return lm, coordinates, frames_pil
 
-def face_3dmm_extraction(dataset, idx, args, frames_pil, lm, net_recon, reprocess=False):
+def face_3dmm_extraction(dataset, idx, args, frames_pil, lm, reprocess=False):
     torch.cuda.empty_cache()
     if not os.path.isfile(dataset[idx].split('.')[0] + "_coeffs.npy") or reprocess:
         #net_recon = load_face3d_net(args.face3d_net_path, device)
