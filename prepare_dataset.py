@@ -117,7 +117,7 @@ def read_video(dataset, index, args):
     video_stream = cv2.VideoCapture(dataset[index])
     fps = video_stream.get(cv2.CAP_PROP_FPS)
     if os.path.isfile(dataset[index].split('.')[0] + "_cropped.npy"):
-        full_frames = np.load(dataset[index].split('.')[0] + "_cropped.npy", allow_pickle=True)
+        full_frames = np.load(dataset[index].split('.')[0] + "_cropped.npy", allow_pickle=True).astype(np.float32)
     else:
         full_frames = []
         while True:
@@ -135,6 +135,7 @@ def read_video(dataset, index, args):
 def landmarks_estimate(dataset, idx, nframes, reprocess=False):
     # face detection & cropping, cropping the first frame as the style of FFHQ
     croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+
     cv2.imwrite('/home/dremi/check.png', nframes[0])
     full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
 
@@ -315,8 +316,8 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
             img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
             mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
 
-            yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
-            img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
+            return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+            #img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch, ref_batch  = [], [], [], [], [], [], []
 
     if len(img_batch) > 0:
         img_batch, mel_batch, ref_batch = np.asarray(img_batch), np.asarray(mel_batch), np.asarray(ref_batch)
@@ -325,7 +326,7 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
         img_masked[:, args.img_size//2:] = 0
         img_batch = np.concatenate((img_masked, ref_batch), axis=3) / 255.
         mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
-        yield img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
+        return img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch
 
 def preprocess(dataset, args):
     # if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
