@@ -54,8 +54,9 @@ from third_part.ganimation_replicate.model.ganimation import GANimationModel
 from futils import audio
 from futils.ffhq_preprocess import Croper
 from futils.alignment_stit import crop_faces, calc_alignment_coefficients, paste_image
-from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, train_options, split_coeff, \
-                                  trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint
+from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, train_options, \
+    split_coeff, \
+    trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint, load_model
 from futils.inference_utils import load_model as fu_load_model
 from futils import hparams, audio
 import warnings
@@ -206,7 +207,7 @@ def face_3dmm_extraction(dataset, idx, args, frames_pil, lm, reprocess=False):
 
 def hack_3dmm_expression(dataset, idx, frames_pil, semantic_npy, args, reprocess=False):
     expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
-    D_Net =
+    D_Net, _ = load_model(args, device)
     # Video Image Stabilized
     if not os.path.isfile(dataset[idx].split('.')[0] + '_stablized.npy'):
         imgs = []
@@ -312,7 +313,7 @@ def preprocess(dataset, args):
         face_3dmm_extraction(dataset, idx, args, frames_pil, lm, reprocess=args.re_preprocess)
 
         # Hack the 3DMM features to have neutral face
-        hack_3dmm_expression(save=args.re_preprocess)
+        hack_3dmm_expression(dataset, idx, frames_pil, semantic_npy, args, reprocess=args.re_preprocess)
 
         # Split mel-spectrogram into chunks
         mel_chunks = get_full_mels()

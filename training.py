@@ -262,7 +262,6 @@ class Dataset(object):
             self.semantic_npy = self.semantic_npy[start_frame:start_frame+lnet_T]
     def hack_3dmm_expression(self, save=False, start_frame=0):
         expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
-
         # Video Image Stabilized
         if not os.path.isfile( self.all_videos[self.idx].split('.')[0] + '_stablized.npy'):
             self.imgs = []
