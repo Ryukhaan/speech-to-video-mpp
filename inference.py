@@ -234,8 +234,8 @@ def main():
 
             mm = [255] * 19
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True, mm=mm)
-            #cv2.imwrite('./temp/images/frame{}.png'.format(ip), pp)
-            #ip+=1
+            cv2.imwrite('./temp/images/frame{}.png'.format(ip), pp)
+            ip+=1
             out.write(pp)
 
     out.release()
