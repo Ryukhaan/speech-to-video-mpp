@@ -116,59 +116,26 @@ def get_frame_id(self, frame):
 def read_video(dataset, index, args):
     video_stream = cv2.VideoCapture(dataset[index])
     fps = video_stream.get(cv2.CAP_PROP_FPS)
-    #if os.path.isfile(dataset[index].split('.')[0] + "_cropped.npy"):
-    #    full_frames = np.load(dataset[index].split('.')[0] + "_cropped.npy", allow_pickle=True)
-    #else:
-    full_frames = []
-    while True:
-       still_reading, frame = video_stream.read()
-       if not still_reading:
-           video_stream.release()
-           break
-       y1, y2, x1, x2 = args.crop
-       if x2 == -1: x2 = frame.shape[1]
-       if y2 == -1: y2 = frame.shape[0]
-       frame = frame[y1:y2, x1:x2]
-       full_frames.append(frame)
+    if os.path.isfile(dataset[index].split('.')[0] + "_cropped.npy"):
+        full_frames = np.load(dataset[index].split('.')[0] + "_cropped.npy", allow_pickle=True)
+    else:
+        full_frames = []
+        while True:
+           still_reading, frame = video_stream.read()
+           if not still_reading:
+               video_stream.release()
+               break
+           y1, y2, x1, x2 = args.crop
+           if x2 == -1: x2 = frame.shape[1]
+           if y2 == -1: y2 = frame.shape[0]
+           frame = frame[y1:y2, x1:x2]
+           full_frames.append(frame)
     return full_frames, fps
-
-def get_segmented_phones(self, index, start_frame):
-    assert lnet_T == 5
-    if start_frame < 1: return None
-    # Get folder and file without ext.
-    basefile = self.all_videos[index].split('.')[0]
-    with open(basefile + ".json", 'r', encoding='utf-8') as file:
-        json_data = json.load(file)
-    # Get Phones and words from json
-    self.words = json_data['tiers']['words']['entries']
-    # self.phones = json_data['tiers']['phones']
-
-    m_fps = 1. / self.args.fps
-    text_array = []
-    for i in range(lnet_T):
-        tmin = (start_frame + i) * m_fps
-        tmax = (start_frame + i + 1) * m_fps
-        tmp_word = []
-        for (ts, te, word) in self.words:
-            if ts < tmax and te >= tmin:
-                tmp_word.append(word)
-        text_array.append(" ".join(tmp_word))
-    with torch.no_grad():
-        text_tokens = clip.tokenize(text_array).to(self.device)
-        text_features = self.clip_model.encode_text(text_tokens)
-    return text_features
-
-
-def crop_audio_window(self, spec, start_frame):
-    syncnet_mel_step_size = 16
-    start_idx = int(80. * (start_frame / float(hparams.fps)))
-    end_idx = start_idx + syncnet_mel_step_size
-    return spec[start_idx: end_idx, :]
-
 
 def landmarks_estimate(dataset, idx, nframes, reprocess=False):
     # face detection & cropping, cropping the first frame as the style of FFHQ
     croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+    cv2.imwrite('/home/dremi/check.png', nframes[0])
     full_frames_RGB = [cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) for frame in nframes]
 
     # Why there was a try ?
