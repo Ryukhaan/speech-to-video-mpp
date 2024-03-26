@@ -167,7 +167,8 @@ def main():
                 pred = pred * mask + cur_gen_faces * (1 - mask) 
         
         pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
-
+        if args.use_lora:
+            pred = pred[:,:,:,::-1]
         torch.cuda.empty_cache()
         ip=0
         for p, f, xf, c in zip(pred, frames, f_frames, coords):
