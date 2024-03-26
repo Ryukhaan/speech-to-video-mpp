@@ -67,7 +67,7 @@ def load_lora_network(args):
         lora_dropout=0.0
     )
     lora_l_decoder = get_peft_model(model.low_res.decoder, decoder_config)
-    model.low_res.decoder = load_checkpoint(args.lora_path, lora_l_decoder)
+    model = load_checkpoint(args.lora_path, model)
 
     #for param in model.parameters():
     #    param.requires_grad = False
