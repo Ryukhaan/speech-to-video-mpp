@@ -354,7 +354,8 @@ def main():
             # mouth region enhancement by GFPGAN
             cropped_faces, restored_faces, restored_img = restorer.enhance(
                 ff, has_aligned=False, only_center_face=True, paste_back=True)
-                # 0,   1,   2,   3,   4,   5,   6,   7,   8,  9, 10,  11,  12,
+
+            # 0,   1,   2,   3,   4,   5,   6,   7,   8,  9, 10,  11,  12,
             #if args.cropped_image:
             #    mm =  [255, 0, 255, 255, 255, 255, 255, 255, 0, 0, 255, 255, 255, 0, 0, 0, 0, 0, 0]
             #else:
@@ -376,8 +377,8 @@ def main():
 
             mm = [255] * 19
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True, mm=mm)
-            cv2.imwrite('./temp/images/frame{}.png'.format(ip), pp)
-            ip+=1
+            #cv2.imwrite('./temp/images/frame{}.png'.format(ip), pp)
+            #ip+=1
             out.write(pp)
 
     out.release()
