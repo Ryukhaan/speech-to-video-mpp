@@ -107,7 +107,7 @@ hparams = hparams.hparams
 lnet_T = 5
 
 use_cuda = torch.cuda.is_available()
-device = torch.device("gpu" if use_cuda else "cpu")
+device = torch.device("cuda" if use_cuda else "cpu")
 
 # Weird function
 def get_frame_id(self, frame):
