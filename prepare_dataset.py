@@ -56,7 +56,7 @@ from futils.ffhq_preprocess import Croper
 from futils.alignment_stit import crop_faces, calc_alignment_coefficients, paste_image
 from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, \
     split_coeff, \
-    trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint, load_model
+    trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint, load_DNet
 from futils.inference_utils import load_model as fu_load_model
 from futils import hparams, audio
 import warnings
@@ -68,7 +68,6 @@ def options():
     parser = argparse.ArgumentParser(description='Inference code to lip-sync videos in the wild using Wav2Lip models')
     parser.add_argument('--data_root', type=str, required=True)
     parser.add_argument('--DNet_path', type=str, default='checkpoints/DNet.pt')
-    parser.add_argument('--LNet_path', type=str, default='checkpoints/LNet.pth')
     parser.add_argument('--face3d_net_path', type=str, default='checkpoints/face3d_pretrain_epoch_20.pth')
     parser.add_argument('--exp_img', type=str, help='Expression template. neutral, smile or image path', default=None)
     parser.add_argument('--outfile', type=str, help='Video path to save result')
@@ -111,7 +110,7 @@ use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
 net_recon = load_face3d_net(args.face3d_net_path, device)
-D_Net, _ = load_model(args, device)
+D_Net = load_DNet(args).to(device)
 # Weird function
 def get_frame_id(self, frame):
     return int(basename(frame).split('.')[0])
