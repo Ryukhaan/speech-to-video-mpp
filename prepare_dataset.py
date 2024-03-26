@@ -117,7 +117,7 @@ def read_video(dataset, index, args):
     video_stream = cv2.VideoCapture(dataset[index])
     fps = video_stream.get(cv2.CAP_PROP_FPS)
     if os.path.isfile(dataset[index].split('.')[0] + "_cropped.npy"):
-        full_frames = np.load(dataset[index].split('.')[0] + "_cropped.npy")
+        full_frames = np.load(dataset[index].split('.')[0] + "_cropped.npy", allow_pickle=True)
     else:
         full_frames = []
         while True:
@@ -131,20 +131,6 @@ def read_video(dataset, index, args):
            frame = frame[y1:y2, x1:x2]
            full_frames.append(frame)
     return full_frames, fps
-
-
-def get_segmented_mels(dataset, spec, start_frame):
-    mels = []
-    syncnet_mel_step_size = 16
-    if start_frame >= 0: return None
-    for i in range(start_frame, start_frame + lnet_T):
-        m = self.crop_audio_window(spec, i - 2)
-        if m.shape[0] != syncnet_mel_step_size:
-            return None
-        mels.append(m.T)
-    mels = np.asarray(mels)
-    return mels
-
 
 def get_segmented_phones(self, index, start_frame):
     assert lnet_T == 5
