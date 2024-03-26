@@ -62,7 +62,7 @@ from futils import hparams, audio
 import warnings
 warnings.filterwarnings("ignore")
 
-args = train_options()
+args = options()
 hparams = hparams.hparams
 
 lnet_T = 5
