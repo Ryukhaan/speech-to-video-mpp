@@ -146,7 +146,7 @@ def landmarks_estimate(dataset, idx, nframes, reprocess=False):
     clx, cly, crx, cry = crop
     lx, ly, rx, ry = quad
     lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
-    oy1, oy2, ox1, ox2 = cly + ly, min(cly + ry, nframes[0].shape[0]), clx + lx, min(clx + rx, nframes[0].shape[1])
+    oy1, oy2, ox1, ox2 = cly + ly, min(cly + ry, full_frames_RGB[0].shape[0]), clx + lx, min(clx + rx, full_frames_RGB[0].shape[1])
     coordinates = oy1, oy2, ox1, ox2
 
     # original_size = (ox2 - ox1, oy2 - oy1)
