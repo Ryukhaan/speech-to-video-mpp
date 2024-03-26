@@ -124,7 +124,7 @@ def read_video(dataset, index, args):
         while True:
            still_reading, frame = video_stream.read()
            if not still_reading:
-               video_stream.release()g
+               video_stream.release()
                break
            y1, y2, x1, x2 = args.crop
            if x2 == -1: x2 = frame.shape[1]
