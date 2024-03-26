@@ -250,7 +250,7 @@ def main():
 
     enhancer = FaceEnhancement(args, base_dir='checkpoints',
                                in_size=512, channel_multiplier=2, narrow=1, sr_scale=2,
-                               sr_model="realesrnet",
+                               sr_model="rrdb_realesrnet_psnr_x4",
                                model='GPEN-BFR-512', use_sr=True)
 
     imgs_enhanced = []
