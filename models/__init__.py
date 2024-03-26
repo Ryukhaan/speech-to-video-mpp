@@ -69,9 +69,9 @@ def load_lora_network(args):
     D = get_peft_model(model.low_res.decoder, decoder_config)
     D = load_checkpoint(args.lora_path, model)
     model.low_res.decoder = D
-    #for param in model.parameters():
-    #    param.requires_grad = False
-    return model.eval()
+    for param in model.parameters():
+        param.requires_grad = False
+    return model
 
 def load_DNet(args):
     torch.cuda.empty_cache()
