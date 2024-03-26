@@ -117,13 +117,14 @@ def read_video(dataset, index, args):
     video_stream = cv2.VideoCapture(dataset[index])
     fps = video_stream.get(cv2.CAP_PROP_FPS)
     if os.path.isfile(dataset[index].split('.')[0] + "_cropped.npy"):
-        full_frames = np.load(dataset[index].split('.')[0] + "_cropped.npy", allow_pickle=True).astype(np.float32)
+        full_frames = np.load(dataset[index].split('.')[0] + "_cropped.npy", allow_pickle=True)
+        print(type(full_frames[0]))
     else:
         full_frames = []
         while True:
            still_reading, frame = video_stream.read()
            if not still_reading:
-               video_stream.release()
+               video_stream.release()g
                break
            y1, y2, x1, x2 = args.crop
            if x2 == -1: x2 = frame.shape[1]
