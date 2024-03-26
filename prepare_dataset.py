@@ -269,7 +269,6 @@ def get_enhanced_imgs(imgs):
 
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
-    base_name = args.face.split('/')[-1]
     refs = []
     image_size = 256
 
