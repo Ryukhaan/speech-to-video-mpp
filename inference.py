@@ -183,22 +183,22 @@ def main():
                 inverse_scale_x = (ox2 - ox1) / np.array(preprocessor.frames_pil[idx]).shape[1]
                 inverse_scale_y = (oy2 - oy1) / np.array(preprocessor.frames_pil[idx]).shape[0]
                 # Nose
-                nose_mask = make_mask(lm[idx][27:35 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                nose_mask = make_mask(lm[ip][27:35 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
                                       apply_dilatation=True, idx=1)
                 # Right Eye
-                eye1 = make_mask(lm[idx][36:41 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                eye1 = make_mask(lm[ip][36:41 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
                                  apply_dilatation=True, idx=2)
                 # Left Eye
-                eye2 = make_mask(lm[idx][42:47 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                eye2 = make_mask(lm[ip][42:47 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
                                  apply_dilatation=True, idx=3)
 
                 removal_mask = np.logical_or.reduce((nose_mask, eye1, eye2))
 
                 # Bottom Face
-                bottom_mask = make_mask(lm[idx][0:16 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
+                bottom_mask = make_mask(lm[ip][0:16 + 1].copy(), ff, inverse_scale_x, inverse_scale_y, ox1, oy1,
                                         apply_dilatation=False, idx=4)
                 bottom_mask = cv2.dilate(bottom_mask, np.array([[0, 1, 0], [0, 1, 0], [0, 0, 0]], dtype=np.uint8),
-                                         iterations=100)
+                                         iterations=50)
                 # Bottom Face - All others
                 mask = np.bitwise_and(bottom_mask, np.logical_not(removal_mask))
 
