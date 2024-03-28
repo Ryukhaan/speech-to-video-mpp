@@ -69,6 +69,7 @@ def load_lora_network(args):
     D = get_peft_model(model.low_res.decoder, decoder_config)
     model.low_res.decoder = D
     model.low_res = load_checkpoint(args.lora_path, model.low_res)
+    model.audio_encoder = load_checkpoint(args.lora_path, model.audio_encoder)
     for param in model.parameters():
         param.requires_grad = False
     return model
