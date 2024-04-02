@@ -339,7 +339,10 @@ def preprocess(dataset, args):
         full_frames, fps = read_video(dataset, idx, args)
 
         # Get landmarks with face detection (already save
-        lm, coordinates, frames_pil = landmarks_estimate(dataset, idx, full_frames, reprocess=args.re_preprocess)
+        try:
+            lm, coordinates, frames_pil = landmarks_estimate(dataset, idx, full_frames, reprocess=args.re_preprocess)
+        except Exception as ex:
+            continue
 
         # Get 3DMM features
         semantic_npy = face_3dmm_extraction(dataset, idx, args, frames_pil, lm, reprocess=args.re_preprocess)
@@ -356,7 +359,7 @@ def preprocess(dataset, args):
         # Recrop face according to mel chunks
         try:
             gen = datagen(imgs_enhanced, mel_chunks, full_frames, None, coordinates)
-        except Exception as exec:
+        except Exception as ex:
             continue
         img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch = gen
         # Save Images Batch
