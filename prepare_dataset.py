@@ -276,14 +276,16 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
     kp_extractor = KeypointExtractor()
     fr_pil = [Image.fromarray(frame) for frame in frames]
     lms = kp_extractor.extract_keypoint(fr_pil, 'temp/'+'temp_x12_landmarks.txt')
-    frames_pil = [ (lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
+    frames_pil = [(lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
     crops, orig_images, quads  = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
     inverse_transforms = [calc_alignment_coefficients(quad + 0.5, [[0, 0], [0, image_size], [image_size, image_size], [image_size, 0]]) for quad in quads]
     del kp_extractor.detector
 
     oy1,oy2,ox1,ox2 = cox
-    face_det_results = face_detect(full_frames, args, jaw_correction=True)
-
+    try:
+        face_det_results = face_detect(full_frames, args, jaw_correction=True)
+    except ValueError as err:
+        raise err
     for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames, face_det_results):
         imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
             cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
@@ -352,7 +354,10 @@ def preprocess(dataset, args):
         imgs_enhanced = get_enhanced_imgs(imgs)
 
         # Recrop face according to mel chunks
-        gen = datagen(imgs_enhanced, mel_chunks, full_frames, None, coordinates)
+        try:
+            gen = datagen(imgs_enhanced, mel_chunks, full_frames, None, coordinates)
+        except Exception as exec:
+            continue
         img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch = gen
         # Save Images Batch
         if not os.path.isfile(dataset[idx].split('.')[0] + '_img_batch.npy'):
