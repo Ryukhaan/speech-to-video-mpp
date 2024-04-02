@@ -335,6 +335,10 @@ def datagen(frames, mels, full_frames, frames_pil, cox):
 def preprocess(dataset, args):
     # if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
     for idx in tqdm(range(len(dataset))):
+        if os.path.isfile(dataset[idx].split('.')[0] + '_img_batch.npy') and \
+            os.path.isfile(dataset[idx].split('.')[0] + '_mel_batch.npy') and \
+                os.path.isfile(dataset[idx].split('.')[0] + '_img_orig.npy'):
+            continue
         # Read the full frame from the video idx
         full_frames, fps = read_video(dataset, idx, args)
 
