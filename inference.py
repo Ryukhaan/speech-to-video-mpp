@@ -67,7 +67,8 @@ def main():
     preprocessor.landmarks_estimate()
     preprocessor.face_3dmm_extraction()
     preprocessor.hack_3dmm_expression()
-    print(preprocessor.model.low_res.decoder)
+    for n, _ in preprocessor.model.low_res.decoder.named_modules():
+        print(n)
     frames_pil = preprocessor.frames_pil
     full_frames = preprocessor.full_frames
     fps = preprocessor.fps
