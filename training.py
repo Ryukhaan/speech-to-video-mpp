@@ -782,7 +782,7 @@ if __name__ == "__main__":
     # Model
     _, model = load_model(args, device)
     model = model.low_res
-
+    print(model.decoder)
     no_decay = ['bias', 'LayerNorm.weight']
     optimizer_grouped_parameters = [
         {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
@@ -796,9 +796,9 @@ if __name__ == "__main__":
 
     # Lora Config
     decoder_config = LoraConfig(
-        r=512,
-        lora_alpha=256,
-        target_modules=["mlp_gamma", "mlp_beta", "mlp_shared.0"],
+        r=16,
+        lora_alpha=16,
+        target_modules=["mlp_gamma", "mlp_beta"],
         lora_dropout=0.1,
         bias="none",
     )
