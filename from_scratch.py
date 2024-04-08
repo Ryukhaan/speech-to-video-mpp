@@ -84,6 +84,10 @@ if __name__ == "__main__":
     kp_extractor = KeypointExtractor()
     image_size = 256
     for file in tqdm(vidnames):
+
+        if os.path.isfile(file + '_img_batch.npy'):
+            continue
+
         full_frames = read_video(file)
         frames = full_frames.copy()
 
