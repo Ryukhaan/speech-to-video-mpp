@@ -121,10 +121,10 @@ if __name__ == "__main__":
                 cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
 
             ff = full_frame.copy()
-            ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
+            #ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
             oface, coords = face_det
             y1, y2, x1, x2 = coords
-            cv2.imwrite("./results/{}.png".format(i), ff) #ff[y1:y2, x1:x2])
+            cv2.imwrite("./results/{}.png".format(i), ff[y1:y2, x1:x2])
             i += 1
             #refs.append(ff[y1: y2, x1:x2])
             out.write(ff[y1:y2, x1:x2])
