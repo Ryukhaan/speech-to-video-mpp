@@ -782,7 +782,8 @@ if __name__ == "__main__":
     # Model
     _, model = load_model(args, device)
     model = model.low_res
-    print(model.decoder)
+    for n, _ in model.decoder.named_modules():
+        print(n)
     no_decay = ['bias', 'LayerNorm.weight']
     optimizer_grouped_parameters = [
         {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
