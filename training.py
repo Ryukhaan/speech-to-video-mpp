@@ -476,7 +476,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     for _ in epoch_bar:
         running_loss = []
         disc_loss = []
-        prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader), leave=True, position=1)
+        prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader), leave=False, position=1)
         for step, (x, indiv_mel, mel, lms, y) in prog_bar:
             if x is None: continue
 
