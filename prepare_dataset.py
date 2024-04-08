@@ -365,6 +365,7 @@ def preprocess(dataset, args):
         try:
             gen = datagen(imgs_enhanced, mel_chunks, full_frames, None, coordinates)
         except Exception as ex:
+            print("Exception in  Gen Data")
             continue
         img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch = gen
         # Save Images Batch
