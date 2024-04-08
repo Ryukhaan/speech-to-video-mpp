@@ -54,7 +54,7 @@ def get_image_list(dirpath):
     filelist = []
     for folder in tqdm(os.listdir(dirpath), position=0):
         if folder == '.DS_Store': continue
-        for vidname in tqdm(os.listdir(dirpath + '/' + folder), position=1, leave=True):
+        for vidname in tqdm(os.listdir(dirpath + '/' + folder), position=1):
             if vidname == '.DS_Store': continue
             if vidname.split('.')[-1] != 'mp4': continue
             filelist.append(os.path.join(dirpath, folder, vidname))
