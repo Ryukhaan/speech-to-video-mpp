@@ -52,9 +52,9 @@ def options():
 
 def get_image_list(dirpath):
     filelist = []
-    for folder in os.path.listdir(dirpath):
+    for folder in os.listdir(dirpath):
         if folder == '.DS_Store': continue
-        for vidname in os.path.listdir(dirpath + '/' + folder):
+        for vidname in os.listdir(dirpath + '/' + folder):
             if vidname == '.DS_Store': continue
             if vidname.split('.')[-1] != 'mp4': continue
             filelist.append(os.path.join(dirpath, folder, vidname))
