@@ -92,7 +92,10 @@ if __name__ == "__main__":
         full_frames_RGB = [np.asarray(frame) for frame in frames]
 
         # Why there was a try ?
-        full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512)  # Why 512 ?
+        try:
+            full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512)  # Why 512 ?
+        except TypeError:
+            continue
 
         clx, cly, crx, cry = crop
         lx, ly, rx, ry = quad
