@@ -79,11 +79,11 @@ def read_video(vidname):
 args = options()
 
 if __name__ == "__main__":
-    list = get_image_list(args.data_root)
+    vidnames = get_image_list(args.data_root)
     # original frames
     kp_extractor = KeypointExtractor()
     image_size = 256
-    for file in tqdm(list):
+    for file in tqdm(vidnames):
         full_frames = read_video(file)
         frames = full_frames.copy()
 
