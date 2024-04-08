@@ -496,18 +496,18 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             y = y.to(device)
 
             # KeyPoint Extractor Loss
-            pred_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
-            true_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
-            for b in range(pred.size(0)):
-                fr_pil = [Image.fromarray((255 * pred[b,:,frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(96,96,3)) for frame in range(lnet_T)]
-                pred_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
-                fr_pil = [Image.fromarray(
-                    (255 * y[b, :, frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(384, 384, 3)) for
-                    frame in range(lnet_T)]
-                true_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
-            pred_lms = torch.FloatTensor(pred_lms).to(device) / 96.
-            true_lms = torch.FloatTensor(true_lms).to(device) / 384.
-            loss_lm = nn.MSELoss()(true_lms[:,:,48:], pred_lms[:,:,48:])
+            # pred_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
+            # true_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
+            # for b in range(pred.size(0)):
+            #     fr_pil = [Image.fromarray((255 * pred[b,:,frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(96,96,3)) for frame in range(lnet_T)]
+            #     pred_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
+            #     fr_pil = [Image.fromarray(
+            #         (255 * y[b, :, frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(384, 384, 3)) for
+            #         frame in range(lnet_T)]
+            #     true_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
+            # pred_lms = torch.FloatTensor(pred_lms).to(device) / 96.
+            # true_lms = torch.FloatTensor(true_lms).to(device) / 384.
+            # loss_lm = nn.MSELoss()(true_lms[:,:,48:], pred_lms[:,:,48:])
 
             # Extract validity predictions from discriminator
             pred_real = disc_model(pred).detach()
@@ -515,7 +515,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             # Adversarial loss (relativistic average GAN)
             loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
-            loss = loss_func(pred, y, mel) + loss_GAN + loss_lm
+            loss = loss_func(pred, y, mel) + loss_GAN #+ loss_lm
 
             loss.backward(retain_graph=True)
             optimizer.step()
@@ -531,6 +531,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             # Adversarial loss for real and fake images (relativistic average GAN)
             loss_real = criterion_GAN(pred_real - pred_fake.mean(0, keepdim=True), valid)
             loss_fake = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), fake)
+
             # Total loss
             loss_D = (loss_real + loss_fake) / 2
             loss_D.backward(retain_graph=True)
@@ -573,7 +574,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         #writer.add_scalar('Loss/discriminator', disc_loss[-1] / len(disc_loss), global_step)
 
         with torch.no_grad():
-            avg_eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=writer)
+            avg_eval_loss = eval_model(test_data_loader, global_step, device, model, disc_model, checkpoint_dir, writer=writer)
             if avg_eval_loss < best_eval_loss:
                 epoch_bar.set_description(f"Saved model at {checkpoint_dir} with {avg_eval_loss}")
                 best_eval_loss = avg_eval_loss
@@ -586,7 +587,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         global_epoch += 1
     del kp_extractor.detector
 
-def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, writer=None):
+def eval_model(test_data_loader, global_step, device, model, disc_model, checkpoint_dir, writer=None):
     #eval_steps = 1400
     #print('Evaluating for {} steps'.format(global_step))
     loss_tot = []
@@ -596,6 +597,15 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, wri
                     leave=True, position=1,
                     desc='Evaluating for {} steps'.format(global_step))
     kp_extractor = KeypointExtractor()
+
+    # Adversarial ground truths
+    valid = torch.FloatTensor(np.ones((lnet_T * hparams.batch_size, 1, 96, 96))).to(device)
+    fake = torch.FloatTensor(np.zeros((lnet_T * hparams.batch_size, 1, 96, 96))).to(device)
+
+    resumed_step = global_step
+    loss_func = losses.LoraLoss(device)
+    criterion_GAN = torch.nn.BCEWithLogitsLoss().to(device)
+
     for step, (x, indiv_mel, mel, lms, y) in prog_bar:
 
         model.eval()
@@ -607,22 +617,28 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir, wri
         pred = pred.to(device)
         y = y.to(device)
 
-        pred_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
-        true_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
-        for b in range(pred.size(0)):
-            fr_pil = [Image.fromarray(
-                (255 * pred[b, :, frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(96, 96, 3)) for
-                      frame in range(lnet_T)]
-            pred_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
-            fr_pil = [Image.fromarray(
-                (255 * y[b, :, frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(384, 384, 3)) for
-                frame in range(lnet_T)]
-            true_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
-        pred_lms = torch.FloatTensor(pred_lms).to(device) / 96.
-        true_lms = torch.FloatTensor(true_lms).to(device) / 384.
-        loss_lm = nn.MSELoss()(true_lms[:, :, 48:], pred_lms[:, :, 48:])
+        # pred_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
+        # true_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
+        # for b in range(pred.size(0)):
+        #     fr_pil = [Image.fromarray(
+        #         (255 * pred[b, :, frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(96, 96, 3)) for
+        #               frame in range(lnet_T)]
+        #     pred_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
+        #     fr_pil = [Image.fromarray(
+        #         (255 * y[b, :, frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(384, 384, 3)) for
+        #         frame in range(lnet_T)]
+        #     true_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
+        # pred_lms = torch.FloatTensor(pred_lms).to(device) / 96.
+        # true_lms = torch.FloatTensor(true_lms).to(device) / 384.
+        # loss_lm = nn.MSELoss()(true_lms[:, :, 48:], pred_lms[:, :, 48:])
 
-        loss = loss_func(pred, y, mel) + loss_lm
+        #
+        pred_real = disc_model(pred).detach()
+        pred_fake = disc_model(y)
+        # Adversarial loss (relativistic average GAN)
+        loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
+
+        loss = loss_func(pred, y, mel) + loss_GAN #+ loss_lm
 
         loss_tot.append(loss.item())
     del kp_extractor.detector
