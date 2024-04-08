@@ -116,7 +116,7 @@ if __name__ == "__main__":
         _fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
         out = cv2.VideoWriter('./outpy.mp4', _fourcc, 25, (96, 96))
         i = 0
-        for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames, face_det_results):
+        for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames_RGB, face_det_results):
             imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
                 cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
 
