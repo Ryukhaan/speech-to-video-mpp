@@ -116,9 +116,10 @@ if __name__ == "__main__":
         crops, orig_images, quads  = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
         inverse_transforms = [calc_alignment_coefficients(quad + 0.5, [[0, 0], [0, image_size], [image_size, image_size], [image_size, 0]]) for quad in quads]
 
-
-        face_det_results = face_detect(full_frames, args, jaw_correction=True)
-
+        try:
+            face_det_results = face_detect(full_frames, args, jaw_correction=True)
+        except ValueError:
+            continue
         refs = []
         for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames_RGB, face_det_results):
             imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
