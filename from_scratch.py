@@ -1,4 +1,7 @@
-import os
+import os, sys
+
+sys.path.append('third_part')
+
 from third_part.face3d.extract_kp_videos import KeypointExtractor
 import cv2
 import numpy as np
