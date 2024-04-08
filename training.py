@@ -820,7 +820,7 @@ if __name__ == "__main__":
         r=16,
         lora_alpha=16,
         target_modules=["mlp_gamma", "mlp_beta",
-                        "conv1", "conv1.0", "conv1.1", "conv1.2",
+                        "convl2l", "convl2g", "convg2l", "convg2g.conv1.0"
                         "conv2"],
         lora_dropout=0.1,
         bias="none",
