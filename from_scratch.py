@@ -54,7 +54,7 @@ def get_image_list(dirpath):
     filelist = []
     for folder in tqdm(os.listdir(dirpath), position=0, leave=True):
         if folder == '.DS_Store': continue
-        for vidname in tqdm(os.listdir(dirpath + '/' + folder), position=1):
+        for vidname in tqdm(os.listdir(dirpath + '/' + folder), position=1, leave=False):
             if vidname == '.DS_Store': continue
             if vidname.split('.')[-1] != 'mp4': continue
             filelist.append(os.path.join(dirpath, folder, vidname))
@@ -114,7 +114,7 @@ if __name__ == "__main__":
         face_det_results = face_detect(full_frames, args, jaw_correction=True)
 
         refs = []
-        _fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+        _fourcc = cv2.VideoWriter_fourcc('H','2','6','4')
         out = cv2.VideoWriter('./outpy.mp4', _fourcc, 25, (96, 96))
         for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames, face_det_results):
             imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
