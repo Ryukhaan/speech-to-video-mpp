@@ -129,5 +129,5 @@ if __name__ == "__main__":
             oface, coords = face_det
             y1, y2, x1, x2 = coords
 
-            refs.append(ff[y1: y2, x1:x2])
+            refs.append(cv2.resize(ff[y1: y2, x1:x2], (128,128)))
         np.save(file + '_img_batch.npy', refs)
