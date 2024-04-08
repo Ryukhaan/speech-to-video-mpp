@@ -52,7 +52,7 @@ def options():
 
 def get_image_list(dirpath):
     filelist = []
-    for folder in tqdm(os.listdir(dirpath), position=0, leave=True:
+    for folder in tqdm(os.listdir(dirpath), position=0, leave=True):
         if folder == '.DS_Store': continue
         for vidname in tqdm(os.listdir(dirpath + '/' + folder), position=1):
             if vidname == '.DS_Store': continue
