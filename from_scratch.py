@@ -113,9 +113,9 @@ if __name__ == "__main__":
         face_det_results = face_detect(full_frames, args, jaw_correction=True)
 
         refs = []
-        _fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-        out = cv2.VideoWriter('./outpy.mp4', _fourcc, 25, (96, 96))
-        i = 0
+        #_fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+        #out = cv2.VideoWriter('./outpy.mp4', _fourcc, 25, (96, 96))
+        #i = 0
         for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames_RGB, face_det_results):
             imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
                 cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
@@ -124,8 +124,10 @@ if __name__ == "__main__":
             #ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
             oface, coords = face_det
             y1, y2, x1, x2 = coords
-            cv2.imwrite("./results/{}.png".format(i), ff[y1:y2, x1:x2])
-            i += 1
-            #refs.append(ff[y1: y2, x1:x2])
-            out.write(ff[y1:y2, x1:x2])
+            #cv2.imwrite("./results/{}.png".format(i), ff[y1:y2, x1:x2])
+            #i += 1
+            refs.append(ff[y1: y2, x1:x2])
+            #out.write(ff[y1:y2, x1:x2])
+        print(file + "_img_batch.npy")
+        np.save(file + '_img_batch.npy', refs)
         break
