@@ -804,12 +804,16 @@ if __name__ == "__main__":
     optimizer_grouped_parameters = [
         {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
          'weight_decay': 0.01},
-        {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}
     ]
     optimizer = Adafactor(optimizer_grouped_parameters) #lr=hparams.syncnet_lr
 
-    discriminator = UNetDiscriminatorSN(3, num_feat=16).to(device)
-    optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=0.0002)
+    discriminator = UNetDiscriminatorSN(3, num_feat=64).to(device)
+    optimizer_grouped_parameters = [
+        {'params': [p for n, p in discriminator.named_parameters() if not any(nd in n for nd in no_decay)],
+         'weight_decay': 0.01},
+    ]
+    optimizer_D = Adafactor(optimizer_grouped_parameters)
+    #torch.optim.Adam(discriminator.parameters(), lr=0.0002)
 
     # Lora Config
     decoder_config = LoraConfig(
