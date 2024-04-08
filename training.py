@@ -566,9 +566,9 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             prog_bar.set_description('Loss: {:.4f} at {}'.format(running_loss[-1], global_step))
 
-        writer.add_scalars('train', {
-                                'vis_loss' : sum(running_loss) / len(running_loss),
-                                'dis_loss' : sum(disc_loss) / len(disc_loss)
+        writer.add_scalars('loss', {
+                                'visual' : sum(running_loss) / len(running_loss),
+                                'discriminator' : sum(disc_loss) / len(disc_loss)
                             },
                            global_step)
         #writer.add_scalar('Loss/discriminator', disc_loss[-1] / len(disc_loss), global_step)
@@ -643,7 +643,7 @@ def eval_model(test_data_loader, global_step, device, model, disc_model, checkpo
         loss_tot.append(loss.item())
     del kp_extractor.detector
     averaged_loss = sum(loss_tot) / len(test_data_loader)
-    writer.add_scalars('train', { 'test_loss' : averaged_loss}, global_step)
+    writer.add_scalars('loss', { 'test' : averaged_loss}, global_step)
     return averaged_loss
 def datagen(frames, mels, full_frames, frames_pil, cox):
     img_batch, mel_batch, frame_batch, coords_batch, ref_batch, full_frame_batch = [], [], [], [], [], []
