@@ -79,7 +79,7 @@ def read_video(vidname):
 args = options()
 
 if __name__ == "__main__":
-    list = get_image_list('./')
+    list = get_image_list(args.data_root)
     # original frames
     kp_extractor = KeypointExtractor()
     image_size = 256
