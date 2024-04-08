@@ -52,9 +52,9 @@ def options():
 
 def get_image_list(dirpath):
     filelist = []
-    for folder in os.listdir(dirpath):
+    for folder in tqdm(os.listdir(dirpath), position=0):
         if folder == '.DS_Store': continue
-        for vidname in os.listdir(dirpath + '/' + folder):
+        for vidname in tqdm(os.listdir(dirpath + '/' + folder), position=1, leave=True):
             if vidname == '.DS_Store': continue
             if vidname.split('.')[-1] != 'mp4': continue
             filelist.append(os.path.join(dirpath, folder, vidname))
@@ -80,6 +80,7 @@ args = options()
 
 if __name__ == "__main__":
     vidnames = get_image_list(args.data_root)
+    print(vidnames)
     # original frames
     kp_extractor = KeypointExtractor()
     image_size = 256
