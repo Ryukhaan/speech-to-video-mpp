@@ -337,7 +337,8 @@ def preprocess(dataset, args):
     for idx in tqdm(range(len(dataset))):
         if os.path.isfile(dataset[idx].split('.')[0] + '_img_batch.npy') and \
             os.path.isfile(dataset[idx].split('.')[0] + '_mel_batch.npy') and \
-                os.path.isfile(dataset[idx].split('.')[0] + '_img_orig.npy'):
+            os.path.isfile(dataset[idx].split('.')[0] + '_img_orig.npy'):
+            print("exist")
             continue
         # Read the full frame from the video idx
         full_frames, fps = read_video(dataset, idx, args)
