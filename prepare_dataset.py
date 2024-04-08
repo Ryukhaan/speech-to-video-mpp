@@ -365,10 +365,10 @@ def preprocess(dataset, args):
         try:
             gen = datagen(imgs_enhanced, mel_chunks, full_frames, None, coordinates)
         except Exception as ex:
-            print("Exception in  Gen Data")
             continue
         img_batch, mel_batch, frame_batch, coords_batch, img_original, full_frame_batch = gen
         # Save Images Batch
+        print(os.path.isfile(dataset[idx].split('.')[0] + '_img_batch.npy'))
         if not os.path.isfile(dataset[idx].split('.')[0] + '_img_batch.npy'):
             np.save(dataset[idx].split('.')[0] + '_img_batch.npy', img_batch)
         # Save Mel-Spec Batch
