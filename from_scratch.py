@@ -80,7 +80,6 @@ args = options()
 
 if __name__ == "__main__":
     vidnames = get_image_list(args.data_root)
-    print(vidnames)
     # original frames
     kp_extractor = KeypointExtractor()
     image_size = 256
@@ -114,7 +113,7 @@ if __name__ == "__main__":
         face_det_results = face_detect(full_frames, args, jaw_correction=True)
 
         refs = []
-        _fourcc = cv2.VideoWriter_fourcc('H','2','6','4')
+        _fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
         out = cv2.VideoWriter('./outpy.mp4', _fourcc, 25, (96, 96))
         for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames, face_det_results):
             imc_pil = paste_image(inverse_transform, crop, Image.fromarray(

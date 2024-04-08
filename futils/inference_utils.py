@@ -171,7 +171,7 @@ def face_detect(images, args, jaw_correction=False, detector=None):
     while 1:
         predictions = []
         try:
-            for i in tqdm(range(0, len(images), batch_size),desc='FaceDet:'):
+            for i in range(0, len(images), batch_size):
                 predictions.extend(detector.get_detections_for_batch(np.array(images[i:i + batch_size])))
         except RuntimeError:
             if batch_size == 1: 
