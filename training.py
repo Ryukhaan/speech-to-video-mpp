@@ -594,7 +594,7 @@ def eval_model(test_data_loader, global_step, device, model, disc_model, checkpo
     loss_func = losses.LoraLoss(device)
     prog_bar = tqdm(enumerate(test_data_loader),
                     total=len(test_data_loader),
-                    leave=True, position=1,
+                    leave=False, position=1,
                     desc='Evaluating for {} steps'.format(global_step))
     kp_extractor = KeypointExtractor()
 
