@@ -166,7 +166,6 @@ def face_detect(images, args, jaw_correction=False, detector=None):
     if detector == None:
         detector = face_detection.FaceAlignment(face_detection.LandmarksType._2D, 
                                                 flip_input=False, device='cuda:0')
-
     batch_size = args.face_det_batch_size    
     while 1:
         predictions = []
