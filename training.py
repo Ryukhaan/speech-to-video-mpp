@@ -830,7 +830,7 @@ if __name__ == "__main__":
     for param in model.encoder.parameters():
         param.requires_grad = False
     for param in model.audio_encoder.parameters():
-        param.requires_grad = True
+        param.requires_grad = False
     print_trainable_parameters(model)
     print_trainable_parameters(discriminator)
 
