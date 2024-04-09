@@ -862,20 +862,20 @@ if __name__ == "__main__":
             param.requires_grad = False
 
     # Lora Config
-    decoder_config = LoraConfig(
-        r=16,
-        lora_alpha=16,
-        target_modules=["mlp_gamma", "mlp_beta",
-                        "convl2l", "convl2g", "convg2l", "convg2g.conv1.0"],
-        lora_dropout=0.1,
-        bias="none",
-    )
-    lora_l_decoder = get_peft_model(model.decoder, decoder_config)
-    model.decoder = lora_l_decoder
-    for param in model.encoder.parameters():
-        param.requires_grad = True
-    for param in model.audio_encoder.parameters():
-        param.requires_grad = True
+    # decoder_config = LoraConfig(
+    #     r=16,
+    #     lora_alpha=16,
+    #     target_modules=["mlp_gamma", "mlp_beta",
+    #                     "convl2l", "convl2g", "convg2l", "convg2g.conv1.0"],
+    #     lora_dropout=0.1,
+    #     bias="none",
+    # )
+    # lora_l_decoder = get_peft_model(model.decoder, decoder_config)
+    # model.decoder = lora_l_decoder
+    # for param in model.encoder.parameters():
+    #     param.requires_grad = True
+    # for param in model.audio_encoder.parameters():
+    #     param.requires_grad = True
     print_trainable_parameters(model)
     print_trainable_parameters(discriminator)
 
