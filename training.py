@@ -533,7 +533,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             # Adversarial loss (relativistic average GAN)
             loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
-            loss = loss_func(pred, y, mel) + loss_GAN #+ loss_lm
+            loss = loss_func(pred, y, mel) + 0.1 * loss_GAN #+ loss_lm
 
             loss.backward(retain_graph=True)
             optimizer.step()
@@ -574,14 +574,14 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                                   torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
                                   global_step=global_step
                                   )
-                writer.add_images('3_cropped',
-                                  cropped[:,[2,1,0]],
-                                  global_step=global_step
-                                  )
-                writer.add_images('4_reference',
-                                  reference[:,[2,1,0]],
-                                  global_step=global_step
-                                  )
+                #writer.add_images('3_cropped',
+                #                  cropped[:,[2,1,0]],
+                #                  global_step=global_step
+                #                  )
+                #writer.add_images('4_reference',
+                #                  reference[:,[2,1,0]],
+                #                  global_step=global_step
+                #                  )
 
             prog_bar.set_description('Loss: {:.4f} at {}'.format(running_loss[-1], global_step))
 
@@ -658,9 +658,23 @@ def eval_model(test_data_loader, global_step, device, model, disc_model, checkpo
         # Adversarial loss (relativistic average GAN)
         loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
 
-        loss = loss_func(pred, y, mel) + loss_GAN #+ loss_lm
+        loss = loss_func(pred, y, mel) + 0.1 * loss_GAN #+ loss_lm
 
         loss_tot.append(loss.item())
+
+        if global_step % 5 == 0:
+            cropped, reference = torch.split(x, 3, dim=1)
+            #cropped = torch.cat([cropped[:, :, i] for i in range(lnet_T)], dim=0)
+            #reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
+            writer.add_images('eval_original',
+                              torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0)[:, [2, 1, 0]],
+                              global_step=global_step
+                              )
+            writer.add_images('eval_predictions',
+                              torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:, [2, 1, 0]],
+                              global_step=global_step
+                              )
+
     del kp_extractor.detector
     averaged_loss = sum(loss_tot) / len(test_data_loader)
     writer.add_scalars('loss', { 'test' : averaged_loss}, global_step)
