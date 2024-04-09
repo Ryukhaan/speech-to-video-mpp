@@ -835,6 +835,8 @@ if __name__ == "__main__":
     optimizer_D = Adafactor(optimizer_grouped_parameters)
     if not args.train_disc:
         discriminator =  local_load_checkpoint('./checkpoints/disc_lora_with_conv.pth', discriminator)
+        for param in discriminator.parameters():
+            param.requires_grad = False
 
     # Lora Config
     decoder_config = LoraConfig(
