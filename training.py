@@ -523,19 +523,20 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             # ---------------------
             #  Train Discriminator
             # ---------------------
-            optimizer_D.zero_grad()
+            if args.train_disc:
+                optimizer_D.zero_grad()
 
-            pred_real = disc_model(y)
-            pred_fake = disc_model(pred.detach())
+                pred_real = disc_model(y)
+                pred_fake = disc_model(pred.detach())
 
-            # Adversarial loss for real and fake images (relativistic average GAN)
-            loss_real = criterion_GAN(pred_real - pred_fake.mean(0, keepdim=True), valid)
-            loss_fake = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), fake)
+                # Adversarial loss for real and fake images (relativistic average GAN)
+                loss_real = criterion_GAN(pred_real - pred_fake.mean(0, keepdim=True), valid)
+                loss_fake = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), fake)
 
-            # Total loss
-            loss_D = (loss_real + loss_fake) / 2
-            loss_D.backward(retain_graph=True)
-            optimizer_D.step()
+                # Total loss
+                loss_D = (loss_real + loss_fake) / 2
+                loss_D.backward(retain_graph=True)
+                optimizer_D.step()
 
 
             global_step += 1
@@ -813,7 +814,8 @@ if __name__ == "__main__":
          'weight_decay': 0.01},
     ]
     optimizer_D = Adafactor(optimizer_grouped_parameters)
-    discriminator = load_checkpoint('./checkpoints/disc_lora_with_conv.pth', discriminator)
+    if not args.train_disc:
+        discriminator = load_checkpoint('./checkpoints/disc_lora_with_conv.pth', discriminator)
 
     # Lora Config
     decoder_config = LoraConfig(

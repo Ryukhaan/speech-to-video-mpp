@@ -67,6 +67,8 @@ def train_options():
 
     parser.add_argument('--use_lora', default=False, action='store_true',
                         help="Use LoRA model in inference")
+    parser.add_argument('--train_disc', default=False, action='store_true',
+                        help="Training Discriminator UNET at the same time")
     parser.add_argument('--lora_path', type=str, default='checkpoints/Lora.pth')
     args = parser.parse_args()
     return args
