@@ -662,7 +662,7 @@ def eval_model(test_data_loader, global_step, device, model, disc_model, checkpo
 
         loss_tot.append(loss.item())
 
-        if global_step % 5 == 0:
+        if step == 0:
             cropped, reference = torch.split(x, 3, dim=1)
             #cropped = torch.cat([cropped[:, :, i] for i in range(lnet_T)], dim=0)
             #reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
