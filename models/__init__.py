@@ -57,7 +57,8 @@ def load_lora_network(args):
         r=16,
         lora_alpha=16,
         target_modules=["mlp_gamma", "mlp_beta",
-                        "convl2l", "convl2g", "convg2l"],
+                        "convl2l", "convl2g", "convg2l",
+                        "convg2g.conv1.0"],
         lora_dropout=0.1,
         bias="none",
     )
