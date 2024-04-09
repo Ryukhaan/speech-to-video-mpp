@@ -150,7 +150,7 @@ def main():
 
             # Get low res
             for idx, lr in enumerate(low_res):
-                cv2.imwrite('./temp/images/low_res{}.png'.format(idx), lr)
+                cv2.imwrite('./temp/images/low_res{}.png'.format(idx), np.uint8(lr.cpu().numpy().transpose(1,2,0) * 255.))
 
             if args.up_face in ['sad', 'angry', 'surprise']:
                 tar_aus = exp_aus_dict[args.up_face]
