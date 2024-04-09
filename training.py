@@ -587,7 +587,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
         writer.add_scalars('loss', {
                                 'visual' : sum(running_loss) / len(running_loss),
-                                'discriminator' : sum(disc_loss) / len(disc_loss)
+                                'discriminator' : sum(disc_loss) / len(disc_loss) if args.train_disc else 0.
                             },
                            global_step)
         #writer.add_scalar('Loss/discriminator', disc_loss[-1] / len(disc_loss), global_step)
