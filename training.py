@@ -249,7 +249,7 @@ class Dataset(object):
                 # hacking the new expression
                 coeff[:, :64, :] = expression[None, :64, None].to(device)
                 with torch.no_grad():
-                    output = self.D_Net(source_img, coeff)
+                    output = self.preprocessor.D_Net(source_img, coeff)
                 img_stablized = np.uint8 \
                     ((output['fake_image'].squeeze(0).permute(1, 2, 0).cpu().clamp_(-1, 1).numpy() + 1) / 2. * 255)
                 self.imgs.append(cv2.cvtColor(img_stablized, cv2.COLOR_RGB2BGR))
@@ -825,7 +825,7 @@ if __name__ == "__main__":
     seed = 0
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     # Dataset and Dataloader setup
-    print(val_list)
+
     train_dataset = Dataset(train_list, device)
     test_dataset = Dataset(val_list, device)
 
