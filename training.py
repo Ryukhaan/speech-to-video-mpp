@@ -180,7 +180,7 @@ class Dataset(object):
         #    self.frames_96pil = np.asarray([cv2.resize(frame, (96, 96)) for frame in self.frames_pil])
         # get the landmark according to the detected face.
         # Change this one
-        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + '_landmarks.txt') or save:
+        if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + '_landmarks.txt'):
             torch.cuda.empty_cache()
             print('[Step 1] Landmarks Extraction in Video.')
             if self.kp_extractor is None:
@@ -874,8 +874,8 @@ if __name__ == "__main__":
     # model.decoder = lora_l_decoder
     # for param in model.encoder.parameters():
     #     param.requires_grad = True
-    # for param in model.audio_encoder.parameters():
-    #     param.requires_grad = True
+    for param in model.decoder.parameters():
+         param.requires_grad = True
     print_trainable_parameters(model)
     print_trainable_parameters(discriminator)
 
