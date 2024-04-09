@@ -674,14 +674,14 @@ def eval_model(test_data_loader, global_step, device, model, disc_model, checkpo
                               torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:, [2, 1, 0]],
                               global_step=global_step
                               )
-            writer.add_images('eval_cropped',
-                             cropped[:,[2,1,0]],
-                             global_step=global_step
-                             )
-            writer.add_images('eval_reference',
-                             reference[:,[2,1,0]],
-                             global_step=global_step
-                             )
+            # writer.add_images('eval_cropped',
+            #                  cropped[:,[2,1,0]],
+            #                  global_step=global_step
+            #                  )
+            # writer.add_images('eval_reference',
+            #                  reference[:,[2,1,0]],
+            #                  global_step=global_step
+            #                  )
 
     del kp_extractor.detector
     averaged_loss = sum(loss_tot) / len(test_data_loader)
