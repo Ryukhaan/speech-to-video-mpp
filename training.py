@@ -533,7 +533,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 
             # Adversarial loss (relativistic average GAN)
             loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
-            loss = loss_func(pred, y, mel) + 0.1 * loss_GAN #+ loss_lm
+            loss = loss_func(pred, y, mel) #+ 0.1 * loss_GAN #+ loss_lm
 
             loss.backward(retain_graph=True)
             optimizer.step()
@@ -658,7 +658,7 @@ def eval_model(test_data_loader, global_step, device, model, disc_model, checkpo
         # Adversarial loss (relativistic average GAN)
         loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
 
-        loss = loss_func(pred, y, mel) + 0.1 * loss_GAN #+ loss_lm
+        loss = loss_func(pred, y, mel) #+ 0.1 * loss_GAN #+ loss_lm
 
         loss_tot.append(loss.item())
 
