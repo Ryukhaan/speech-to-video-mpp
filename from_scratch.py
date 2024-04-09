@@ -123,8 +123,12 @@ if __name__ == "__main__":
         refs = []
         error = False
         for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames_RGB, face_det_results):
-            imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
-                cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
+            try:
+                imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
+                    cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
+            except:
+                error = True
+                break
 
             ff = full_frame.copy()
             #ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
