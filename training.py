@@ -61,7 +61,6 @@ from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_de
     split_coeff, \
     trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint, load_model
 
-from futils.inference_utils import load_checkpoint as fu_load_checkpoint
 from futils import hparams, audio
 import warnings
 warnings.filterwarnings("ignore")
@@ -75,6 +74,24 @@ hparams = hparams.hparams
 lnet_T = 5
 global_step = 0
 global_epoch = 0
+
+def local_load_checkpoint(path, model):
+    print("Load checkpoint from: {}".format(path))
+    checkpoint = torch.load(path)
+    try:
+        s = checkpoint["state_dict"] if 'arcface' not in path else checkpoint
+        new_s = {}
+        for k, v in s.items():
+            if 'low_res' in k:
+                continue
+            else:
+                new_s[k.replace('module.', '')] = v
+        model.load_state_dict(new_s, strict=False)
+    except:
+        model.load_state_dict(torch.load(path))
+        #model = torch.load(path)
+    return model
+
 def get_image_list(data_root, split):
     filelist = []
     with open('./filelists/{}.txt'.format(split)) as f:
@@ -801,8 +818,8 @@ if __name__ == "__main__":
     # Model
     _, model = load_model(args, device)
     model = model.low_res
-    for n, _ in model.decoder.named_modules():
-        print(n)
+    #for n, _ in model.decoder.named_modules():
+    #    print(n)
     no_decay = ['bias', 'LayerNorm.weight']
     optimizer_grouped_parameters = [
         {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
@@ -817,7 +834,7 @@ if __name__ == "__main__":
     ]
     optimizer_D = Adafactor(optimizer_grouped_parameters)
     if not args.train_disc:
-        discriminator =  fu_load_checkpoint('./checkpoints/disc_lora_with_conv.pth', discriminator)
+        discriminator =  local_load_checkpoint('./checkpoints/disc_lora_with_conv.pth', discriminator)
 
     # Lora Config
     decoder_config = LoraConfig(
