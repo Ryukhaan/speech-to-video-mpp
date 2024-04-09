@@ -556,11 +556,11 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 loss_D.backward(retain_graph=True)
                 optimizer_D.step()
 
+                disc_loss.append(loss_D.item())
 
             global_step += 1
             cur_session_steps = global_step - resumed_step
             running_loss.append(loss.item())
-            disc_loss.append(loss_D.item())
 
             if global_step % 5 == 0:
                 cropped, reference = torch.split(x, 3, dim=1)
