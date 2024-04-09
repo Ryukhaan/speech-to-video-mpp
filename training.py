@@ -813,7 +813,7 @@ if __name__ == "__main__":
          'weight_decay': 0.01},
     ]
     optimizer_D = Adafactor(optimizer_grouped_parameters)
-    #torch.optim.Adam(discriminator.parameters(), lr=0.0002)
+    discriminator = load_checkpoint('./checkpoints/disc_lora_with_conv.pth', discriminator)
 
     # Lora Config
     decoder_config = LoraConfig(
