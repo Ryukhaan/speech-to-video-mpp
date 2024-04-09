@@ -149,7 +149,7 @@ def main():
             pred = torch.clamp(pred, 0, 1)
 
             # Get low res
-            for idx, lr in low_res:
+            for idx, lr in enumerate(low_res):
                 cv2.imwrite('./temp/images/low_res{}.png'.format(idx), lr)
 
             if args.up_face in ['sad', 'angry', 'surprise']:
