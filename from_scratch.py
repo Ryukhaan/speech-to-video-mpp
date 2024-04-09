@@ -121,6 +121,7 @@ if __name__ == "__main__":
         except ValueError:
             continue
         refs = []
+        error = False
         for inverse_transform, crop, full_frame, face_det in zip(inverse_transforms, crops, full_frames_RGB, face_det_results):
             imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
                 cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
@@ -130,5 +131,11 @@ if __name__ == "__main__":
             oface, coords = face_det
             y1, y2, x1, x2 = coords
 
-            refs.append(cv2.resize(ff[y1: y2, x1:x2], (128,128)))
+            try:
+                refs.append(cv2.resize(ff[y1: y2, x1:x2], (128,128)))
+            except:
+                error = True
+                break
+        if error:
+            continue
         np.save(file + '_img_batch.npy', refs)
