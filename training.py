@@ -125,12 +125,12 @@ class Dataset(object):
     def initialize(self):
         #if not os.path.isfile(self.all_videos[self.idx].split('.')[0] +'_cropped.npy'):
         self.read_full_video()
+        self.landmarks_estimate(self.full_frames, save=True)
+        self.face_3dmm_extraction(save=True)
+        self.hack_3dmm_expression(save=True)
         self.get_full_mels()
+        self.get_enhanced_imgs()
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + '_img_batch.npy'):
-            self.landmarks_estimate(self.full_frames, save=False)
-            self.face_3dmm_extraction(save=False)
-            self.hack_3dmm_expression(save=False)
-            self.get_enhanced_imgs()
             gen = datagen(self.imgs_enhanced, self.mel_chunks, self.full_frames, None, self.coordinates)
             self.img_batch, self.mel_batch, self.frame_batch, self.coords_batch, self.img_original, self.full_frame_batch = gen
             np.save(self.all_videos[self.idx].split('.')[0] + '_img_batch.npy', self.img_batch)
