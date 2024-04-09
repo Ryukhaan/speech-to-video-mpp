@@ -60,7 +60,8 @@ from futils.alignment_stit import crop_faces, calc_alignment_coefficients, paste
 from futils.inference_utils import Laplacian_Pyramid_Blending_with_mask, face_detect, load_train_model, train_options, \
     split_coeff, \
     trans_image, transform_semantic, find_crop_norm_ratio, load_face3d_net, exp_aus_dict, save_checkpoint, load_model
-from futils.inference_utils import load_model as fu_load_model
+
+from futils.inference_utils import load_checkpoint as fu_load_checkpoint
 from futils import hparams, audio
 import warnings
 warnings.filterwarnings("ignore")
@@ -816,7 +817,7 @@ if __name__ == "__main__":
     ]
     optimizer_D = Adafactor(optimizer_grouped_parameters)
     if not args.train_disc:
-        discriminator = load_checkpoint('./checkpoints/disc_lora_with_conv.pth', discriminator)
+        discriminator =  fu_load_checkpoint('./checkpoints/disc_lora_with_conv.pth', discriminator)
 
     # Lora Config
     decoder_config = LoraConfig(
