@@ -582,9 +582,10 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 save_checkpoint(
                     model, optimizer, global_step, checkpoint_dir, global_epoch
                 )
-                save_checkpoint(
-                    disc_model, optimizer, global_step, checkpoint_dir, global_epoch, prefix='disc'
-                )
+                if args.train_disc:
+                    save_checkpoint(
+                        disc_model, optimizer, global_step, checkpoint_dir, global_epoch, prefix='disc'
+                    )
         global_epoch += 1
     del kp_extractor.detector
 
