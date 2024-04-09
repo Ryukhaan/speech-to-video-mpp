@@ -825,7 +825,7 @@ if __name__ == "__main__":
         {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
          'weight_decay': 0.01},
     ]
-    optimizer = Adafactor(optimizer_grouped_parameters) #lr=hparams.syncnet_lr
+    optimizer = AdamW(optimizer_grouped_parameters, lr=hparams.syncnet_lr)
 
     discriminator = UNetDiscriminatorSN(3, num_feat=64).to(device)
     optimizer_grouped_parameters = [
@@ -843,7 +843,7 @@ if __name__ == "__main__":
         r=16,
         lora_alpha=16,
         target_modules=["mlp_gamma", "mlp_beta",
-                        "convl2l", "convl2g", "convg2l", "conv2"],
+                        "convl2l", "convl2g", "convg2l", "convg2g.conv1.0"],
         lora_dropout=0.1,
         bias="none",
     )
