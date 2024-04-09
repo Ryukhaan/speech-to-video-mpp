@@ -873,9 +873,9 @@ if __name__ == "__main__":
     lora_l_decoder = get_peft_model(model.decoder, decoder_config)
     model.decoder = lora_l_decoder
     for param in model.encoder.parameters():
-        param.requires_grad = False
+        param.requires_grad = True
     for param in model.audio_encoder.parameters():
-        param.requires_grad = False
+        param.requires_grad = True
     print_trainable_parameters(model)
     print_trainable_parameters(discriminator)
 
