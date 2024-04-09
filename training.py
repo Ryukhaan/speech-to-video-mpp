@@ -664,8 +664,8 @@ def eval_model(test_data_loader, global_step, device, model, disc_model, checkpo
 
         if step == 0:
             cropped, reference = torch.split(x, 3, dim=1)
-            #cropped = torch.cat([cropped[:, :, i] for i in range(lnet_T)], dim=0)
-            #reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
+            cropped = torch.cat([cropped[:, :, i] for i in range(lnet_T)], dim=0)
+            reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
             writer.add_images('eval_original',
                               torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0)[:, [2, 1, 0]],
                               global_step=global_step
@@ -674,6 +674,14 @@ def eval_model(test_data_loader, global_step, device, model, disc_model, checkpo
                               torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:, [2, 1, 0]],
                               global_step=global_step
                               )
+            writer.add_images('eval_cropped',
+                             cropped[:,[2,1,0]],
+                             global_step=global_step
+                             )
+            writer.add_images('eval_reference',
+                             reference[:,[2,1,0]],
+                             global_step=global_step
+                             )
 
     del kp_extractor.detector
     averaged_loss = sum(loss_tot) / len(test_data_loader)
