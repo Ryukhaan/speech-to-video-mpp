@@ -232,7 +232,7 @@ class Dataset(object):
 
     def hack_3dmm_expression(self, save=False, start_frame=0):
         expression = torch.tensor(loadmat('checkpoints/expression.mat')['expression_center'])[0]
-
+        self.D_Net, _ = load_model(self.args, self.device)
         # Video Image Stabilized
         if not os.path.isfile(self.all_videos[self.idx].split('.')[0] + '_stablized.npy'):
             self.imgs = []
@@ -249,13 +249,13 @@ class Dataset(object):
                 # hacking the new expression
                 coeff[:, :64, :] = expression[None, :64, None].to(device)
                 with torch.no_grad():
-                    output = self.preprocessor.D_Net(source_img, coeff)
+                    output = self.D_Net(source_img, coeff)
                 img_stablized = np.uint8 \
                     ((output['fake_image'].squeeze(0).permute(1, 2, 0).cpu().clamp_(-1, 1).numpy() + 1) / 2. * 255)
                 self.imgs.append(cv2.cvtColor(img_stablized, cv2.COLOR_RGB2BGR))
             if save:
                 np.save(self.all_videos[self.idx].split('.')[0] + '_stablized.npy', self.imgs)
-            # del D_Net, model
+            del self.D_Net
             torch.cuda.empty_cache()
         else:
             self.imgs = np.load(self.all_videos[self.idx].split('.')[0] + "_stablized.npy")
