@@ -74,7 +74,7 @@ hparams = hparams.hparams
 lnet_T = 5
 global_step = 0
 global_epoch = 0
-global_in_size = 256
+global_in_size = 192
 
 def local_load_checkpoint(path, model):
     print("Load checkpoint from: {}".format(path))
