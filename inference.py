@@ -98,7 +98,7 @@ def main():
         i += 1
 
     print("[Step 4] Load audio; Length of mel chunks: {}".format(len(mel_chunks)))
-    delta = 12  # len(mel_chunks)
+    delta = len(mel_chunks)
     imgs = imgs[:delta]
     full_frames = full_frames[:delta]
     lm = lm[:delta]
@@ -155,9 +155,9 @@ def main():
             pred = torch.clamp(pred, 0, 1)
 
             # Get low res
-            for idx, lr in enumerate(low_res):
-                cv2.imwrite('./temp/images/low_res{}.png'.format(idx),
-                            np.uint8(lr.cpu().numpy().transpose(1, 2, 0) * 255.))
+            #for idx, lr in enumerate(low_res):
+            #    cv2.imwrite('./temp/images/low_res{}.png'.format(idx),
+            #                np.uint8(lr.cpu().numpy().transpose(1, 2, 0) * 255.))
 
             if args.up_face in ['sad', 'angry', 'surprise']:
                 tar_aus = exp_aus_dict[args.up_face]
@@ -251,8 +251,8 @@ def main():
             mm = [255] * 19
             pp, orig_faces, enhanced_faces = enhancer.process(pp, xf, bbox=c, face_enhance=True, possion_blending=True,
                                                               mm=mm)
-            cv2.imwrite('./temp/images/frame{}.png'.format(ip), pp)
-            cv2.imwrite('./temp/images/pred{}.png'.format(ip), p)
+            #cv2.imwrite('./temp/images/frame{}.png'.format(ip), pp)
+            #cv2.imwrite('./temp/images/pred{}.png'.format(ip), p)
             ip += 1
             out.write(pp)
 
