@@ -118,7 +118,7 @@ class Dataset(object):
         self.full_frames = []
         self.idx = 0
         self.fps = self.args.fps
-        self.in_size = 96
+        self.in_size = 128
         self.initialize()
 
 
@@ -478,8 +478,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
     global global_step, global_epoch
 
     # Adversarial ground truths
-    valid = torch.FloatTensor(np.ones((lnet_T*hparams.batch_size, 1, 96, 96))).to(device)
-    fake = torch.FloatTensor(np.zeros((lnet_T*hparams.batch_size, 1, 96, 96))).to(device)
+    valid = torch.FloatTensor(np.ones((lnet_T*hparams.batch_size, 1, 128, 128))).to(device)
+    fake = torch.FloatTensor(np.zeros((lnet_T*hparams.batch_size, 1, 128, 128))).to(device)
 
     resumed_step = global_step
     loss_func = losses.LoraLoss(device)
@@ -862,19 +862,19 @@ if __name__ == "__main__":
             param.requires_grad = False
 
     # Lora Config
-    # decoder_config = LoraConfig(
-    #     r=16,
-    #     lora_alpha=16,
-    #     target_modules=["mlp_gamma", "mlp_beta",
-    #                     "convl2l", "convl2g", "convg2l", "convg2g.conv1.0"],
-    #     lora_dropout=0.1,
-    #     bias="none",
-    # )
-    # lora_l_decoder = get_peft_model(model.decoder, decoder_config)
-    # model.decoder = lora_l_decoder
+    decoder_config = LoraConfig(
+        r=16,
+        lora_alpha=16,
+        target_modules=["mlp_gamma", "mlp_beta",
+                        "convl2l", "convl2g", "convg2l", "convg2g.conv1.0"],
+        lora_dropout=0.1,
+        bias="none",
+    )
+    lora_l_decoder = get_peft_model(model.decoder, decoder_config)
+    model.decoder = lora_l_decoder
     # for param in model.encoder.parameters():
     #     param.requires_grad = True
-    for param in model.decoder.parameters():
+    for param in model.audio_encoder.parameters():
          param.requires_grad = True
     print_trainable_parameters(model)
     print_trainable_parameters(discriminator)
