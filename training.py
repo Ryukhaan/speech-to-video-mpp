@@ -640,6 +640,8 @@ def eval_model(test_data_loader, global_step, device, model, disc_model, checkpo
         pred = pred.to(device)
         y = y.to(device)
 
+        loss = loss_func(pred, y, mel)
+
         # pred_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
         # true_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
         # for b in range(pred.size(0)):
@@ -653,15 +655,12 @@ def eval_model(test_data_loader, global_step, device, model, disc_model, checkpo
         #     true_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
         # pred_lms = torch.FloatTensor(pred_lms).to(device) / 96.
         # true_lms = torch.FloatTensor(true_lms).to(device) / 384.
-        # loss_lm = nn.MSELoss()(true_lms[:, :, 48:], pred_lms[:, :, 48:])
+        # loss += nn.MSELoss()(true_lms[:, :, 48:], pred_lms[:, :, 48:])
 
-        #
-        pred_real = disc_model(pred).detach()
-        pred_fake = disc_model(y)
         # Adversarial loss (relativistic average GAN)
-        loss_GAN = criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
-
-        loss = loss_func(pred, y, mel) + loss_GAN #+ loss_lm
+        # pred_real = disc_model(pred).detach()
+        # pred_fake = disc_model(y)
+        # loss += criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
 
         loss_tot.append(loss.item())
 
