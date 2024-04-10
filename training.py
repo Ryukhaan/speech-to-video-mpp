@@ -74,6 +74,7 @@ hparams = hparams.hparams
 lnet_T = 5
 global_step = 0
 global_epoch = 0
+global_in_size = 128
 
 def local_load_checkpoint(path, model):
     print("Load checkpoint from: {}".format(path))
@@ -118,7 +119,7 @@ class Dataset(object):
         self.full_frames = []
         self.idx = 0
         self.fps = self.args.fps
-        self.in_size = 128
+        self.in_size = global_in_size
         self.initialize()
 
 
@@ -475,11 +476,11 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
           checkpoint_dir=None, checkpoint_interval=None, nepochs=None, filenames=None, writer=None,
           discriminator=(None,None)):
 
-    global global_step, global_epoch
+    global global_step, global_epoch, global_in_size
 
     # Adversarial ground truths
-    valid = torch.FloatTensor(np.ones((lnet_T*hparams.batch_size, 1, 128, 128))).to(device)
-    fake = torch.FloatTensor(np.zeros((lnet_T*hparams.batch_size, 1, 128, 128))).to(device)
+    valid = torch.FloatTensor(np.ones((lnet_T*hparams.batch_size, 1, global_in_size, global_in_size))).to(device)
+    fake = torch.FloatTensor(np.zeros((lnet_T*hparams.batch_size, 1, global_in_size, global_in_size))).to(device)
 
     resumed_step = global_step
     loss_func = losses.LoraLoss(device)
@@ -610,6 +611,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
 def eval_model(test_data_loader, global_step, device, model, disc_model, checkpoint_dir, writer=None):
     #eval_steps = 1400
     #print('Evaluating for {} steps'.format(global_step))
+    global global_in_size
     loss_tot = []
     loss_func = losses.LoraLoss(device)
     prog_bar = tqdm(enumerate(test_data_loader),
@@ -619,8 +621,8 @@ def eval_model(test_data_loader, global_step, device, model, disc_model, checkpo
     kp_extractor = KeypointExtractor()
 
     # Adversarial ground truths
-    valid = torch.FloatTensor(np.ones((lnet_T * hparams.batch_size, 1, 96, 96))).to(device)
-    fake = torch.FloatTensor(np.zeros((lnet_T * hparams.batch_size, 1, 96, 96))).to(device)
+    valid = torch.FloatTensor(np.ones((lnet_T * hparams.batch_size, 1, global_in_size, global_in_size))).to(device)
+    fake = torch.FloatTensor(np.zeros((lnet_T * hparams.batch_size, 1, global_in_size, global_in_size))).to(device)
 
     resumed_step = global_step
     loss_func = losses.LoraLoss(device)
