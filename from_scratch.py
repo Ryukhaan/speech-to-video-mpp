@@ -88,37 +88,34 @@ if __name__ == "__main__":
         if os.path.isfile(file + '_img_batch.npy'):
             continue
 
-        full_frames = read_video(file)
-        frames = full_frames.copy()
-
-        # face detection & cropping, cropping the first frame as the style of FFHQ
-        croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
-        full_frames_RGB = [np.asarray(frame) for frame in frames]
-
-        # Why there was a try ?
         try:
+            full_frames = read_video(file)
+            frames = full_frames.copy()
+
+            # face detection & cropping, cropping the first frame as the style of FFHQ
+            croper = Croper('checkpoints/shape_predictor_68_face_landmarks.dat')
+            full_frames_RGB = [np.asarray(frame) for frame in frames]
+
+            # Why there was a try ?
             full_frames_RGB, crop, quad = croper.crop(full_frames_RGB, xsize=512)  # Why 512 ?
-        except TypeError:
-            continue
 
-        clx, cly, crx, cry = crop
-        lx, ly, rx, ry = quad
-        lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
-        oy1, oy2, ox1, ox2 = cly + ly, min(cly + ry, full_frames_RGB[0].shape[0]), clx + lx, min(clx + rx,
-                                                                                                 full_frames_RGB[
-                                                                                                     0].shape[1])
-        coordinates = oy1, oy2, ox1, ox2
+            clx, cly, crx, cry = crop
+            lx, ly, rx, ry = quad
+            lx, ly, rx, ry = int(lx), int(ly), int(rx), int(ry)
+            oy1, oy2, ox1, ox2 = cly + ly, min(cly + ry, full_frames_RGB[0].shape[0]), clx + lx, min(clx + rx,
+                                                                                                     full_frames_RGB[
+                                                                                                         0].shape[1])
+            coordinates = oy1, oy2, ox1, ox2
 
 
-        fr_pil = [Image.fromarray(frame) for frame in frames]
-        lms = kp_extractor.extract_keypoint(fr_pil, 'temp/'+'temp_x12_landmarks.txt')
-        frames_pil = [(lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
-        crops, orig_images, quads  = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
-        inverse_transforms = [calc_alignment_coefficients(quad + 0.5, [[0, 0], [0, image_size], [image_size, image_size], [image_size, 0]]) for quad in quads]
+            fr_pil = [Image.fromarray(frame) for frame in frames]
+            lms = kp_extractor.extract_keypoint(fr_pil, 'temp/'+'temp_x12_landmarks.txt')
+            frames_pil = [(lm, frame) for frame,lm in zip(fr_pil, lms)] # frames is the croped version of modified face
+            crops, orig_images, quads  = crop_faces(image_size, frames_pil, scale=1.0, use_fa=True)
+            inverse_transforms = [calc_alignment_coefficients(quad + 0.5, [[0, 0], [0, image_size], [image_size, image_size], [image_size, 0]]) for quad in quads]
 
-        try:
             face_det_results = face_detect(full_frames, args, jaw_correction=True)
-        except ValueError:
+        except Exception as e:
             continue
         refs = []
         error = False
@@ -126,18 +123,13 @@ if __name__ == "__main__":
             try:
                 imc_pil = paste_image(inverse_transform, crop, Image.fromarray(
                     cv2.resize(full_frame[int(oy1):int(oy2), int(ox1):int(ox2)], (256, 256))))
-            except:
-                error = True
-                break
 
-            ff = full_frame.copy()
-            #ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
-            oface, coords = face_det
-            y1, y2, x1, x2 = coords
-
-            try:
+                ff = full_frame.copy()
+                #ff[int(oy1):int(oy2), int(ox1):int(ox2)] = cv2.resize(np.array(imc_pil.convert('RGB')), (ox2 - ox1, oy2 - oy1))
+                oface, coords = face_det
+                y1, y2, x1, x2 = coords
                 refs.append(cv2.resize(ff[y1: y2, x1:x2], (128,128)))
-            except:
+            except Exception as e:
                 error = True
                 break
         if error:
