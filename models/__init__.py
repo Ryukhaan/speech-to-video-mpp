@@ -53,17 +53,17 @@ def load_lora_network(args):
     L_net = LNet()
     E_net = ENet(lnet=L_net)
     model = load_checkpoint(args.ENet_path, E_net)
+    # Lora Config
     decoder_config = LoraConfig(
         r=16,
         lora_alpha=16,
         target_modules=["mlp_gamma", "mlp_beta",
-                        "convl2l", "convl2g", "convg2l",
-                        "convg2g.conv1.0"],
+                        "convl2l", "convl2g", "convg2l", "convg2g.conv1.0"],
         lora_dropout=0.1,
         bias="none",
     )
-    D = get_peft_model(model.low_res.decoder, decoder_config)
-    model.low_res.decoder = D
+    lora_l_decoder = get_peft_model(model.low_res.decoder, decoder_config)
+    model.low_res.decoder = lora_l_decoder
     model.low_res = load_checkpoint(args.lora_path, model.low_res)
     for param in model.parameters():
         param.requires_grad = False
