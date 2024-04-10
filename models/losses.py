@@ -145,5 +145,5 @@ class LoraLoss(torch.nn.Module):
         tv_val = self.tv_loss(y_pred_up).to(self.device)
         return self.lambda_1 * l1_val \
             + self.lambda_p * lp_val \
-            + self.lambda_ssim * lssim_val \
-            + self.lambda_tv * tv_val
+            #+ self.lambda_ssim * lssim_val \
+            #+ self.lambda_tv * tv_val
