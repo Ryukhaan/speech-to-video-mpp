@@ -71,7 +71,7 @@ from torch.utils.tensorboard import SummaryWriter
 args = train_options()
 
 hparams = hparams.hparams
-lnet_T = 5
+lnet_T = 10
 global_step = 0
 global_epoch = 0
 global_in_size = 128
