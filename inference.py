@@ -136,6 +136,8 @@ def main():
     else:
         out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
                               (frame_w, frame_h))
+        out_low = cv2.VideoWriter('temp/{}/result_low.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
+                              (96, 96))
     if args.up_face != 'original':
         instance = GANimationModel()
         instance.initialize()
