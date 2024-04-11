@@ -160,7 +160,7 @@ def main():
 
             # Get low res
             for idx, lr in enumerate(low_res):
-                out_low.write(lr)
+                out_low.write(np.uint8(lr.cpu().numyp().transpose(1,2,0) * 255))
 
             if args.up_face in ['sad', 'angry', 'surprise']:
                 tar_aus = exp_aus_dict[args.up_face]
