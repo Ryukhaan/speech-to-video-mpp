@@ -119,8 +119,8 @@ def main():
     for idx in tqdm(range(len(imgs)), desc='[Step 5] Reference Enhancement'):
         img = imgs[idx]
         # pred, _, _ = enhancer.process(img, aligned=True)
-        # pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False) #True
-        pred = cv2.resize(img, (256, 256))
+        pred, _, _ = ref_enhancer.process(img, img, face_enhance=False, possion_blending=False) #True
+        #pred = cv2.resize(img, (256, 256))
         imgs_enhanced.append(pred)
     gen = datagen(imgs_enhanced.copy(), mel_chunks, full_frames, None, (oy1, oy2, ox1, ox2))
     del ref_enhancer
