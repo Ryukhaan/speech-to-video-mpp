@@ -872,12 +872,12 @@ if __name__ == "__main__":
         lora_dropout=0.1,
         bias="none",
     )
-    lora_l_decoder = get_peft_model(model.decoder, decoder_config)
+    lora_l_decoder = get_peft_model(model, decoder_config)
     model.decoder = lora_l_decoder
     # for param in model.encoder.parameters():
     #     param.requires_grad = True
-    for param in model.audio_encoder.parameters():
-         param.requires_grad = True
+    #for param in model.audio_encoder.parameters():
+    #     param.requires_grad = True
     print_trainable_parameters(model)
     print_trainable_parameters(discriminator)
 
