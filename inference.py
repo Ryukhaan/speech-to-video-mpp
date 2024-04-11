@@ -131,6 +131,8 @@ def main():
     if not args.cropped_image:
         out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
                               (2 * frame_w, 2 * frame_h))
+        out_low = cv2.VideoWriter('temp/{}/result_low.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
+                              (96, 96))
     else:
         out = cv2.VideoWriter('temp/{}/result.mp4'.format(args.tmp_dir), cv2.VideoWriter_fourcc(*'mp4v'), fps,
                               (frame_w, frame_h))
@@ -155,9 +157,8 @@ def main():
             pred = torch.clamp(pred, 0, 1)
 
             # Get low res
-            #for idx, lr in enumerate(low_res):
-            #    cv2.imwrite('./temp/images/low_res{}.png'.format(idx),
-            #                np.uint8(lr.cpu().numpy().transpose(1, 2, 0) * 255.))
+            for idx, lr in enumerate(low_res):
+                out_low.write(lr)
 
             if args.up_face in ['sad', 'angry', 'surprise']:
                 tar_aus = exp_aus_dict[args.up_face]
@@ -255,7 +256,7 @@ def main():
             #cv2.imwrite('./temp/images/pred{}.png'.format(ip), p)
             ip += 1
             out.write(pp)
-
+    out_low.release()
     out.release()
 
     if not os.path.isdir(os.path.dirname(args.outfile)):
