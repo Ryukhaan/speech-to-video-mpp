@@ -864,6 +864,7 @@ if __name__ == "__main__":
             param.requires_grad = False
 
     # Lora Config
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     decoder_config = LoraConfig(
         r=16,
         lora_alpha=16,
