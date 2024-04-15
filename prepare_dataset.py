@@ -203,7 +203,10 @@ def get_full_mels(dataset, idx, imgs, full_frames, lm, fps):
     for i in range(len(full_frames)):
         start_idx = int(80. * (i / float(hparams.fps)))
         end_idx = start_idx + syncnet_mel_step_size
-        mel_chunks_crop.append(mel[start_idx: end_idx, :])
+        m = mel[start_idx: end_idx, :]
+        if m.shape[0] != syncnet_mel_step_size:
+            continue
+        mel_chunks_crop.append(m)
     mel_chunks_crop = np.asarray(mel_chunks_crop)
 
     # Indiv Mel - Input
