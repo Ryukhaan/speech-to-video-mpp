@@ -304,7 +304,7 @@ class Dataset(object):
         try:
             frames = self.read_video(self.idx)
         except Exception as e:
-            return
+            return None, None, None, None, None
 
         # Take a random frame
         start_frame = np.random.randint(0, len(frames) - lnet_T)
