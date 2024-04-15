@@ -218,11 +218,10 @@ def get_full_mels(dataset, idx, imgs, full_frames, lm, fps):
             start_idx = int(80. * ((j - 2) / float(hparams.fps)))
             end_idx = start_idx + syncnet_mel_step_size
             m = mel[start_idx: end_idx, :]
-            print(start_idx, end_idx)
             if m.shape[0] != syncnet_mel_step_size:
                 print(f"Mel shape ({m.shape[0]}) does not match mel step size ({syncnet_mel_step_size})")
                 continue
-            indiv_mels.append(m.T)
+            local_mels.append(m.T)
 
         local_mels = np.asarray(local_mels)
         print(local_mels.shape)
