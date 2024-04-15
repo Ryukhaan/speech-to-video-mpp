@@ -10,5 +10,3 @@ gradio>=3.7.0
 numpy==1.23.4
 fastdtw>=0.3.4
 torch-summary==1.4.5
-peft
-accelerate
