@@ -711,9 +711,9 @@ if __name__ == "__main__":
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
     print(len(filenames), len(train_list), len(val_list))
     # Dataset and Dataloader setup
-    save_preprocess(train_list)
-    save_preprocess(val_list)
-    exit(0)
+    #save_preprocess(train_list)
+    #save_preprocess(val_list)
+    #exit(0)
     #train_dataset = Dataset(train_list, device)
     #train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
