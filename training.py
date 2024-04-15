@@ -300,6 +300,7 @@ class Dataset(object):
         #self.idx = np.random.randint(0, len(self.all_videos) - 1)
         self.idx = idx
         # Read full frames from that video
+
         vidname = self.all_videos[self.idx]
         try:
             frames = self.read_video(self.idx)
@@ -356,8 +357,6 @@ class Dataset(object):
         masked_window = self.prepare_window(self.imgs_masked)
         masked_window[:, window.shape[2] // 2:] = 0.
         x = np.concatenate([masked_window, stabilized_window], axis=0)
-        if x.shape != torch.Size([6, 5, 96, 96]):
-            return 0, 0, 0, 0, 0
 
         y = window.copy()
         y = torch.FloatTensor(y)
@@ -366,9 +365,9 @@ class Dataset(object):
         #phones = phones
         x = torch.FloatTensor(x)
         mel = torch.FloatTensor(mel.T).unsqueeze(0)
-        #indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
+        indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
 
-        return x, codes, phones, mel, y
+        return x, codes, phones, indiv_mels, y
 
     def get_crop_orig_images(self):
         # face detection & cropping, cropping the first frame as the style of FFHQ
@@ -509,7 +508,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             x = x.to(device)
             code = code.to(device)
             phone = phone.to(device)
-            if x.shape != torch.Size([4, 3, 5, 96, 96]):
+            if len(x.shape) < 3:
                 continue
             pred = model(code, phone, x)
             if pred.shape != torch.Size([4, 3, 5, 96, 96]):
