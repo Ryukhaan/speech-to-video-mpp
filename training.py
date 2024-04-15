@@ -525,10 +525,26 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
             # Write Loss To TensorBoard
             writer.add_scalar('training loss', running_loss / (step + 1), global_epoch * len(train_data_loader) + step)
-            if global_step % hparams.writer_interval == 0:
-                writer.add_figure('predictions',
-                                  plot_classes_preds(model, x, code, phone, y),
-                                  global_step=global_epoch * len(train_data_loader) + step)
+            if global_step % 5 == 0:
+                cropped, reference = torch.split(x, 3, dim=1)
+                cropped = torch.cat([cropped[:,:,i] for i in range(lnet_T)], dim=0)
+                reference = torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)
+                writer.add_images('2_original',
+                                  torch.cat([y[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('1_predictions',
+                                  torch.cat([pred[:, :, i] for i in range(lnet_T)], dim=0)[:,[2,1,0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('cropped',
+                                  torch.cat([reference[:, :, i] for i in range(lnet_T)], dim=0)[:, [2, 1, 0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('reference',
+                                  torch.cat([cropped[:, :, i] for i in range(lnet_T)], dim=0)[:, [2, 1, 0]],
+                                  global_step=global_step
+                                  )
             prog_bar.refresh()
             if global_step == 1 or global_step % checkpoint_interval == 0:
                 save_checkpoint(
