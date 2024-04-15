@@ -609,7 +609,9 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
     while 1:
         prog_bar = tqdm(enumerate(test_data_loader), total=len(test_data_loader) + 1)
         for step, (x, code, phone, mel, y) in prog_bar:
-            if x is None or x == 0:
+            if x is None:
+                continue
+            if isinstance(x, int):
                 continue
             model.eval()
 
