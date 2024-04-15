@@ -714,7 +714,7 @@ if __name__ == "__main__":
     #save_preprocess(train_list)
     #save_preprocess(val_list)
     #exit(0)
-    #train_dataset = Dataset(train_list, device)
+    train_dataset = Dataset(train_list, device)
     #train_dataset.save_preprocess()
     test_dataset = Dataset(val_list, device)
     #test_dataset.save_preprocess()
