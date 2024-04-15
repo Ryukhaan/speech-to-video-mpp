@@ -304,7 +304,7 @@ class Dataset(object):
         try:
             frames = self.read_video(self.idx)
         except Exception as e:
-            continue
+            return
 
         # Take a random frame
         start_frame = np.random.randint(0, len(frames) - lnet_T)
@@ -312,7 +312,7 @@ class Dataset(object):
         # Get sub full frames
         nframes = self.get_segmented_window(start_frame)
         if nframes is None:
-            continue
+            return None, None, None, None, None
         # Get Encodec features from audio
         codes  = self.get_segmented_codes(self.idx, start_frame)
 
@@ -327,37 +327,37 @@ class Dataset(object):
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
         except Exception as e:
             print("Error in wav or mel")
-            continue
+            return None, None, None, None, None
         mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
         # Get landmarks
         if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
-            continue
+            return None, None, None, None, None
 
         nframes = self.full_frames_RGB
         # Get Hack Image
         try:
             self.hack_3dmm_expression(save=False, start_frame=start_frame)
         except Exception as e:
-            continue
+            return None, None, None, None, None
 
         if len(self.imgs.shape) <= 3:
-            continue
+            return None, None, None, None, None
         window = self.prepare_window(nframes)
         if window.shape[1] != 5:
-            continue
+            return None, None, None, None, None
         self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
         try:
             stabilized_window = self.prepare_window(self.imgs)
         except Exception as e:
-            continue
+            return None, None, None, None, None
         self.imgs_masked = self.imgs.copy()
 
         masked_window = self.prepare_window(self.imgs_masked)
         masked_window[:, window.shape[2] // 2:] = 0.
         x = np.concatenate([masked_window, stabilized_window], axis=0)
         if x.shape != torch.Size([6, 5, 96, 96]):
-            continue
+            return None, None, None, None, None
 
         y = window.copy()
         y = torch.FloatTensor(y)
