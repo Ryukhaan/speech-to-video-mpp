@@ -211,7 +211,7 @@ def get_full_mels(dataset, idx, imgs, full_frames, lm, fps):
 
     # Indiv Mel - Input
     indiv_mels = []
-    for i in range(len(full_frames)):
+    for i in range(len(full_frames)-syncnet_T):
         local_mels = []
         if i - 2 < 0: continue
         for j in range(i, i + syncnet_T):
@@ -224,7 +224,6 @@ def get_full_mels(dataset, idx, imgs, full_frames, lm, fps):
             local_mels.append(m.T)
 
         local_mels = np.asarray(local_mels)
-        print(local_mels.shape)
         indiv_mels.append((local_mels))
     indiv_mels = np.asarray(indiv_mels)
 
