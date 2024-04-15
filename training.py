@@ -622,6 +622,7 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
             y = y.to(device)
             code = code.to(device)
             phone = phone.to(device)
+            print(x.shape)
             pred = model(code, phone, x)
             if pred.shape != torch.Size([4, 3, 5, 96, 96]):
                 continue
