@@ -502,7 +502,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         for step, (x, code, phone, mel, y) in prog_bar:
             if x is None: continue
             if isinstance(x, int) or len(x.shape) < 3:
-                print(x)
                 continue
             model.train()
             optimizer.zero_grad()
