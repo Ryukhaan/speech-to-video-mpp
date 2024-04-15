@@ -295,80 +295,80 @@ class Dataset(object):
     def __getitem__(self, idx):
         img_size = 384
         size = torch.Size([30, 96, 96])
-        while True:
-            # Take a random video
-            self.idx = np.random.randint(0, len(self.all_videos) - 1)
+        #while True:
+        # Take a random video
+        #self.idx = np.random.randint(0, len(self.all_videos) - 1)
+        self.idx = idx
+        # Read full frames from that video
+        vidname = self.all_videos[self.idx]
+        try:
+            frames = self.read_video(self.idx)
+        except Exception as e:
+            continue
 
-            # Read full frames from that video
-            vidname = self.all_videos[self.idx]
-            try:
-                frames = self.read_video(self.idx)
-            except Exception as e:
-                continue
+        # Take a random frame
+        start_frame = np.random.randint(0, len(frames) - lnet_T)
 
-            # Take a random frame
-            start_frame = np.random.randint(0, len(frames) - lnet_T)
+        # Get sub full frames
+        nframes = self.get_segmented_window(start_frame)
+        if nframes is None:
+            continue
+        # Get Encodec features from audio
+        codes  = self.get_segmented_codes(self.idx, start_frame)
 
-            # Get sub full frames
-            nframes = self.get_segmented_window(start_frame)
-            if nframes is None:
-                continue
-            # Get Encodec features from audio
-            codes  = self.get_segmented_codes(self.idx, start_frame)
+        # Get CLIP features from text
+        phones = self.get_segmented_phones(self.idx, start_frame)
 
-            # Get CLIP features from text
-            phones = self.get_segmented_phones(self.idx, start_frame)
+        # Read WAV for Wav2Lip Sync Loss
+        try:
+            wavpath = vidname.split('.')[0] + '.wav'
+            wav = audio.load_wav(wavpath, hparams.sample_rate)
+            orig_mel = audio.melspectrogram(wav).T
+            indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
+        except Exception as e:
+            print("Error in wav or mel")
+            continue
+        mel = self.crop_audio_window(orig_mel.copy(), start_frame)
 
-            # Read WAV for Wav2Lip Sync Loss
-            try:
-                wavpath = vidname.split('.')[0] + '.wav'
-                wav = audio.load_wav(wavpath, hparams.sample_rate)
-                orig_mel = audio.melspectrogram(wav).T
-                indiv_mels = self.get_segmented_mels(orig_mel.copy(), start_frame)
-            except Exception as e:
-                print("Error in wav or mel")
-                continue
-            mel = self.crop_audio_window(orig_mel.copy(), start_frame)
+        # Get landmarks
+        if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
+            continue
 
-            # Get landmarks
-            if not self.landmarks_estimate(nframes, save=False, start_frame=start_frame):
-                continue
+        nframes = self.full_frames_RGB
+        # Get Hack Image
+        try:
+            self.hack_3dmm_expression(save=False, start_frame=start_frame)
+        except Exception as e:
+            continue
 
-            nframes = self.full_frames_RGB
-            # Get Hack Image
-            try:
-                self.hack_3dmm_expression(save=False, start_frame=start_frame)
-            except Exception as e:
-                continue
+        if len(self.imgs.shape) <= 3:
+            continue
+        window = self.prepare_window(nframes)
+        if window.shape[1] != 5:
+            continue
+        self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
+        try:
+            stabilized_window = self.prepare_window(self.imgs)
+        except Exception as e:
+            continue
+        self.imgs_masked = self.imgs.copy()
 
-            if len(self.imgs.shape) <= 3:
-                continue
-            window = self.prepare_window(nframes)
-            if window.shape[1] != 5:
-                continue
-            self.imgs = np.asarray([cv2.resize(frame, (96,96)) for frame in self.imgs])
-            try:
-                stabilized_window = self.prepare_window(self.imgs)
-            except Exception as e:
-                continue
-            self.imgs_masked = self.imgs.copy()
+        masked_window = self.prepare_window(self.imgs_masked)
+        masked_window[:, window.shape[2] // 2:] = 0.
+        x = np.concatenate([masked_window, stabilized_window], axis=0)
+        if x.shape != torch.Size([6, 5, 96, 96]):
+            continue
 
-            masked_window = self.prepare_window(self.imgs_masked)
-            masked_window[:, window.shape[2] // 2:] = 0.
-            x = np.concatenate([masked_window, stabilized_window], axis=0)
-            if x.shape != torch.Size([6, 5, 96, 96]):
-                continue
+        y = window.copy()
+        y = torch.FloatTensor(y)
 
-            y = window.copy()
-            y = torch.FloatTensor(y)
+        codes = torch.FloatTensor(codes)
+        #phones = phones
+        x = torch.FloatTensor(x)
+        mel = torch.FloatTensor(mel.T).unsqueeze(0)
+        #indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
 
-            codes = torch.FloatTensor(codes)
-            #phones = phones
-            x = torch.FloatTensor(x)
-            mel = torch.FloatTensor(mel.T).unsqueeze(0)
-            #indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
-
-            return x, codes, phones, mel, y
+        return x, codes, phones, mel, y
 
     def get_crop_orig_images(self):
         # face detection & cropping, cropping the first frame as the style of FFHQ
