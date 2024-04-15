@@ -220,7 +220,7 @@ def get_full_mels(dataset, idx, imgs, full_frames, lm, fps):
             m = mel[start_idx: end_idx, :]
             if m.shape[0] != syncnet_mel_step_size:
                 print(f"Mel shape ({m.shape[0]}) does not match mel step size ({syncnet_mel_step_size})")
-                return None
+                continue
             local_mels.append(m.T)
 
         local_mels = np.asarray(local_mels)
