@@ -301,7 +301,10 @@ class Dataset(object):
 
             # Read full frames from that video
             vidname = self.all_videos[self.idx]
-            frames = self.read_video(self.idx)
+            try:
+                frames = self.read_video(self.idx)
+            except Exception as e:
+                continue
 
             # Take a random frame
             start_frame = np.random.randint(0, len(frames) - lnet_T)
