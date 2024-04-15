@@ -501,6 +501,8 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader)+1)
         for step, (x, code, phone, mel, y) in prog_bar:
             if x is None: continue
+            if isinstance(x, int):
+                continue
             model.train()
             optimizer.zero_grad()
 
@@ -622,7 +624,6 @@ def eval_model(test_data_loader, global_step, device, model, checkpoint_dir):
             y = y.to(device)
             code = code.to(device)
             phone = phone.to(device)
-            print(x.shape)
             pred = model(code, phone, x)
             if pred.shape != torch.Size([4, 3, 5, 96, 96]):
                 continue
