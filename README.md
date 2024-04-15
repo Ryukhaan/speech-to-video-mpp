@@ -36,7 +36,7 @@ git clone https://github.com/vinthony/video-retalking.git
 cd video-retalking
 conda create -n video_retalking python=3.8
 conda activate video_retalking
-pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio=0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
 pip install -r requirements.txt
 ```
 
