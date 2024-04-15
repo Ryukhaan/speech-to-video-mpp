@@ -2,54 +2,20 @@ import glob
 from os.path import dirname, join, basename, isfile
 
 # Training Tensorboard
-import matplotlib.pyplot as plt
-from torch.utils.tensorboard import SummaryWriter
-
-import json
-import gc
-import torch
-from torch import nn
-from torch import optim
-import torchvision
-from torchsummary import summary
-from torch.utils import data as data_utils
-from librosa import get_duration
-import clip
 import numpy as np
 import cv2, os, sys, subprocess, platform, torch
 from tqdm import tqdm
 from PIL import Image
 from scipy.io import loadmat
-from scipy.io import wavfile
-
-from pydub import AudioSegment
-from pydub.utils import make_chunks
-
-import matplotlib.pyplot as plt
-from scipy.signal import correlate
 
 # Audio framework and Encodec
-#from encodec import EncodecModel
-#from encodec.utils import convert_audio
-import torchaudio
-
-from sklearn.model_selection import train_test_split
-
-from models.LNet import LNet
 import pickle
-from models import losses
-import preprocessing.facing as preprocessing
 
 sys.path.append('third_part')
 # 3dmm extraction
 from third_part.face3d.util.preprocess import align_img
 from third_part.face3d.util.load_mats import load_lm3d
 from third_part.face3d.extract_kp_videos import KeypointExtractor
-# face enhancement
-#from third_part.GPEN.face_enhancement import FaceEnhancement
-#from third_part.GFPGAN.gfpgan import GFPGANer
-# expression control
-from third_part.ganimation_replicate.model.ganimation import GANimationModel
 
 from futils import audio
 from futils.ffhq_preprocess import Croper
