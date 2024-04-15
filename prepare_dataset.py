@@ -98,6 +98,8 @@ def options():
     parser.add_argument('--json_path', default="", help="Path to JSON MFA result")
     parser.add_argument('--sync_path', default="checkpoints/lipsync_expert.pth",
                         help="Path to LipSync Network checkpoints")
+    parser.add_argument('--filelist', default="train",
+                        help="Path to filelist of video on train with no extension inside filelists directory")
     args = parser.parse_args()
     return args
 
@@ -414,7 +416,7 @@ def get_image_list(data_root, split):
 
 def main():
     # Get all file's name using filelists.txt
-    filenames = get_image_list(args.data_root, 'train')
+    filenames = get_image_list(args.data_root, args.filelist)
 
     # Preprocess all files
     preprocess(filenames, args)
