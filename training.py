@@ -508,6 +508,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             x = x.to(device)
             code = code.to(device)
             phone = phone.to(device)
+            print(x.shape)
             if len(x.shape) < 3:
                 continue
             pred = model(code, phone, x)
