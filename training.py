@@ -308,7 +308,8 @@ class Dataset(object):
 
             # Get sub full frames
             nframes = self.get_segmented_window(start_frame)
-
+            if nframes is None:
+                continue
             # Get Encodec features from audio
             codes  = self.get_segmented_codes(self.idx, start_frame)
 
