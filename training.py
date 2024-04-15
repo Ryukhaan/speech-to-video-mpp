@@ -109,7 +109,7 @@ class Dataset(object):
     def read_video(self, index):
         video_stream = cv2.VideoCapture(self.all_videos[index])
         self.fps = video_stream.get(cv2.CAP_PROP_FPS)
-        self.full_frames = np.load(self.all_videos[self.idx].split('.')[0] + "_cropped.npy")
+        self.full_frames = np.load(self.all_videos[self.idx].split('.')[0] + "_cropped.npy", allow_pickle=True)
         #self.full_frames = []
         #while True:
         #    still_reading, frame = video_stream.read()
