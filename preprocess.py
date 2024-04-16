@@ -171,7 +171,7 @@ def encode_text(vfile, args, gpu_id):
     with torch.no_grad():
         text_tokens = torch_clip.tokenize(text_array).to(device)
         text_features = clip_model[gpu_id][0].encode_text(text_tokens)
-
+    print(text_features.shape, len(frames))
     np.save(path.join(fulldir, 'text_features.npy'), np.array(text_features.cpu().numpy()))
 
 def mp_handler(job):
