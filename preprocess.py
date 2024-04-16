@@ -52,6 +52,10 @@ audios_model = [EncodecModel.encodec_model_24khz() for id in range(args.ngpu)]
 for m in audios_model:
     m.set_target_bandwidth(args.bandwidth)
 
+# Load CLIP Model
+clip_model = [clip.load("ViT-B/32", device='cuda:{}'.format(id)) for id in range(args.ngpu)]
+
+# Face Detection Model
 fa = [face_detection.FaceAlignment(face_detection.LandmarksType._2D, flip_input=False,
                                    device='cuda:{}'.format(id)) for id in range(args.ngpu)]
 
@@ -138,7 +142,7 @@ def encode_audio(vfile, args, gpu_id):
             encoded_frames = audios_model[gpu_id].encode(chunk)
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
         codes_chunks.append(np.array(codes))
-
+    print(path.join(fulldir, 'audio_features.npy'))
     np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes_chunks))
 
 def encode_text(vfile, args, gpu_id):
@@ -150,26 +154,25 @@ def encode_text(vfile, args, gpu_id):
     fulldir = os.path.join(args.data_root, dirname, vidname)
     os.makedirs(fulldir, exist_ok=True)
 
-    with open( os.path.join(fulldir, "text.json"), 'r', encoding='utf-8') as file:
+    with open(vfile, 'r', encoding='utf-8') as file:
         json_data = json.load(file)
     # Get Phones and words from json
     words = json_data['tiers']['words']['entries']
     #phones = json_data['tiers']['phones']
 
+    frames = glob(path.join(fulldir, '*.jpg'))
     m_fps = 1. / args.fps
     text_array = []
-    for i in range(lnet_T):
-        tmin = (start_frame + i) * m_fps
-        tmax = (start_frame + i + 1) * m_fps
-        tmp_word = []
-        for (ts, te, word) in words:
-            if ts < tmax and te >= tmin:
-                tmp_word.append(word)
+    for i in range(len(frames)):
+        tmin = i * m_fps
+        tmax = (i + 1) * m_fps
+        tmp_word = [word for (ts, te, word) in words if ts < tmax and te >= tmin]
         text_array.append(" ".join(tmp_word))
     with torch.no_grad():
         text_tokens = clip.tokenize(text_array).to(device)
-        text_features = clip_model.encode_text(text_tokens)
-    return text_features
+        text_features = clip_model[gpu_id][0].encode_text(text_tokens)
+        print(text_features.shape)
+    np.save(path.join(fulldir, 'text_features.npy'), np.array(text_features))
 
 def mp_handler(job):
     vfile, args, gpu_id = job
@@ -226,11 +229,29 @@ def main(args):
 
     print("Extract Encodec Features")
     filelist = glob((path.join(args.preprocessed_root, '*/*/*.wav')))
+    # Filter filelist
+    filelist = [vfile for vfile in filelist \
+                    if not os.path.isfile(path.join(args.preprocessed_root,
+                                               vfile.split('/')[-2],
+                                               "audio_features.npy"))]
+    print(filelist)
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_encodec_handler, j) for j in jobs]
     _ = [r.result() for r in tqdm(as_completed(futures), total=len(futures))]
 
+    print("Extract Text Features from Clip Model")
+    # Filter list
+    filelist = glob((path.join(args.data_root, '*/*.json')))
+    # Filter filelist
+    filelist = [vfile for vfile in filelist \
+                    if not os.path.isfile(path.join(args.preprocessed_root,
+                                               vfile.split('/')[-2],
+                                               "text_features.npy"))]
+    jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
+    p = ThreadPoolExecutor(args.ngpu)
+    futures = [p.submit(mp_clip_hanlder, j) for j in jobs]
+    _ = [r.result() for r in tqdm(as_completed(futures), total=len(futures))]
 
 if __name__ == '__main__':
     main(args)
