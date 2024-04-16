@@ -161,7 +161,7 @@ def encode_text(vfile, args, gpu_id):
     frames = glob(path.join(fulldir, vidname, '*.jpg'))
     m_fps = 1. / args.fps
     text_array = []
-    print(fulldir, dirname, frames)
+    print(fulldir, dirname, path.join(fulldir, vidname, '*.jpg'))
     for i in range(len(frames)):
         tmin = i * m_fps
         tmax = (i + 1) * m_fps
