@@ -127,14 +127,15 @@ def encode_audio(vfile, model, gpu_id):
         i += 1
 
     batches = [audio_chunks[i:i + args.batch_size] for i in range(0, len(audio_chunks), args.batch_size)]
-
+    print(len(batches), len(batches[0]))
     for batch in batches:
-        chunk = convert_audio(batch, sr, audios_model[gpu_id].sample_rate, audios_model[gpu_id].channels)
+        chunk = [convert_audio(b, sr, audios_model[gpu_id].sample_rate, audios_model[gpu_id].channels) for b in batch]
 
         # Extract discrete codes from EnCodec
         with torch.no_grad():
             encoded_frames = audios_model[gpu_id].encode(chunk)
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
+        print(codes.shape)
         codes_chunks.append(np.array(codes))
 
     np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes_chunks))
