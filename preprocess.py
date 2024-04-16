@@ -27,7 +27,7 @@ import torch
 from torchaudio import load as torch_load
 from encodec import EncodecModel
 from encodec.utils import convert_audio
-import clip
+import clip as torch_clip
 
 parser = argparse.ArgumentParser()
 
@@ -53,7 +53,7 @@ for m in audios_model:
     m.set_target_bandwidth(args.bandwidth)
 
 # Load CLIP Model
-clip_model = [clip.load("ViT-B/32", device='cuda:{}'.format(id)) for id in range(args.ngpu)]
+clip_model = [torch_clip.load("ViT-B/32", device='cuda:{}'.format(id)) for id in range(args.ngpu)]
 
 # Face Detection Model
 fa = [face_detection.FaceAlignment(face_detection.LandmarksType._2D, flip_input=False,
