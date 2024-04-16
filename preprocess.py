@@ -150,6 +150,7 @@ def encode_text(vfile, args, gpu_id):
     dirname = vfile.split('/')[-2]
 
     fulldir = os.path.join(args.data_root, dirname)
+    pre_fulldir = os.path.join(args.preprocessed_root, dirname)
     os.makedirs(fulldir, exist_ok=True)
 
     with open(vfile, 'r', encoding='utf-8') as file:
@@ -158,10 +159,10 @@ def encode_text(vfile, args, gpu_id):
     words = json_data['tiers']['words']['entries']
     #phones = json_data['tiers']['phones']
 
-    frames = glob(path.join(fulldir, vidname, '*.jpg'))
+    frames = glob(path.join(pre_fulldir, vidname, '*.jpg'))
     m_fps = 1. / args.fps
     text_array = []
-    print(fulldir, dirname, path.join(fulldir, vidname, '*.jpg'))
+    #print(fulldir, dirname, path.join(fulldir, vidname, '*.jpg'))
     for i in range(len(frames)):
         tmin = i * m_fps
         tmax = (i + 1) * m_fps
