@@ -18,14 +18,12 @@ from glob import glob
 import futils.audio as audio
 from futils.hparams import hparams as hp
 
+sys.path.append('third_part')
 import third_part.face_detection as face_detection
-from third_part.face3d.util.load_mats import load_lm3d
-from futils.inference_utils import split_coeff, load_face3d_net, load_DNet
 
 import gc
 import torch
 from torchaudio import torch_load
-from torch.nn.functional import pad
 from encodec import EncodecModel
 from encodec.utils import convert_audio
 import clip
