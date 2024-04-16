@@ -498,7 +498,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
         prog_bar = tqdm(enumerate(train_data_loader), total=len(train_data_loader), leave=False, position=1)
         for step, (x, indiv_mel, mel, lms, y) in prog_bar:
             if x is None: continue
-
             # ---------------------
             #  Train Generator
             # ---------------------
@@ -515,26 +514,6 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             y = y.to(device)
 
             loss = loss_func(pred, y, mel)
-
-            # KeyPoint Extractor Loss
-            # pred_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
-            # true_lms = np.zeros((pred.size(0), lnet_T, 68, 2))
-            # for b in range(pred.size(0)):
-            #     fr_pil = [Image.fromarray((255 * pred[b,:,frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(96,96,3)) for frame in range(lnet_T)]
-            #     pred_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
-            #     fr_pil = [Image.fromarray(
-            #         (255 * y[b, :, frame].squeeze().detach().cpu().numpy()).astype(np.uint8).reshape(384, 384, 3)) for
-            #         frame in range(lnet_T)]
-            #     true_lms[b] = kp_extractor.extract_keypoint(fr_pil, 'temp/pred_x12_landmarks.txt')
-            # pred_lms = torch.FloatTensor(pred_lms).to(device) / 96.
-            # true_lms = torch.FloatTensor(true_lms).to(device) / 384.
-            # loss += nn.MSELoss()(true_lms[:,:,48:], pred_lms[:,:,48:])
-
-            # Extract validity predictions from discriminator
-            # Adversarial loss (relativistic average GAN)
-            # pred_real = disc_model(pred).detach()
-            # pred_fake = disc_model(y)
-            # loss += criterion_GAN(pred_fake - pred_real.mean(0, keepdim=True), valid)
 
 
             loss.backward(retain_graph=True)

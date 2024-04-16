@@ -1,5 +1,5 @@
 import torch
-from torch import nn
+from torch import nn, Tensor
 import torchvision
 import numpy
 import torch.nn.functional as F
@@ -7,6 +7,7 @@ from torch import optim
 
 from models.syncnet import SyncNet_color
 from models.ssim import SSIM, MS_SSIM
+from models.spectrum import get_spectrum
 
 class LipSyncLoss(torch.nn.Module):
     def __init__(self, device):
@@ -97,6 +98,21 @@ class TotalVariationLoss(torch.nn.Module):
          res2 = diff2.abs().sum([1, 2, 3])
          #score = res1 + res2
          return torch.add(res1, res2).mean()
+
+class MSESpectrumLoss(torch.nn.MSELoss):
+    def __init__(self, *args, **kwargs):
+        super(MSESpectrumLoss, self).__init__(*args, **kwargs)
+
+    @staticmethod
+    def get_log_spectrum(input):
+        spectra = get_spectrum(input.flatten(0, 1)).unflatten(0, input.shape[:2])
+        spectra = spectra.mean(dim=1)             # average over channels
+        return (1 + spectra).log()
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        input_spectrum = self.get_log_spectrum(input)
+        target_spectrum = self.get_log_spectrum(target)
+        return super(MSESpectrumLoss, self).forward(input_spectrum, target_spectrum)
 
 class LoraLoss(torch.nn.Module):
     def __init__(self, device):
