@@ -126,10 +126,10 @@ def encode_audio(vfile, model, gpu_id):
         audio_chunks.append(chunk)
         i += 1
 
-    batches = [audio_chunks[i:i + args.batch_size] for i in range(0, len(audio_chunks), args.batch_size)]
+    #batches = [audio_chunks[i:i + args.batch_size] for i in range(0, len(audio_chunks), args.batch_size)]
 
-    for batch in batches:
-        chunk = torch.FloatTensor([convert_audio(b, sr, audios_model[gpu_id].sample_rate, audios_model[gpu_id].channels) for b in batch])
+    for batch in audio_chunks:
+        chunk = convert_audio(batch, sr, audios_model[gpu_id].sample_rate, audios_model[gpu_id].channels)
         print(chunk.shape)
         # Extract discrete codes from EnCodec
         with torch.no_grad():
