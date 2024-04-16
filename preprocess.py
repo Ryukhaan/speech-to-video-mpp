@@ -142,12 +142,10 @@ def encode_audio(vfile, args, gpu_id):
             encoded_frames = audios_model[gpu_id].encode(chunk)
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
         codes_chunks.append(np.array(codes))
-    print(path.join(fulldir, 'audio_features.npy'))
+
     np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes_chunks))
 
 def encode_text(vfile, args, gpu_id):
-    lnet_T = 5
-
     vidname = os.path.basename(vfile).split('.')[0]
     dirname = vfile.split('/')[-2]
 
