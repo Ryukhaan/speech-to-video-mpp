@@ -169,12 +169,10 @@ def encode_text(vfile, args, gpu_id):
         tmp_word = [word for (ts, te, word) in words if ts < tmax and te >= tmin]
         text_array.append(" ".join(tmp_word))
     with torch.no_grad():
-        print(text_array)
         text_tokens = torch_clip.tokenize(text_array).to(device)
-        print(text_tokens)
         text_features = clip_model[gpu_id][0].encode_text(text_tokens)
-        print(text_features.shape)
-    np.save(path.join(fulldir, 'text_features.npy'), np.array(text_features))
+
+    np.save(path.join(fulldir, 'text_features.npy'), np.array(text_features.cpu().numpy()))
 
 def mp_handler(job):
     vfile, args, gpu_id = job
