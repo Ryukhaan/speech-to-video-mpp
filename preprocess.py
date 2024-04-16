@@ -184,6 +184,7 @@ def main(args):
 
     print("Extract Encodec Features")
     filelist = glob((path.join(args.data_root, '*/*/*.wav')))
+    print(filelist)
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_encodec_handler, j) for j in jobs]
