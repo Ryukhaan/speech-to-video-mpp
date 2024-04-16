@@ -23,7 +23,7 @@ import third_part.face_detection as face_detection
 
 import gc
 import torch
-from torchaudio import torch_load
+from torchaudio import load as torch_load
 from encodec import EncodecModel
 from encodec.utils import convert_audio
 import clip
