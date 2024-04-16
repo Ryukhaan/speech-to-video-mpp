@@ -183,7 +183,7 @@ def main(args):
             continue
 
     print("Extract Encodec Features")
-    filelist = glob((path.join(args.data_root, '*/*/*.wav')))
+    filelist = glob((path.join(args.preprocessed_root, '*/*/*.wav')))
     print(filelist)
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
