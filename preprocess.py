@@ -103,10 +103,10 @@ def process_audio_file(vfile, args):
     command = template.format(vfile, wavpath)
     subprocess.call(command, shell=True)
 
-def encode_audio(vfile, model, gpu_id):
+def encode_audio(vfile, args, gpu_id):
     # Load audio
     wav, sr =  torch_load(vfile)
-
+    print(vfile)
     # Pad wav to get NoF codec
     samples_per_frame = int(0.2 * sr)
     idx_multiplier, codes_chunks = int(1. / args.fps * sr), []
