@@ -9,6 +9,7 @@ if not path.isfile('checkpoints/s3fd.pth'):
     raise FileNotFoundError('Save the s3fd model to checkpoints/s3fd.pth \
 							before running this script!')
 
+import json
 import multiprocessing as mp
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import numpy as np
@@ -140,6 +141,36 @@ def encode_audio(vfile, args, gpu_id):
 
     np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes_chunks))
 
+def encode_text(vfile, args, gpu_id):
+    lnet_T = 5
+
+    vidname = os.path.basename(vfile).split('.')[0]
+    dirname = vfile.split('/')[-2]
+
+    fulldir = os.path.join(args.data_root, dirname, vidname)
+    os.makedirs(fulldir, exist_ok=True)
+
+    with open( os.path.join(fulldir, "text.json"), 'r', encoding='utf-8') as file:
+        json_data = json.load(file)
+    # Get Phones and words from json
+    words = json_data['tiers']['words']['entries']
+    #phones = json_data['tiers']['phones']
+
+    m_fps = 1. / args.fps
+    text_array = []
+    for i in range(lnet_T):
+        tmin = (start_frame + i) * m_fps
+        tmax = (start_frame + i + 1) * m_fps
+        tmp_word = []
+        for (ts, te, word) in words:
+            if ts < tmax and te >= tmin:
+                tmp_word.append(word)
+        text_array.append(" ".join(tmp_word))
+    with torch.no_grad():
+        text_tokens = clip.tokenize(text_array).to(device)
+        text_features = clip_model.encode_text(text_tokens)
+    return text_features
+
 def mp_handler(job):
     vfile, args, gpu_id = job
     try:
@@ -153,6 +184,15 @@ def mp_encodec_handler(job):
     vfile, args, gpu_id = job
     try:
         encode_audio(vfile, args, gpu_id)
+    except KeyboardInterrupt:
+        exit(0)
+    except:
+        traceback.print_exc()
+
+def mp_clip_hanlder(job):
+    vfile, args, gpu_id = job
+    try:
+        encode_text(vfile, args, gpu_id)
     except KeyboardInterrupt:
         exit(0)
     except:
