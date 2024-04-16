@@ -163,6 +163,12 @@ def main(args):
 
     filelist = glob(path.join(args.data_root, '*/*.mp4'))
 
+    # Filter list
+    filelist = [vfile for vfile in filelist \
+                    if not os.path.isdir(path.join(args.preprocessed_root,
+                                               vfile.split('/')[-2],
+                                               os.path.basename(vfile).split('.')[0]))]
+
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_handler, j) for j in jobs]
