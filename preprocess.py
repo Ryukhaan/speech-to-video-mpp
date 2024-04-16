@@ -124,6 +124,7 @@ def encode_audio(vfile, model, gpu_id):
             break
         chunk = wav[:, start_idx: start_idx + samples_per_frame]
         audio_chunks.append(chunk)
+        i += 1
 
     batches = [audio_chunks[i:i + args.batch_size] for i in range(0, len(audio_chunks), args.batch_size)]
 
@@ -184,7 +185,6 @@ def main(args):
 
     print("Extract Encodec Features")
     filelist = glob((path.join(args.preprocessed_root, '*/*/*.wav')))
-    print(filelist)
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_encodec_handler, j) for j in jobs]
