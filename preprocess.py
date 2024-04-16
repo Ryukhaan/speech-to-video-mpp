@@ -106,7 +106,7 @@ def process_audio_file(vfile, args):
 def encode_audio(vfile, args, gpu_id):
     # Load audio
     wav, sr =  torch_load(vfile)
-    print(vfile)
+
     # Pad wav to get NoF codec
     samples_per_frame = int(0.2 * sr)
     idx_multiplier, codes_chunks = int(1. / args.fps * sr), []
@@ -137,7 +137,7 @@ def encode_audio(vfile, args, gpu_id):
             encoded_frames = audios_model[gpu_id].encode(chunk)
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
         codes_chunks.append(np.array(codes))
-    print(np.array(codes_chunks).shape)
+
     np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes_chunks))
 
 def mp_handler(job):
