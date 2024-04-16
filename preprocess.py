@@ -119,7 +119,7 @@ def encode_audio(vfile, args, gpu_id):
     vidname = os.path.basename(vfile).split('.')[0]
     dirname = vfile.split('/')[-2]
 
-    fulldir = path.join(args.preprocessed_root, dirname, vidname)
+    fulldir = path.join(args.preprocessed_root, dirname)
     os.makedirs(fulldir, exist_ok=True)
 
     audio_chunks, i = [], 0
@@ -151,7 +151,7 @@ def encode_text(vfile, args, gpu_id):
     vidname = os.path.basename(vfile).split('.')[0]
     dirname = vfile.split('/')[-2]
 
-    fulldir = os.path.join(args.data_root, dirname, vidname)
+    fulldir = os.path.join(args.data_root, dirname)
     os.makedirs(fulldir, exist_ok=True)
 
     with open(vfile, 'r', encoding='utf-8') as file:
@@ -169,7 +169,7 @@ def encode_text(vfile, args, gpu_id):
         tmp_word = [word for (ts, te, word) in words if ts < tmax and te >= tmin]
         text_array.append(" ".join(tmp_word))
     with torch.no_grad():
-        text_tokens = clip.tokenize(text_array).to(device)
+        text_tokens = torch_clip.tokenize(text_array).to(device)
         text_features = clip_model[gpu_id][0].encode_text(text_tokens)
         print(text_features.shape)
     np.save(path.join(fulldir, 'text_features.npy'), np.array(text_features))
@@ -234,7 +234,6 @@ def main(args):
                     if not os.path.isfile(path.join(args.preprocessed_root,
                                                vfile.split('/')[-2],
                                                "audio_features.npy"))]
-    print(filelist)
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_encodec_handler, j) for j in jobs]
