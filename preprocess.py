@@ -197,6 +197,7 @@ def mp_encodec_handler(job):
     except KeyboardInterrupt:
         exit(0)
     except:
+        print(vfile)
         traceback.print_exc()
 
 def mp_clip_hanlder(job):
@@ -206,6 +207,7 @@ def mp_clip_hanlder(job):
     except KeyboardInterrupt:
         exit(0)
     except:
+        print(vfile)
         traceback.print_exc()
 
 def main(args):
