@@ -145,9 +145,8 @@ def encode_audio(vfile, args, gpu_id):
     codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
     codes_chunks.append(np.array(codes))
     frames = glob(path.join(fulldir, '*.jpg'))
-    print(len(frames))
+    print(fulldir, len(frames))
     print(np.array(codes_chunks).shape)
-    exit()
     np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes_chunks))
 
 def encode_text(vfile, args, gpu_id):
@@ -251,6 +250,7 @@ def main(args):
                     if not os.path.isfile(path.join(args.preprocessed_root,
                                                vfile.split('/')[-3], vfile.split('/')[-2],
                                                "audio_features.npy"))]
+    filelist = [filelist[0]]
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_encodec_handler, j) for j in jobs]
