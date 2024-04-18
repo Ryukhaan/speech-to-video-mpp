@@ -146,7 +146,7 @@ def encode_audio(vfile, args, gpu_id):
         encoded_frames = audios_model[gpu_id].encode(chunk)
     #codes_chunks = torch.cat([codes for codes in encoded_frames], dim=0)
     frames = glob(path.join(fulldir, '*.jpg'))
-    print(len(frames), len(encoded_frames))
+    encoded_frames = encoded_frames[:len(frames)]
     codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=0)  # [B, n_q, T]
     #codes_chunks.append(np.array(codes))
     print(codes.shape)
