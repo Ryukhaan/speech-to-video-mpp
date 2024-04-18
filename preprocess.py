@@ -52,7 +52,7 @@ torch.cuda.empty_cache()
 audios_model = [EncodecModel.encodec_model_24khz() for id in range(args.ngpu)]
 for m in audios_model:
     m.set_target_bandwidth(args.bandwidth)
-    m.segment = args.chunk_length_s
+    m.segment = args.chunk_length_s * (1.6 / 2.4)
     m.overlap = 1. / args.fps
 
 
@@ -115,7 +115,7 @@ def process_audio_file(vfile, args):
 def encode_audio(vfile, args, gpu_id):
     # Load audio
     wav, sr =  torch_load(vfile)
-    print(sr)
+
     # Pad wav to get NoF codec
     samples_per_frame = int(0.2 * sr)
     idx_multiplier, codes_chunks = int(1. / args.fps * sr), []
