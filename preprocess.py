@@ -142,6 +142,7 @@ def encode_audio(vfile, args, gpu_id):
     chunk = chunk.unsqueeze(0)
     print(chunk.shape, int(args.chunk_length_s * sr))
     chunk = torch.nn.functional.pad(chunk, (0, 0, 0, 0, 0, int(args.chunk_length_s * sr)), "constant", 0)
+    print(chunk.shape)
     # Extract discrete codes from EnCodec
     with torch.no_grad():
         encoded_frames = audios_model[gpu_id].encode(chunk)
