@@ -54,7 +54,7 @@ audios_model = [EncodecModel.encodec_model_24khz() for id in range(args.ngpu)]
 for m in audios_model:
     m.set_target_bandwidth(args.bandwidth)
     m.segment = args.chunk_length_s
-    m.overlap = 1. / (args.fps * args.chunk_length_s)
+    m.overlap = 1. - 1. / (args.fps * args.chunk_length_s)
 
 
 # Load CLIP Model
