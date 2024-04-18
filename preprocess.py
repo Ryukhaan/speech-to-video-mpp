@@ -140,19 +140,16 @@ def encode_audio(vfile, args, gpu_id):
     #for batch in audio_chunks:
     chunk = convert_audio(wav, sr, audios_model[gpu_id].sample_rate, audios_model[gpu_id].channels)
     chunk = chunk.unsqueeze(0)
-    print(chunk.shape, int(args.chunk_length_s * sr))
     chunk = torch.nn.functional.pad(chunk, (0, int(args.chunk_length_s * sr), 0, 0, 0, 0), "constant", 0)
-    print(chunk.shape)
+
     # Extract discrete codes from EnCodec
     with torch.no_grad():
         encoded_frames = audios_model[gpu_id].encode(chunk)
     #codes_chunks = torch.cat([codes for codes in encoded_frames], dim=0)
     frames = glob(path.join(fulldir, '*.jpg'))
     encoded_frames = encoded_frames[:len(frames)]
-    print([encoded[0].shape for encoded in encoded_frames])
     codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=0)  # [B, n_q, T]
     #codes_chunks.append(np.array(codes))
-    print(codes.shape)
     np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes))
 
 def encode_text(vfile, args, gpu_id):
@@ -255,7 +252,7 @@ def main(args):
                     if not os.path.isfile(path.join(args.preprocessed_root,
                                                vfile.split('/')[-3], vfile.split('/')[-2],
                                                "audio_features.npy"))]
-    filelist = [filelist[0]]
+    #filelist = [filelist[0]]
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_encodec_handler, j) for j in jobs]
