@@ -37,7 +37,7 @@ parser.add_argument("--data_root", help="Root folder of the LRS2 dataset", requi
 parser.add_argument("--preprocessed_root", help="Root folder of the preprocessed dataset", required=True)
 
 parser.add_argument("--bandwidth", default=24.0, type=float, help="Bandwidth value (by default 24.0)")
-parser.add_argument("--t", default=5, type=int, help="Number of frames as input")
+parser.add_argument("--chunk_length_s", default=.2, type=float, help="Second which frame length")
 parser.add_argument("--fps", help="Frame per second (default 25)", default=25, type=int)
 
 args = parser.parse_args()
@@ -52,7 +52,7 @@ torch.cuda.empty_cache()
 audios_model = [EncodecModel.encodec_model_24khz() for id in range(args.ngpu)]
 for m in audios_model:
     m.set_target_bandwidth(args.bandwidth)
-    m.segment = 0.2
+    m.segment = args.chunk_length_s
     m.overlap = 1. / args.fps
 
 
