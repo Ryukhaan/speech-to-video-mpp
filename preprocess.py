@@ -238,7 +238,6 @@ def main(args):
                     if not os.path.isfile(path.join(args.preprocessed_root,
                                                vfile.split('/')[-2], os.path.basename(vfile).split('.')[0],
                                                "text_features.npy"))]
-    print(filelist[0])
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_clip_hanlder, j) for j in jobs]
