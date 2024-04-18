@@ -117,7 +117,7 @@ def encode_audio(vfile, args, gpu_id):
     idx_multiplier, codes_chunks = int(1. / args.fps * sr), []
 
     vidname = os.path.basename(vfile).split('.')[0]
-    dirname = vfile.split('/')[-3]
+    dirname = vfile.split('/')[-2]
     fulldir = path.join(args.preprocessed_root, dirname, vidname)
     os.makedirs(fulldir, exist_ok=True)
 
@@ -147,7 +147,7 @@ def encode_audio(vfile, args, gpu_id):
 
 def encode_text(vfile, args, gpu_id):
     vidname = os.path.basename(vfile).split('.')[0]
-    dirname = vfile.split('/')[-3]
+    dirname = vfile.split('/')[-2]
 
     fulldir = os.path.join(args.data_root, dirname)
     pre_fulldir = os.path.join(args.preprocessed_root, dirname, vidname)
@@ -233,7 +233,7 @@ def main(args):
     filelist = glob((path.join(args.data_root, '*/*.json')))
     filelist = [vfile for vfile in filelist \
                     if not os.path.isfile(path.join(args.preprocessed_root,
-                                               vfile.split('/')[-3], vfile.split('/')[-2],
+                                               vfile.split('/')[-3], vfile.split('.')[0],
                                                "text_features.npy"))]
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
