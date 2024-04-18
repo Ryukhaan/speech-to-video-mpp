@@ -147,6 +147,7 @@ def encode_audio(vfile, args, gpu_id):
     frames = glob(path.join(fulldir, '*.jpg'))
     print(len(frames))
     print(np.array(codes_chunks).shape)
+    exit()
     np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes_chunks))
 
 def encode_text(vfile, args, gpu_id):
