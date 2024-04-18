@@ -229,8 +229,6 @@ def main(args):
             traceback.print_exc()
             continue
 
-    del fa
-
     print("Extract Text Features from Clip Model")
     # Filter list
     filelist = glob((path.join(args.data_root, '*/*.json')))
@@ -242,8 +240,6 @@ def main(args):
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_clip_hanlder, j) for j in jobs]
     _ = [r.result() for r in tqdm(as_completed(futures), total=len(futures))]
-
-    del clip_model
 
     print("Extract Encodec Features")
     filelist = glob((path.join(args.preprocessed_root, '*/*/*.wav')))
@@ -257,7 +253,6 @@ def main(args):
     futures = [p.submit(mp_encodec_handler, j) for j in jobs]
     _ = [r.result() for r in tqdm(as_completed(futures), total=len(futures))]
 
-    del audios_model
 
 if __name__ == '__main__':
     main(args)
