@@ -118,7 +118,7 @@ def encode_audio(vfile, args, gpu_id):
     wav, sr =  torch_load(vfile)
 
     # Pad wav to get NoF codec
-    wav = resample(wav, orig_freq=sr, new_freq=audios_model[gpu_id].sample_rate)
+    #wav = resample(wav, orig_freq=sr, new_freq=audios_model[gpu_id].sample_rate)
     #samples_per_frame = int(0.2 * sr)
     #idx_multiplier, codes_chunks = int(1. / args.fps * sr), []
 
@@ -139,7 +139,7 @@ def encode_audio(vfile, args, gpu_id):
     #batches = [audio_chunks[i:i + args.batch_size] for i in range(0, len(audio_chunks), args.batch_size)]
 
     #for batch in audio_chunks:
-    #chunk = convert_audio(wav, audios_model[gpu_id].sample_rate, audios_model[gpu_id].sample_rate, audios_model[gpu_id].channels)
+    chunk = convert_audio(wav, audios_model[gpu_id].sample_rate, audios_model[gpu_id].sample_rate, audios_model[gpu_id].channels)
     chunk = wav.unsqueeze(0)
 
     # Extract discrete codes from EnCodec
@@ -148,6 +148,7 @@ def encode_audio(vfile, args, gpu_id):
     #codes_chunks = torch.cat([codes for codes in encoded_frames], dim=0)
     frames = glob(path.join(fulldir, '*.jpg'))
     print(len(frames), len(encoded_frames))
+    print(encoded_frames[0])
     codes = torch.cat([encoded for encoded in encoded_frames], dim=0)  # [B, n_q, T]
     #codes_chunks.append(np.array(codes))
     print(codes.shape)
