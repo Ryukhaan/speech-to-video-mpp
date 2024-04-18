@@ -241,7 +241,7 @@ def main(args):
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_encodec_handler, j) for j in jobs]
     _ = [r.result() for r in tqdm(as_completed(futures), total=len(futures))]
-
+    exit()
     print("Extract Text Features from Clip Model")
     # Filter list
     filelist = glob((path.join(args.data_root, '*/*.json')))
