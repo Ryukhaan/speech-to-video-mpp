@@ -53,9 +53,8 @@ torch.cuda.empty_cache()
 audios_model = [EncodecModel.encodec_model_24khz() for id in range(args.ngpu)]
 for m in audios_model:
     m.set_target_bandwidth(args.bandwidth)
-    delta = 1.6 / 2.4
-    m.segment = args.chunk_length_s * delta
-    m.overlap = 1. / args.fps * delta
+    m.segment = args.chunk_length_s
+    m.overlap = 1. / args.fps
 
 
 # Load CLIP Model
