@@ -120,8 +120,8 @@ def encode_audio(vfile, args, gpu_id):
     samples_per_frame = int(0.2 * sr)
     idx_multiplier, codes_chunks = int(1. / args.fps * sr), []
 
-    vidname = os.path.basename(vfile).split('.')[0]
-    dirname = vfile.split('/')[-2]
+    vidname = vfile.split('/')[-2]
+    dirname = vfile.split('/')[-3]
     fulldir = path.join(args.preprocessed_root, dirname, vidname)
     os.makedirs(fulldir, exist_ok=True)
 
