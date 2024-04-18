@@ -234,7 +234,7 @@ def main(args):
     filelist = glob((path.join(args.data_root, '*/*.json')))
     filelist = [vfile for vfile in filelist \
                     if not os.path.isfile(path.join(args.preprocessed_root,
-                                               vfile.split('/')[-3], vfile.split('.')[0],
+                                               vfile.split('/')[-2], vfile.split('.')[0],
                                                "text_features.npy"))]
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
