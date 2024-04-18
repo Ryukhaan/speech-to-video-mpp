@@ -25,7 +25,7 @@ import third_part.face_detection as face_detection
 import gc
 import torch
 from torchaudio import load as torch_load
-from encodec import EncodecModel
+from encodec import EncodecModel, EncodecConfig
 from encodec.utils import convert_audio
 import clip as torch_clip
 
@@ -48,9 +48,10 @@ gc.collect()
 torch.cuda.empty_cache()
 
 # Load encodec
-audios_model = [EncodecModel.encodec_model_24khz() for id in range(args.ngpu)]
-for m in audios_model:
-    m.set_target_bandwidth(args.bandwidth)
+configuration = EncodecConfig(target_bandwidths=[args.bandwidth], chunk_length_s = 0.1, overlap=0)
+audios_model = [EncodecModel(configuration) for id in range(args.ngpu)]
+#for m in audios_model:
+#    m.set_target_bandwidth(args.bandwidth)
 
 # Load CLIP Model
 clip_model = [torch_clip.load("ViT-B/32", device='cuda:{}'.format(id)) for id in range(args.ngpu)]
@@ -121,26 +122,26 @@ def encode_audio(vfile, args, gpu_id):
     fulldir = path.join(args.preprocessed_root, dirname, vidname)
     os.makedirs(fulldir, exist_ok=True)
 
-    audio_chunks, i = [], 0
-    while 1:
-        start_idx = int(i * idx_multiplier)
-        if start_idx + samples_per_frame > len(wav[0]):
-            break
-        chunk = wav[:, start_idx: start_idx + samples_per_frame]
-        audio_chunks.append(chunk)
-        i += 1
+    #audio_chunks, i = [], 0
+    #while 1:
+    #    start_idx = int(i * idx_multiplier)
+    #    if start_idx + samples_per_frame > len(wav[0]):
+    #        break
+    #    chunk = wav[:, start_idx: start_idx + samples_per_frame]
+    #    audio_chunks.append(chunk)
+    #    i += 1
 
     #batches = [audio_chunks[i:i + args.batch_size] for i in range(0, len(audio_chunks), args.batch_size)]
 
-    for batch in audio_chunks:
-        chunk = convert_audio(batch, sr, audios_model[gpu_id].sample_rate, audios_model[gpu_id].channels)
-        chunk = chunk.unsqueeze(0)
+    #for batch in audio_chunks:
+    chunk = convert_audio(wav, sr, audios_model[gpu_id].sample_rate, audios_model[gpu_id].channels)
+    chunk = chunk.unsqueeze(0)
 
-        # Extract discrete codes from EnCodec
-        with torch.no_grad():
-            encoded_frames = audios_model[gpu_id].encode(chunk)
-        codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
-        codes_chunks.append(np.array(codes))
+    # Extract discrete codes from EnCodec
+    with torch.no_grad():
+        encoded_frames = audios_model[gpu_id].encode(chunk)
+    codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
+    codes_chunks.append(np.array(codes))
 
     print(fulldir)
     np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes_chunks))
@@ -162,7 +163,6 @@ def encode_text(vfile, args, gpu_id):
     frames = glob(path.join(pre_fulldir, '*.jpg'))
     m_fps = 1. / args.fps
     text_array = []
-    #print(fulldir, dirname, path.join(fulldir, vidname, '*.jpg'))
     for i in range(len(frames)):
         tmin = i * m_fps
         tmax = (i + 1) * m_fps
