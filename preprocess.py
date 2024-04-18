@@ -232,10 +232,13 @@ def main(args):
     print("Extract Text Features from Clip Model")
     # Filter list
     filelist = glob((path.join(args.data_root, '*/*.json')))
+    print(args.preprocessed_root, filelist[0].split('/')[-2], filelist[0].split('.')[0])
+    exit()
     filelist = [vfile for vfile in filelist \
                     if not os.path.isfile(path.join(args.preprocessed_root,
                                                vfile.split('/')[-2], vfile.split('.')[0],
                                                "text_features.npy"))]
+    print(filelist[0])
     jobs = [(vfile, args, i % args.ngpu) for i, vfile in enumerate(filelist)]
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_clip_hanlder, j) for j in jobs]
