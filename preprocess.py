@@ -25,7 +25,7 @@ import third_part.face_detection as face_detection
 import gc
 import torch
 from torchaudio import load as torch_load
-from encodec import EncodecModel, EncodecConfig
+from encodec import EncodecModel
 from encodec.utils import convert_audio
 import clip as torch_clip
 
@@ -48,10 +48,13 @@ gc.collect()
 torch.cuda.empty_cache()
 
 # Load encodec
-configuration = EncodecConfig(target_bandwidths=[args.bandwidth], chunk_length_s = 0.2, overlap = 1. / args.fps)
-audios_model = [EncodecModel(configuration) for id in range(args.ngpu)]
-#for m in audios_model:
-#    m.set_target_bandwidth(args.bandwidth)
+#configuration = EncodecConfig(target_bandwidths=[args.bandwidth], chunk_length_s = 0.2, overlap = 1. / args.fps)
+audios_model = [EncodecModel.encodec_model_24khz() for id in range(args.ngpu)]
+for m in audios_model:
+    m.set_target_bandwidth(args.bandwidth)
+    m.segment = 0.2
+    m.overlap = 1. / args.fps
+
 
 # Load CLIP Model
 clip_model = [torch_clip.load("ViT-B/32", device='cuda:{}'.format(id)) for id in range(args.ngpu)]
