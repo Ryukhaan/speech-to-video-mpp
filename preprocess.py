@@ -109,6 +109,7 @@ def process_audio_file(vfile, args):
     subprocess.call(command, shell=True)
 
 def encode_audio(vfile, args, gpu_id):
+    print(vfile)
     # Load audio
     wav, sr =  torch_load(vfile)
 
@@ -143,6 +144,7 @@ def encode_audio(vfile, args, gpu_id):
         codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
         codes_chunks.append(np.array(codes))
 
+    print(fulldir)
     np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes_chunks))
 
 def encode_text(vfile, args, gpu_id):
