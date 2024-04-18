@@ -25,6 +25,7 @@ import third_part.face_detection as face_detection
 import gc
 import torch
 from torchaudio import load as torch_load
+from torchaudio.functional import resample
 from encodec import EncodecModel
 from encodec.utils import convert_audio
 import clip as torch_clip
@@ -116,10 +117,11 @@ def process_audio_file(vfile, args):
 def encode_audio(vfile, args, gpu_id):
     # Load audio
     wav, sr =  torch_load(vfile)
-    print(sr)
+
     # Pad wav to get NoF codec
-    samples_per_frame = int(0.2 * sr)
-    idx_multiplier, codes_chunks = int(1. / args.fps * sr), []
+    wav = resample(wav, orig_freq=sr, new_freq=audios_model[gpu_id].sample_rate)
+    #samples_per_frame = int(0.2 * sr)
+    #idx_multiplier, codes_chunks = int(1. / args.fps * sr), []
 
     vidname = vfile.split('/')[-2]
     dirname = vfile.split('/')[-3]
@@ -143,12 +145,13 @@ def encode_audio(vfile, args, gpu_id):
     # Extract discrete codes from EnCodec
     with torch.no_grad():
         encoded_frames = audios_model[gpu_id].encode(chunk)
+    #codes_chunks = torch.cat([codes for codes in encoded_frames], dim=0)
     frames = glob(path.join(fulldir, '*.jpg'))
     print(len(frames), len(encoded_frames))
     codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
-    codes_chunks.append(np.array(codes))
-    print(np.array(codes_chunks).shape)
-    np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes_chunks))
+    #codes_chunks.append(np.array(codes))
+    print(codes.shape)
+    np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes))
 
 def encode_text(vfile, args, gpu_id):
     vidname = os.path.basename(vfile).split('.')[0]
