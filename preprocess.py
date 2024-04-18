@@ -160,7 +160,7 @@ def encode_text(vfile, args, gpu_id):
     #phones = json_data['tiers']['phones']
 
     frames = glob(path.join(pre_fulldir, '*.jpg'))
-    print(frames)
+    print(vfile, pre_fulldir, frames)
     m_fps = 1. / args.fps
     text_array = []
     #print(fulldir, dirname, path.join(fulldir, vidname, '*.jpg'))
