@@ -109,7 +109,6 @@ def process_audio_file(vfile, args):
     subprocess.call(command, shell=True)
 
 def encode_audio(vfile, args, gpu_id):
-    print(vfile)
     # Load audio
     wav, sr =  torch_load(vfile)
 
@@ -119,8 +118,7 @@ def encode_audio(vfile, args, gpu_id):
 
     vidname = os.path.basename(vfile).split('.')[0]
     dirname = vfile.split('/')[-2]
-    print(dirname, vidname, args.preprocessed_root)
-    fulldir = path.join(args.preprocessed_root, dirname)
+    fulldir = path.join(args.preprocessed_root, vfile.split('/')[-3], dirname)
     os.makedirs(fulldir, exist_ok=True)
 
     audio_chunks, i = [], 0
@@ -207,7 +205,6 @@ def main(args):
     print('Started processing for {} with {} GPUs'.format(args.data_root, args.ngpu))
 
     filelist = glob(path.join(args.data_root, '*/*.mp4'))
-
     # Filter list
     filelist = [vfile for vfile in filelist \
                     if not os.path.isdir(path.join(args.preprocessed_root,
@@ -232,7 +229,7 @@ def main(args):
     print("Extract Encodec Features")
     filelist = glob((path.join(args.preprocessed_root, '*/*/*.wav')))
     # Filter filelist
-    print(filelist[0], filelist[0].split('/')[-2])
+    print(filelist[0].split('/')[-3:-2])
     filelist = [vfile for vfile in filelist \
                     if not os.path.isfile(path.join(args.preprocessed_root,
                                                vfile.split('/')[-2],
@@ -241,10 +238,12 @@ def main(args):
     p = ThreadPoolExecutor(args.ngpu)
     futures = [p.submit(mp_encodec_handler, j) for j in jobs]
     _ = [r.result() for r in tqdm(as_completed(futures), total=len(futures))]
-    exit()
+
     print("Extract Text Features from Clip Model")
     # Filter list
     filelist = glob((path.join(args.data_root, '*/*.json')))
+    print(filelist[0], filelist[0].split('/')[-2])
+    exit()
     # Filter filelist
     filelist = [vfile for vfile in filelist \
                     if not os.path.isfile(path.join(args.preprocessed_root,
