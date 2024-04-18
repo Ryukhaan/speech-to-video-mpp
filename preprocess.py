@@ -119,7 +119,7 @@ def encode_audio(vfile, args, gpu_id):
 
     vidname = os.path.basename(vfile).split('.')[0]
     dirname = vfile.split('/')[-2]
-
+    print(dirname, vidname, args.preprocessed_root)
     fulldir = path.join(args.preprocessed_root, dirname)
     os.makedirs(fulldir, exist_ok=True)
 
