@@ -48,7 +48,7 @@ gc.collect()
 torch.cuda.empty_cache()
 
 # Load encodec
-configuration = EncodecConfig(target_bandwidths=[args.bandwidth], chunk_length_s = 0.1, overlap=0)
+configuration = EncodecConfig(target_bandwidths=[args.bandwidth], chunk_length_s = 0.2, overlap = 1. / args.fps)
 audios_model = [EncodecModel(configuration) for id in range(args.ngpu)]
 #for m in audios_model:
 #    m.set_target_bandwidth(args.bandwidth)
@@ -142,8 +142,7 @@ def encode_audio(vfile, args, gpu_id):
         encoded_frames = audios_model[gpu_id].encode(chunk)
     codes = torch.cat([encoded[0] for encoded in encoded_frames], dim=-1)  # [B, n_q, T]
     codes_chunks.append(np.array(codes))
-
-    print(fulldir)
+    print(np.array(codes_chunks).shape)
     np.save(path.join(fulldir, 'audio_features.npy'), np.array(codes_chunks))
 
 def encode_text(vfile, args, gpu_id):
