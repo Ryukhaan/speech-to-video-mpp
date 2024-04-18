@@ -169,7 +169,7 @@ def encode_text(vfile, args, gpu_id):
         tmp_word = [word for (ts, te, word) in words if ts < tmax and te >= tmin]
         text_array.append(" ".join(tmp_word))
     with torch.no_grad():
-        text_tokens = torch_clip.tokenize(text_array).to(device)
+        text_tokens = torch_clip.tokenize(text_array).to(f'cuda:{gpu_id}')
         text_features = clip_model[gpu_id][0].encode_text(text_tokens)
 
     np.save(path.join(pre_fulldir, 'text_features.npy'), np.array(text_features.cpu().numpy()))
