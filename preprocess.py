@@ -232,7 +232,7 @@ def main(args):
     print("Extract Encodec Features")
     filelist = glob((path.join(args.preprocessed_root, '*/*/*.wav')))
     # Filter filelist
-    print(filelist)
+    print(filelist[0], filelist[0].split('/')[-2])
     filelist = [vfile for vfile in filelist \
                     if not os.path.isfile(path.join(args.preprocessed_root,
                                                vfile.split('/')[-2],
