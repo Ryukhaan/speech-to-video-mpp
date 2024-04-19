@@ -22,6 +22,7 @@ from futils.hparams import hparams, get_image_list
 from sklearn.model_selection import train_test_split
 
 from models.losses import PerceptualLoss, MSESpectrumLoss
+from torch.utils.tensorboard import SummaryWriter
 
 parser = argparse.ArgumentParser(description='Code to train the Wav2Lip model WITH the visual quality discriminator')
 
@@ -263,7 +264,7 @@ class MultiLoss(object):
         return loss
 
 def train(device, model, disc, train_data_loader, test_data_loader, optimizer, disc_optimizer,
-          checkpoint_dir=None, checkpoint_interval=None, nepochs=None):
+          checkpoint_dir=None, checkpoint_interval=None, nepochs=None, writer=None):
     global global_step, global_epoch
     resumed_step = global_step
 
@@ -365,6 +366,41 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                 running_spectrum_loss += mse_spectrum(g, gt).item()
             else:
                 running_spectrum_loss += 0.
+
+            # Monitoring with Tensorboard
+            writer.add_scalars('gen_loss', {
+                'l1': running_l1_loss / (step + 1),
+                'sync': running_sync_loss / (step + 1),
+                'perceptual': running_perceptual_loss / (step + 1),
+                'vgg': running_vgg_perceptual_loss / (step + 1),
+                'spectrum': running_spectrum_loss / (step + 1),
+                'total': loss
+                }, global_step)
+            writer.add_scalars('disc_loss', {
+                'fake': running_disc_fake_loss / (step + 1),
+                'real': running_disc_real_loss / (step + 1)
+            }, global_step)
+
+            if global_step == 1 or global_step % 200 == 0:
+                x1, x2 = torch.split(x, 3, dim=1)
+                x1 = torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)
+                x2 = torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)
+                writer.add_images('1_original',
+                                  torch.cat([gt[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('2_x2',
+                                  torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('2_x2',
+                                  torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('3_pred',
+                                  torch.cat([g[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                                  global_step=global_step
+                                  )
 
             if global_step == 1 or global_step % checkpoint_interval == 0:
                 save_checkpoint(
