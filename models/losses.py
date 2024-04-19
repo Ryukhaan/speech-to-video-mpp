@@ -45,6 +45,7 @@ class PerceptualLoss(torch.nn.Module):
             return x
 
         y_pred = torch.cat([y_pred[:, :, i] for i in range(y_pred.size(2))], dim=0)
+        y_true = torch.cat([y_true[:, :, i] for i in range(y_true.size(2))], dim=0)
         vgg_sr = _forward(y_pred)
         with torch.no_grad():
             vgg_hr = _forward(y_true.detach())
