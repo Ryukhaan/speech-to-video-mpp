@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from models.syncnet import SyncNet_color
 
 from torch import Tensor
-from spectrum import get_spectrum
+from models.spectrum import get_spectrum
 
 class PerceptualLoss(torch.nn.Module):
     def __init__(self, device, conv_index='22'):
