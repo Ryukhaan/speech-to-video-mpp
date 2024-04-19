@@ -122,7 +122,9 @@ class Dataset(object):
 
         audiopath = join(vidname, "audio_features.npy")
         audio_features = np.load(audiopath, allow_pickle=True)
+        print(audio_features.shape)
         fa = audio_features[start_frame_num: start_frame_num+syncnet_T, ...]
+        print(fa.shape)
         return torch.cat([fa[:,:,i] for i in range(fa.shape[2])], dim=1)
 
 
