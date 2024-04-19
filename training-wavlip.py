@@ -239,7 +239,7 @@ for p in syncnet.parameters():
 
 recon_loss = nn.L1Loss()
 
-vgg_perceptual = PerceptualLoss()
+vgg_perceptual = PerceptualLoss(device)
 
 spectrum_loss = MSESpectrumLoss()
 
