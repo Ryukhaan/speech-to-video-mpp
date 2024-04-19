@@ -18,6 +18,8 @@ from glob import glob
 import os, random, cv2, argparse
 from futils.hparams import hparams, get_image_list
 
+from sklearn.model_selection import train_test_split
+
 parser = argparse.ArgumentParser(description='Code to train the Wav2Lip model WITH the visual quality discriminator')
 
 parser.add_argument("--data_root", help="Root folder of the preprocessed LRS2 dataset", required=True, type=str)
