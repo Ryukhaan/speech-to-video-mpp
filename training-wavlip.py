@@ -143,7 +143,7 @@ class Dataset(object):
             img_names = list(glob(join(vidname, '*.jpg')))
             if len(img_names) <= 3 * syncnet_T:
                 continue
-
+            print("Here")
             img_name = random.choice(img_names)
             wrong_img_name = random.choice(img_names)
             while wrong_img_name == img_name:
@@ -164,9 +164,9 @@ class Dataset(object):
 
             try:
                 wavpath = join(vidname, "audio.wav")
-                wav = audio.load_wav(wavpath, hparams.sample_rate)
+                wav = futils.audio.load_wav(wavpath, hparams.sample_rate)
 
-                orig_mel = audio.melspectrogram(wav).T
+                orig_mel = futils.audio.melspectrogram(wav).T
             except Exception as e:
                 continue
 
@@ -213,11 +213,9 @@ def save_sample_images(x, g, gt, global_step, checkpoint_dir):
 
 logloss = nn.BCELoss()
 
-
 def cosine_loss(a, v, y):
     d = nn.functional.cosine_similarity(a, v)
     loss = logloss(d.unsqueeze(1), y)
-
     return loss
 
 
