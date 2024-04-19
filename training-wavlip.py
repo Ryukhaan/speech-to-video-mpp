@@ -251,6 +251,16 @@ def get_sync_loss(mel, g):
     y = torch.ones(g.size(0), 1).float().to(device)
     return cosine_loss(a, v, y)
 
+class MultiLoss(object):
+    def __init__(self, losses, weights):
+        self.losses = losses
+        self.weights = weights
+
+    def __call__(self, *args, **kwargs):
+        loss = 0
+        for loss_fn, w in zip(self.losses, self.weights):
+            loss = loss + w * loss_fn(*args, **kwargs)
+        return loss
 
 def train(device, model, disc, train_data_loader, test_data_loader, optimizer, disc_optimizer,
           checkpoint_dir=None, checkpoint_interval=None, nepochs=None):
@@ -289,10 +299,35 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             else:
                 perceptual_loss = 0.
 
+            if hparams.vgg_wt > 0:
+                vgg_perceptual_loss += vgg_perceptual(g, gt)
+            else:
+                vgg_perceptual_loss += 0.
+
+            if hparams.spectrum_wt > 0:
+                spectrum_loss += spectrum_loss(g, gt)
+            else:
+                spectrum_loss += 0.
+
             l1loss = recon_loss(g, gt)
 
-            loss = hparams.syncnet_wt * sync_loss + hparams.disc_wt * perceptual_loss + \
-                   (1. - hparams.syncnet_wt - hparams.disc_wt) * l1loss
+            multi_loss = MultiLoss([sync_loss,
+                              perceptual_loss,
+                              l1loss,
+                              spectrum_loss,
+                              vgg_perceptual
+            ],
+                             [hparams.syncnet_wt,
+                              hparams.disc_wt,
+                              1. - hparams.syncnet_wt - hparams.disc_wt,
+                              hparams.spectrum_wt,
+                              hparams.vgg_wt
+            ])
+            #loss = hparams.syncnet_wt * sync_loss + hparams.disc_wt * perceptual_loss + \
+            #       (1. - hparams.syncnet_wt - hparams.disc_wt) * l1loss + \
+            #        hparams.spectrum_wt * spectrum_loss + \
+
+            loss = multi_loss()
 
             loss.backward()
             optimizer.step()
