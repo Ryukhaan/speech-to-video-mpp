@@ -395,7 +395,7 @@ def eval_model(test_data_loader, global_step, device, model, disc):
 
 def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch, prefix=''):
     checkpoint_path = join(
-        checkpoint_dir, "{}checkpoint_step{:09d}.pth".format(prefix, global_step))
+        checkpoint_dir, "{}checkpoint_step_pnet{:09d}.pth".format(prefix, global_step))
     optimizer_state = optimizer.state_dict() if hparams.save_optimizer_state else None
     torch.save({
         "state_dict": model.state_dict(),
