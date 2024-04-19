@@ -14,3 +14,4 @@ if __name__ == "__main__":
     with open('train-lrs2.txt', 'w') as file:
         for directory in directories:
             file.write(directory)
+            file.write('\n')
