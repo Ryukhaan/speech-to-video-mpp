@@ -442,7 +442,7 @@ def load_checkpoint(path, model, optimizer, reset_optimizer=False, overwrite_glo
 if __name__ == "__main__":
     checkpoint_dir = args.checkpoint_dir
 
-    filenames = get_image_list(args.data_root, 'train-lrs2.txt')
+    filenames = get_image_list(args.data_root, 'train-lrs2')
     seed = 0
     train_list, val_list = train_test_split(np.array(filenames), random_state=seed, train_size=0.8, test_size=0.2)
 
