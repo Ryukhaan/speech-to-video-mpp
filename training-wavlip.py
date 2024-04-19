@@ -188,6 +188,7 @@ class Dataset(object):
             except Exception as e:
                 continue
 
+            print("Here")
             window = self.prepare_window(window)
             y = window.copy()
             window[:, :, window.shape[2] // 2:] = 0.
