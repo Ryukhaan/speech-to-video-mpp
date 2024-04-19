@@ -5,6 +5,9 @@ import numpy
 import torch.nn.functional as F
 from models.syncnet import SyncNet_color
 
+from torch import Tensor
+from spectrum import get_spectrum
+
 class PerceptualLoss(torch.nn.Module):
     def __init__(self, device, conv_index='22'):
         super(PerceptualLoss, self).__init__()
@@ -46,3 +49,18 @@ class PerceptualLoss(torch.nn.Module):
             vgg_hr = _forward(y_true.detach())
         loss = F.mse_loss(vgg_sr, vgg_hr)
         return loss
+
+class MSESpectrumLoss(torch.nn.MSELoss):
+    def __init__(self, *args, **kwargs):
+        super(MSESpectrumLoss, self).__init__(*args, **kwargs)
+
+    @staticmethod
+    def get_log_spectrum(input):
+        spectra = get_spectrum(input.flatten(0, 1)).unflatten(0, input.shape[:2])
+        spectra = spectra.mean(dim=1)             # average over channels
+        return (1 + spectra).log()
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        input_spectrum = self.get_log_spectrum(input)
+        target_spectrum = self.get_log_spectrum(target)
+        return super(MSESpectrumLoss, self).forward(input_spectrum, target_spectrum)

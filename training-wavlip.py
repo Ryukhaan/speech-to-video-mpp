@@ -21,6 +21,8 @@ from futils.hparams import hparams, get_image_list
 
 from sklearn.model_selection import train_test_split
 
+from models.losses import PerceptualLoss, MSESpectrumLoss
+
 parser = argparse.ArgumentParser(description='Code to train the Wav2Lip model WITH the visual quality discriminator')
 
 parser.add_argument("--data_root", help="Root folder of the preprocessed LRS2 dataset", required=True, type=str)
@@ -109,7 +111,6 @@ class Dataset(object):
             start_frame_num = start_frame
         else:
             start_frame_num = self.get_frame_id(start_frame)
-
         textpath = join(vidname, "text_features.npy")
         text_features = np.load(textpath, allow_pickle=True)
         return text_features[start_frame_num: start_frame_num+syncnet_T, ...]
@@ -182,13 +183,15 @@ class Dataset(object):
             try:
                 text_features = self.get_segmented_clip_features(vidname, img_name)
             except Exception as e:
-                #traceback.print_exc()
+                continue
+            if text_features.shape[0] != syncnet_T:
                 continue
 
             try:
                 audio_features = self.get_segmented_audio_features(vidname, img_name)
             except Exception as e:
-                #traceback.print_exc()
+                continue
+            if audio_features.shape[0] != syncnet_T:
                 continue
 
             window = self.prepare_window(window)
@@ -236,6 +239,9 @@ for p in syncnet.parameters():
 
 recon_loss = nn.L1Loss()
 
+vgg_perceptual = PerceptualLoss()
+
+spectrum_loss = MSESpectrumLoss()
 
 def get_sync_loss(mel, g):
     g = g[:, :, :, g.size(3) // 2:]
@@ -254,6 +260,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
     while global_epoch < nepochs:
         print('Starting Epoch: {}'.format(global_epoch))
         running_sync_loss, running_l1_loss, disc_loss, running_perceptual_loss = 0., 0., 0., 0.
+        running_vgg_perceptual_loss, running_spectrum_loss = 0., 0.
         running_disc_real_loss, running_disc_fake_loss = 0., 0.
         prog_bar = tqdm(enumerate(train_data_loader))
         for step, (x, indiv_mels, mel, fa, ft, gt) in prog_bar:
@@ -314,15 +321,30 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             cur_session_steps = global_step - resumed_step
 
             running_l1_loss += l1loss.item()
+
+            # SyncNet Weighted Loss
             if hparams.syncnet_wt > 0.:
                 running_sync_loss += sync_loss.item()
             else:
                 running_sync_loss += 0.
 
+            # Discrimanator Perceptual Loss
             if hparams.disc_wt > 0.:
                 running_perceptual_loss += perceptual_loss.item()
             else:
                 running_perceptual_loss += 0.
+
+            # VGG Perceptual Loss
+            if hparams.vgg_wt > 0:
+                running_vgg_perceptual_loss += vgg_perceptual(g, gt)
+            else:
+                running_vgg_perceptual_loss += 0.
+
+            # Spectrum Loss Generator
+            if hparams.spectrum_wt > 0:
+                running_spectrum_loss += spectrum_loss(g, gt)
+            else:
+                running_spectrum_loss += 0.
 
             if global_step == 1 or global_step % checkpoint_interval == 0:
                 save_checkpoint(
@@ -337,9 +359,11 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                         hparams.set_hparam('syncnet_wt', 0.03)
 
             prog_bar.set_description(
-                'L1: {}, Sync: {}, Percep: {} | Fake: {}, Real: {}'.format(running_l1_loss / (step + 1),
+                'L1: {}, Sync: {}, Percep: {}, VGG: {}, Spectrum: {} | Fake: {}, Real: {}'.format(running_l1_loss / (step + 1),
                                                                            running_sync_loss / (step + 1),
                                                                            running_perceptual_loss / (step + 1),
+                                                                           running_vgg_perceptual_loss / (step + 1),
+                                                                           running_spectrum_loss / (step + 1),
                                                                            running_disc_fake_loss / (step + 1),
                                                                            running_disc_real_loss / (step + 1)))
 
