@@ -101,7 +101,7 @@ class AudioTextSyncNet(nn.Module):
         encoder=Visual_Encoder,
         decoder=Decoder
         ):
-        super(LNet, self).__init__()
+        super(AudioTextSyncNet, self).__init__()
 
         nonlinearity = nn.LeakyReLU(0.1)
         norm_layer = functools.partial(LayerNorm2d, affine=True)
