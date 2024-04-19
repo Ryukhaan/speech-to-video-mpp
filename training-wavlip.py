@@ -241,7 +241,7 @@ recon_loss = nn.L1Loss()
 
 vgg_perceptual = PerceptualLoss(device)
 
-spectrum_loss = MSESpectrumLoss()
+mse_spectrum = MSESpectrumLoss()
 
 def get_sync_loss(mel, g):
     g = g[:, :, :, g.size(3) // 2:]
@@ -292,7 +292,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             sync_loss = get_sync_loss(mel, g) if hparams.syncnet_wt > 0. else 0.
             perceptual_loss = disc.perceptual_forward(g) if hparams.disc_wt > 0. else 0.
             vgg_perceptual_loss = vgg_perceptual(g, gt) if hparams.vgg_wt > 0 else 0.
-            spectrum_loss = spectrum_loss(g, gt) if hparams.spectrum_wt > 0 else 0.
+            spectrum_loss = mse_spectrum(g, gt) if hparams.spectrum_wt > 0 else 0.
 
             l1loss = recon_loss(g, gt)
 
@@ -362,7 +362,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
 
             # Spectrum Loss Generator
             if hparams.spectrum_wt > 0:
-                running_spectrum_loss += spectrum_loss(g, gt)
+                running_spectrum_loss += mse_spectrum(g, gt)
             else:
                 running_spectrum_loss += 0.
 
