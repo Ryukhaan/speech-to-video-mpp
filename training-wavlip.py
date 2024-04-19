@@ -289,25 +289,10 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
 
             g = model(fa, ft, x)
 
-            if hparams.syncnet_wt > 0.:
-                sync_loss = get_sync_loss(mel, g)
-            else:
-                sync_loss = 0.
-
-            if hparams.disc_wt > 0.:
-                perceptual_loss = disc.perceptual_forward(g)
-            else:
-                perceptual_loss = 0.
-
-            if hparams.vgg_wt > 0:
-                vgg_perceptual_loss += vgg_perceptual(g, gt)
-            else:
-                vgg_perceptual_loss += 0.
-
-            if hparams.spectrum_wt > 0:
-                spectrum_loss += spectrum_loss(g, gt)
-            else:
-                spectrum_loss += 0.
+            sync_loss = get_sync_loss(mel, g) if hparams.syncnet_wt > 0. else 0.
+            perceptual_loss = disc.perceptual_forward(g) if hparams.disc_wt > 0. else 0.
+            vgg_perceptual_loss = vgg_perceptual(g, gt) if hparams.vgg_wt > 0 else 0.
+            spectrum_loss = spectrum_loss(g, gt) if hparams.spectrum_wt > 0 else 0.
 
             l1loss = recon_loss(g, gt)
 
@@ -315,7 +300,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                               perceptual_loss,
                               l1loss,
                               spectrum_loss,
-                              vgg_perceptual
+                              vgg_perceptual_loss
             ],
                              [hparams.syncnet_wt,
                               hparams.disc_wt,
