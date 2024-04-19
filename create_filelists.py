@@ -13,5 +13,5 @@ if __name__ == "__main__":
     directories = glob.glob(os.path.join(args.data_root, '*/*'))
     with open('train-lrs2.txt', 'w') as file:
         for directory in directories:
-            file.write(directory)
+            file.write("/".join(directory.split('/')[-2:]))
             file.write('\n')
