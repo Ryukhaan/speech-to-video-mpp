@@ -49,7 +49,6 @@ class PerceptualLoss(torch.nn.Module):
         vgg_sr = _forward(y_pred)
         vgg_hr = _forward(y_true)
         loss = F.mse_loss(vgg_sr, vgg_hr)
-        #torch.cuda.empty_cache()
         return loss
 
 class MSESpectrumLoss(torch.nn.MSELoss):
