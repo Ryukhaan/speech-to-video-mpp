@@ -344,25 +344,25 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
 
             # SyncNet Weighted Loss
             if hparams.syncnet_wt > 0.:
-                running_sync_loss += sync_loss.item().detach()
+                running_sync_loss += sync_loss.item()
             else:
                 running_sync_loss += 0.
 
             # Discrimanator Perceptual Loss
             if hparams.disc_wt > 0.:
-                running_perceptual_loss += perceptual_loss.item().detach()
+                running_perceptual_loss += perceptual_loss.item()
             else:
                 running_perceptual_loss += 0.
 
             # VGG Perceptual Loss
             if hparams.vgg_wt > 0:
-                running_vgg_perceptual_loss += vgg_perceptual(g, gt).item().detach()
+                running_vgg_perceptual_loss += vgg_perceptual(g, gt).item()
             else:
                 running_vgg_perceptual_loss += 0.
 
             # Spectrum Loss Generator
             if hparams.spectrum_wt > 0:
-                running_spectrum_loss += mse_spectrum(g, gt).item().detach()
+                running_spectrum_loss += mse_spectrum(g, gt).item()
             else:
                 running_spectrum_loss += 0.
 
