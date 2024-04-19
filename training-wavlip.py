@@ -380,7 +380,6 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                 'fake': running_disc_fake_loss / (step + 1),
                 'real': running_disc_real_loss / (step + 1)
             }, global_step)
-
             if global_step == 1 or global_step % 200 == 0:
                 x1, x2 = torch.split(x, 3, dim=1)
                 x1 = torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)
@@ -426,10 +425,11 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
         global_epoch += 1
 
 
-def eval_model(test_data_loader, global_step, device, model, disc):
+def eval_model(test_data_loader, global_step, device, model, disc, writer=None):
     eval_steps = 300
     print('Evaluating for {} steps'.format(eval_steps))
     running_sync_loss, running_l1_loss, running_disc_real_loss, running_disc_fake_loss, running_perceptual_loss = [], [], [], [], []
+    running_vgg_perceptual_loss, running_spectrum_loss, running_total_loss = [], [], []
     while 1:
         for step, (x, indiv_mels, mel, fa, ft, gt) in enumerate((test_data_loader)):
             model.eval()
@@ -460,8 +460,8 @@ def eval_model(test_data_loader, global_step, device, model, disc):
 
             l1loss = recon_loss(g, gt)
 
-            loss = hparams.syncnet_wt * sync_loss + hparams.disc_wt * perceptual_loss + \
-                   (1. - hparams.syncnet_wt - hparams.disc_wt) * l1loss
+            #loss = hparams.syncnet_wt * sync_loss + hparams.disc_wt * perceptual_loss + \
+            #       (1. - hparams.syncnet_wt - hparams.disc_wt) * l1loss
 
             running_l1_loss.append(l1loss.item())
             running_sync_loss.append(sync_loss.item())
@@ -471,8 +471,55 @@ def eval_model(test_data_loader, global_step, device, model, disc):
             else:
                 running_perceptual_loss.append(0.)
 
+            # VGG Perceptual Loss
+            if hparams.vgg_wt > 0:
+                running_vgg_perceptual_loss.append(vgg_perceptual(g, gt).item())
+            else:
+                running_vgg_perceptual_loss.append(0.)
+
+            # Spectrum Loss Generator
+            if hparams.spectrum_wt > 0:
+                running_spectrum_loss.append(mse_spectrum(g, gt).item())
+            else:
+                running_spectrum_loss.append(0.)
+
+
+            if step > eval_steps:
+                x1, x2 = torch.split(x, 3, dim=1)
+                x1 = torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)
+                x2 = torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)
+                writer.add_images('1_original',
+                                  torch.cat([gt[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('2_x2',
+                                  torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('2_x2',
+                                  torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                                  global_step=global_step
+                                  )
+                writer.add_images('3_pred',
+                                  torch.cat([g[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                                  global_step=global_step
+                                  )
+
             if step > eval_steps: break
 
+        # Monitoring with Tensorboard
+        writer.add_scalars('gen_loss', {
+            'l1': running_l1_loss / (step + 1),
+            'sync': running_sync_loss / (step + 1),
+            'perceptual': running_perceptual_loss / (step + 1),
+            'vgg': running_vgg_perceptual_loss / (step + 1),
+            'spectrum': running_spectrum_loss / (step + 1),
+            'total': loss
+        }, global_step)
+        writer.add_scalars('disc_loss', {
+            'fake': running_disc_fake_loss / (step + 1),
+            'real': running_disc_real_loss / (step + 1)
+        }, global_step)
         print('L1: {}, Sync: {}, Percep: {} | Fake: {}, Real: {}'.format(sum(running_l1_loss) / len(running_l1_loss),
                                                                          sum(running_sync_loss) / len(
                                                                              running_sync_loss),
@@ -576,8 +623,12 @@ if __name__ == "__main__":
     if not os.path.exists(checkpoint_dir):
         os.mkdir(checkpoint_dir)
 
+    # Tensorboard writer
+    writer = SummaryWriter('runs/lora')
+
     # Train!
     train(device, model, disc, train_data_loader, test_data_loader, optimizer, disc_optimizer,
           checkpoint_dir=checkpoint_dir,
           checkpoint_interval=hparams.checkpoint_interval,
-          nepochs=hparams.nepochs)
+          nepochs=hparams.nepochs,
+          writer=writer)
