@@ -380,10 +380,10 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                 'fake': running_disc_fake_loss / (step + 1),
                 'real': running_disc_real_loss / (step + 1)
             }, global_step)
-            if global_step == 1 or global_step % 200 == 0:
+            if step == 0 or global_step % 200 == 0:
                 x1, x2 = torch.split(x, 3, dim=1)
-                x1 = torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)
-                x2 = torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)
+                #x1 = torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)
+                #x2 = torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)
                 writer.add_images('1_original',
                                   torch.cat([gt[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
                                   global_step=global_step
