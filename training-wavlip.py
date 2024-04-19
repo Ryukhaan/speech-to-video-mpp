@@ -182,13 +182,13 @@ class Dataset(object):
             try:
                 text_features = self.get_segmented_clip_features(vidname, img_name)
             except Exception as e:
-                traceback.print_exc()
+                #traceback.print_exc()
                 continue
 
             try:
                 audio_features = self.get_segmented_audio_features(vidname, img_name)
             except Exception as e:
-                traceback.print_exc()
+                #traceback.print_exc()
                 continue
 
             window = self.prepare_window(window)
