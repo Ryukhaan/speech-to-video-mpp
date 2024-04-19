@@ -6,6 +6,7 @@ from models.transformer import RETURNX, Transformer
 from models.base_blocks import Conv2d, LayerNorm2d, FirstBlock2d, DownBlock2d, UpBlock2d, \
                                FFCADAINResBlocks, Jump, FinalBlock2d
 
+import torch.nn.functional as F
 class nonorm_Conv2d(nn.Module):
     def __init__(self, cin, cout, kernel_size, stride, padding, residual=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
