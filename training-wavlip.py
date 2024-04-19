@@ -259,7 +259,7 @@ class MultiLoss(object):
     def __call__(self, *args, **kwargs):
         loss = 0
         for loss_fn, w in zip(self.losses, self.weights):
-            loss = loss + w * loss_fn(*args, **kwargs)
+            loss = loss + w * loss_fn
         return loss
 
 def train(device, model, disc, train_data_loader, test_data_loader, optimizer, disc_optimizer,
