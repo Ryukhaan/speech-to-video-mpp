@@ -511,15 +511,15 @@ def eval_model(test_data_loader, global_step, device, model, disc, writer=None):
 
         # Monitoring with Tensorboard
         writer.add_scalars('eval_gen_loss', {
-            'l1': running_l1_loss / (step + 1),
-            'sync': running_sync_loss / (step + 1),
-            'perceptual': running_perceptual_loss / (step + 1),
-            'vgg': running_vgg_perceptual_loss / (step + 1),
-            'spectrum': running_spectrum_loss / (step + 1),
+            'l1': sum(running_l1_loss) / len(running_l1_loss),
+            'sync': sum(running_sync_loss) / len(running_sync_loss),
+            'perceptual': sum(running_perceptual_loss) / len(running_perceptual_loss),
+            'vgg': sum(running_vgg_perceptual_loss) / len(running_vgg_perceptual_loss),
+            'spectrum': sum(running_spectrum_loss) / len(running_spectrum_loss),
         }, global_step)
         writer.add_scalars('eval_disc_loss', {
-            'fake': running_disc_fake_loss / (step + 1),
-            'real': running_disc_real_loss / (step + 1)
+            'fake': sum(running_disc_fake_loss) / len(running_disc_fake_loss),
+            'real': sum(running_disc_real_loss) / len(running_disc_real_loss)
         }, global_step)
         print('L1: {}, Sync: {}, Percep: {} | Fake: {}, Real: {}'.format(sum(running_l1_loss) / len(running_l1_loss),
                                                                          sum(running_sync_loss) / len(
