@@ -142,7 +142,6 @@ class Dataset(object):
             vidname = self.all_videos[idx]
             img_names = list(glob(join(vidname, '*.jpg')))
 
-            print(vidname, img_names)
             if len(img_names) <= 3 * syncnet_T:
                 continue
 
@@ -180,8 +179,15 @@ class Dataset(object):
             indiv_mels = self.get_segmented_mels(orig_mel.copy(), img_name)
             if indiv_mels is None: continue
 
-            text_features = self.get_segmented_clip_features(vidname, img_name)
-            audio_features = self.get_segmented_audio_features(vidname, img_name)
+            try:
+                text_features = self.get_segmented_clip_features(vidname, img_name)
+            except Exception as e:
+                continue
+
+            try:
+                audio_features = self.get_segmented_audio_features(vidname, img_name)
+            except Exception as e:
+                continue
 
             window = self.prepare_window(window)
             y = window.copy()
