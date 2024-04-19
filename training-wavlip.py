@@ -141,6 +141,7 @@ class Dataset(object):
             idx = random.randint(0, len(self.all_videos) - 1)
             vidname = self.all_videos[idx]
             img_names = list(glob(join(vidname, '*.jpg')))
+            print(vidname, img_names)
             if len(img_names) <= 3 * syncnet_T:
                 continue
             print("Here")
