@@ -488,21 +488,21 @@ def eval_model(test_data_loader, global_step, device, model, disc, writer=None):
 
             if step > eval_steps:
                 x1, x2 = torch.split(x, 3, dim=1)
-                x1 = torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)
-                x2 = torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)
-                writer.add_images('1_original',
+                #x1 = torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)
+                #x2 = torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)
+                writer.add_images('eval_1_original',
                                   torch.cat([gt[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
                                   global_step=global_step
                                   )
-                writer.add_images('2_x2',
+                writer.add_images('eval_2_x2',
                                   torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
                                   global_step=global_step
                                   )
-                writer.add_images('2_x2',
+                writer.add_images('eval_2_x2',
                                   torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
                                   global_step=global_step
                                   )
-                writer.add_images('3_pred',
+                writer.add_images('eval_3_pred',
                                   torch.cat([g[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
                                   global_step=global_step
                                   )
@@ -510,14 +510,14 @@ def eval_model(test_data_loader, global_step, device, model, disc, writer=None):
             if step > eval_steps: break
 
         # Monitoring with Tensorboard
-        writer.add_scalars('gen_loss', {
+        writer.add_scalars('eval_gen_loss', {
             'l1': running_l1_loss / (step + 1),
             'sync': running_sync_loss / (step + 1),
             'perceptual': running_perceptual_loss / (step + 1),
             'vgg': running_vgg_perceptual_loss / (step + 1),
             'spectrum': running_spectrum_loss / (step + 1),
         }, global_step)
-        writer.add_scalars('disc_loss', {
+        writer.add_scalars('eval_disc_loss', {
             'fake': running_disc_fake_loss / (step + 1),
             'real': running_disc_real_loss / (step + 1)
         }, global_step)
