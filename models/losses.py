@@ -47,10 +47,9 @@ class PerceptualLoss(torch.nn.Module):
         y_pred = torch.cat([y_pred[:, :, i] for i in range(y_pred.size(2))], dim=0)
         y_true = torch.cat([y_true[:, :, i] for i in range(y_true.size(2))], dim=0)
         vgg_sr = _forward(y_pred)
-        with torch.no_grad():
-            vgg_hr = _forward(y_true.detach())
+        vgg_hr = _forward(y_true)
         loss = F.mse_loss(vgg_sr, vgg_hr)
-        torch.cuda.empty_cache()
+        #torch.cuda.empty_cache()
         return loss
 
 class MSESpectrumLoss(torch.nn.MSELoss):
