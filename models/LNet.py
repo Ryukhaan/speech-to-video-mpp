@@ -6,7 +6,7 @@ from models.transformer import RETURNX, Transformer
 from models.base_blocks import Conv2d, LayerNorm2d, FirstBlock2d, DownBlock2d, UpBlock2d, \
                                FFCADAINResBlocks, Jump, FinalBlock2d
 
-from models.PNet import Phone_Encoder
+#from models.PNet import Phone_Encoder
 
 class Visual_Encoder(nn.Module):
     def __init__(self, image_nc, ngf, img_f, layers, norm_layer=nn.BatchNorm2d, nonlinearity=nn.LeakyReLU(), use_spect=False):
