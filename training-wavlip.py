@@ -11,6 +11,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch import optim
 import torch.backends.cudnn as cudnn
+from torchvision.utils import make_grid
 from torch.utils import data as data_utils
 import numpy as np
 
@@ -305,7 +306,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             ],
                              [hparams.syncnet_wt,
                               hparams.disc_wt,
-                              1. - hparams.syncnet_wt - hparams.disc_wt,
+                              1.,
                               hparams.spectrum_wt,
                               hparams.vgg_wt
             ])
@@ -384,9 +385,10 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                 x1, x2 = torch.split(x, 3, dim=1)
                 #x1 = torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)
                 #x2 = torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)
+                #grid = make_grid(x1)
                 writer.add_images('1_original',
                                   torch.cat([gt[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
-                                  global_step=global_step
+                                  global_step=global_step,
                                   )
                 writer.add_images('2_x1',
                                   torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
