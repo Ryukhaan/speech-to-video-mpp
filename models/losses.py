@@ -63,6 +63,8 @@ class MSESpectrumLoss(torch.nn.MSELoss):
         return (1 + spectra).log()
 
     def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        input = torch.cat([input[:, :, i] for i in range(input.size(2))], dim=0)
+        target = torch.cat([target[:, :, i] for i in range(target.size(2))], dim=0)
         input_spectrum = self.get_log_spectrum(input)
         target_spectrum = self.get_log_spectrum(target)
         return super(MSESpectrumLoss, self).forward(input_spectrum, target_spectrum)
