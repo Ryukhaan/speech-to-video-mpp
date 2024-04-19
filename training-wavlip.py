@@ -516,7 +516,6 @@ def eval_model(test_data_loader, global_step, device, model, disc, writer=None):
             'perceptual': running_perceptual_loss / (step + 1),
             'vgg': running_vgg_perceptual_loss / (step + 1),
             'spectrum': running_spectrum_loss / (step + 1),
-            'total': loss
         }, global_step)
         writer.add_scalars('disc_loss', {
             'fake': running_disc_fake_loss / (step + 1),
