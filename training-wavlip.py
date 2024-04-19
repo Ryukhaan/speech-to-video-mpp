@@ -191,7 +191,6 @@ class Dataset(object):
                 traceback.print_exc()
                 continue
 
-            print("Here")
             window = self.prepare_window(window)
             y = window.copy()
             window[:, :, window.shape[2] // 2:] = 0.
@@ -264,6 +263,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             x = x.to(device)
             mel = mel.to(device)
             indiv_mels = indiv_mels.to(device)
+            fa, ft = fa.to(device), ft.to(device)
             gt = gt.to(device)
 
             ### Train generator now. Remove ALL grads.
@@ -358,6 +358,7 @@ def eval_model(test_data_loader, global_step, device, model, disc):
             x = x.to(device)
             mel = mel.to(device)
             indiv_mels = indiv_mels.to(device)
+            fa, ft = fa.to(device), ft.to(device)
             gt = gt.to(device)
 
             pred = disc(gt)
