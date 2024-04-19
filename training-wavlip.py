@@ -408,7 +408,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
 
             if global_step % hparams.eval_interval == 0:
                 with torch.no_grad():
-                    average_sync_loss = eval_model(test_data_loader, global_step, device, model, disc)
+                    average_sync_loss = eval_model(test_data_loader, global_step, device, model, disc, writer=writer)
 
                     if average_sync_loss < .75:
                         hparams.set_hparam('syncnet_wt', 0.03)
