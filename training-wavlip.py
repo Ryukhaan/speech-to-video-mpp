@@ -122,7 +122,7 @@ class Dataset(object):
 
         audiopath = join(vidname, "audio_features.npy")
         audio_features = np.load(audiopath, allow_pickle=True)
-        fa = torch.TensorFloat(audio_features[start_frame_num: start_frame_num+syncnet_T, ...])
+        fa = torch.FloatTensor(audio_features[start_frame_num: start_frame_num+syncnet_T, ...])
         return torch.cat([fa[:,:,i] for i in range(fa.shape[2])], dim=1)
 
 
