@@ -388,7 +388,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                                   torch.cat([gt[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
                                   global_step=global_step
                                   )
-                writer.add_images('2_x2',
+                writer.add_images('2_x1',
                                   torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
                                   global_step=global_step
                                   )
