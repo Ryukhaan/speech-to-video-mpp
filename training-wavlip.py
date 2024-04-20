@@ -416,7 +416,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                         hparams.set_hparam('syncnet_wt', 0.03)
 
             prog_bar.set_description(
-                'L1: {}, Sync: {}, Percep: {}, VGG: {}, Spectrum: {} | Fake: {}, Real: {}'.format(running_l1_loss / (step + 1),
+                'L1: {:.4f}, Sync: {:.4f}, Percep: {:.4f}, VGG: {:.4f}, Spectrum: {:.4f} | Fake: {:.4f}, Real: {:.4f}'.format(running_l1_loss / (step + 1),
                                                                            running_sync_loss / (step + 1),
                                                                            running_perceptual_loss / (step + 1),
                                                                            running_vgg_perceptual_loss / (step + 1),
