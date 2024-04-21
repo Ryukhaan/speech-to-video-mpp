@@ -81,7 +81,7 @@ hparams = HParams(
 	img_size=96,
 	fps=25,
 	
-	batch_size=4,
+	batch_size=8,
 	initial_learning_rate=1e-4,
 	nepochs=300000,  ### ctrl + c, stop whenever eval loss is consistently greater than train loss for ~10 epochs
 	num_workers=1,
@@ -97,7 +97,7 @@ hparams = HParams(
 	syncnet_checkpoint_interval=10000,
 
 	disc_wt=0.07,
-	disc_initial_learning_rate=1e-4,
+	disc_initial_learning_rate=5e-5,
 
 	vgg_wt= 1.0,
 	spectrum_wt = 0.1
