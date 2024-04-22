@@ -98,6 +98,8 @@ hparams = HParams(
 
 	disc_wt=0.07,
 	disc_initial_learning_rate=5e-5,
+    disc_min_grad_norm = 1e-2,
+	disc_max_grad_norm = 1e10,
 
 	vgg_wt= 1.0,
 	spectrum_wt = 0.1

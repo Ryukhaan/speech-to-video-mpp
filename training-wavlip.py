@@ -381,7 +381,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                 'fake': running_disc_fake_loss / (step + 1),
                 'real': running_disc_real_loss / (step + 1)
             }, global_step)
-            if step == 0 or global_step % 200 == 0:
+            if step == 0 or global_step % 300 == 0:
                 x1, x2 = torch.split(x, 3, dim=1)
                 #x1 = torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)
                 #x2 = torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)
@@ -390,14 +390,14 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                                   torch.cat([gt[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
                                   global_step=global_step,
                                   )
-                writer.add_images('2_x1',
-                                  torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
-                                  global_step=global_step
-                                  )
-                writer.add_images('2_x2',
-                                  torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
-                                  global_step=global_step
-                                  )
+                #writer.add_images('2_x1',
+                #                  torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                #                  global_step=global_step
+                #                  )
+                #writer.add_images('2_x2',
+                #                  torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                #                  global_step=global_step
+                #                  )
                 writer.add_images('3_pred',
                                   torch.cat([g[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
                                   global_step=global_step
@@ -494,14 +494,14 @@ def eval_model(test_data_loader, global_step, device, model, disc, writer=None):
                                   torch.cat([gt[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
                                   global_step=global_step
                                   )
-                writer.add_images('eval_2_x2',
-                                  torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
-                                  global_step=global_step
-                                  )
-                writer.add_images('eval_2_x2',
-                                  torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
-                                  global_step=global_step
-                                  )
+                #writer.add_images('eval_2_x2',
+                #                  torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                #                  global_step=global_step
+                #                  )
+                #writer.add_images('eval_2_x2',
+                #                  torch.cat([x2[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
+                #                  global_step=global_step
+                #                  )
                 writer.add_images('eval_3_pred',
                                   torch.cat([g[:, :, i] for i in range(syncnet_T)], dim=0)[:, [2, 1, 0]],
                                   global_step=global_step
