@@ -91,7 +91,7 @@ def process_video_file_with_cutscenes(vfile, args, gpu_id):
     cut_scenes = []
     scene_i = 1
     i = -1
-    for fb in batches:
+    for fb in tqdm(batches):
         preds = fa[gpu_id].get_detections_for_batch(np.asarray(fb))
 
         for j, f in enumerate(preds):
@@ -107,7 +107,7 @@ def process_video_file_with_cutscenes(vfile, args, gpu_id):
                 cut_scenes.append(0)
                 i = -1
                 continue
-
+            print(scene_i)
             subdir = path.join(fulldir, "{:03d}".format(scene_i))
             os.makedirs(subdir, exist_ok=True)
             x1, y1, x2, y2 = f
