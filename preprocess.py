@@ -103,7 +103,7 @@ def process_video_file_with_cutscenes(vfile, args, gpu_id):
                     cut_scenes.append(0)
                     continue
                 # Otherwise
-                if cut_scenes[-1] != 0:
+                if cut_scenes[-1] == scene_i:
                     scene_i += 1
                 cut_scenes.append(0)
                 i = -1
