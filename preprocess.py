@@ -108,7 +108,7 @@ def process_video_file_with_cutscenes(vfile, args, gpu_id):
                 cut_scenes.append(0)
                 i = -1
                 continue
-            progress_bar.set_description(scene_i)
+            progress_bar.set_description(f"Scene {scene_i}")
             subdir = path.join(fulldir, "{:03d}".format(scene_i))
             os.makedirs(subdir, exist_ok=True)
             x1, y1, x2, y2 = f
