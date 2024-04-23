@@ -69,6 +69,50 @@ template = 'ffmpeg -loglevel panic -y -i {} -strict -2 {}'
 
 # template2 = 'ffmpeg -hide_banner -loglevel panic -threads 1 -y -i {} -async 1 -ac 1 -vn -acodec pcm_s16le -ar 16000 {}'
 
+def process_video_file_with_cutscenes(vfile, args, gpu_id):
+    video_stream = cv2.VideoCapture(vfile)
+
+    frames = []
+    while 1:
+        still_reading, frame = video_stream.read()
+        if not still_reading:
+            video_stream.release()
+            break
+        frames.append(frame)
+
+    vidname = os.path.basename(vfile).split('.')[0]
+    dirname = vfile.split('/')[-2]
+
+    fulldir = path.join(args.preprocessed_root, dirname, vidname)
+    os.makedirs(fulldir, exist_ok=True)
+
+    batches = [frames[i:i + args.batch_size] for i in range(0, len(frames), args.batch_size)]
+
+    cut_scenes = []
+    scene_i = 1
+    i = -1
+    for fb in batches:
+        preds = fa[gpu_id].get_detections_for_batch(np.asarray(fb))
+
+        for j, f in enumerate(preds):
+            i += 1
+            if f is None:
+                # If no face one first frame
+                if len(cut_scenes) == 0:
+                    cut_scenes.append(0)
+                    continue
+                # Otherwise
+                if cut_scenes[-1] != 0:
+                    scene_i += 1
+                cut_scenes.append(0)
+                i = -1
+                continue
+
+            subdir = path.join(fulldir, "{:03d}".format(scene_i))
+            os.makedirs(subdir, exist_ok=True)
+            x1, y1, x2, y2 = f
+            cv2.imwrite(path.join(subdir, '{}.jpg'.format(i)), fb[j][y1:y2, x1:x2])
+
 def process_video_file(vfile, args, gpu_id):
     video_stream = cv2.VideoCapture(vfile)
 
@@ -184,7 +228,8 @@ def encode_text(vfile, args, gpu_id):
 def mp_handler(job):
     vfile, args, gpu_id = job
     try:
-        process_video_file(vfile, args, gpu_id)
+        process_video_file_with_cutscenes(vfile, args, gpu_id)
+        #process_video_file(vfile, args, gpu_id)
     except KeyboardInterrupt:
         exit(0)
     except:
