@@ -65,7 +65,7 @@ fa = [face_detection.FaceAlignment(face_detection.LandmarksType._2D, flip_input=
                                    device='cuda:{}'.format(id)) for id in range(args.ngpu)]
 
 template = 'ffmpeg -loglevel panic -y -i {} -strict -2 {}'
-
+template_sub_audio = 'ffmpeg -loglevel panic -y -ss {} -t {} -i {} -strict -2 {}'
 
 # template2 = 'ffmpeg -hide_banner -loglevel panic -threads 1 -y -i {} -async 1 -ac 1 -vn -acodec pcm_s16le -ar 16000 {}'
 
