@@ -249,11 +249,10 @@ mse_spectrum = MSESpectrumLoss()
 
 mse_loss = torch.nn.MSELoss()
 def get_lms_loss(x, y, kp):
-    total = 0.
     gx = torch.cat([x[:, :, i] for i in range(syncnet_T)], dim=0)
     gy = torch.cat([y[:, :, i] for i in range(syncnet_T)], dim=0)
-    lmx = torch.cat([kp.extract_keypoint(gx[i]) for i in range(gx.shape[0])], dim=0)
-    lmy = torch.cat([kp.extract_keypoint(gy[i]) for i in range(gx.shape[0])], dim=0)
+    lmx = torch.cat([torch.from_numpy(kp.extract_keypoint(gx[i])) for i in range(gx.shape[0])], dim=0)
+    lmy = torch.cat([torch.from_numpy(kp.extract_keypoint(gy[i])) for i in range(gx.shape[0])], dim=0)
     return mse_loss(lmx, lmy)
 
 def get_sync_loss(mel, g):
