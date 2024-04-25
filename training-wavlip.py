@@ -38,7 +38,7 @@ parser.add_argument('--syncnet_checkpoint_path', help='Load the pre-trained Expe
 
 parser.add_argument('--checkpoint_path', help='Resume generator from this checkpoint', default=None, type=str)
 parser.add_argument('--disc_checkpoint_path', help='Resume quality disc from this checkpoint', default=None, type=str)
-
+parser.add_argument('--with_gan', action='store_true', default=False)
 args = parser.parse_args()
 
 global_step = 0
@@ -344,23 +344,24 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             optimizer.step()
 
             ### Remove all gradients before Training disc
-            disc_optimizer.zero_grad()
+            if args.with_gan:
+                disc_optimizer.zero_grad()
 
-            pred = disc(gt)
-            disc_real_loss = F.binary_cross_entropy(pred, torch.ones((len(pred), 1)).to(device))
-            disc_real_loss.backward()
+                pred = disc(gt)
+                disc_real_loss = F.binary_cross_entropy(pred, torch.ones((len(pred), 1)).to(device))
+                disc_real_loss.backward()
 
-            pred = disc(g.detach())
-            disc_fake_loss = F.binary_cross_entropy(pred, torch.zeros((len(pred), 1)).to(device))
-            disc_fake_loss.backward()
+                pred = disc(g.detach())
+                disc_fake_loss = F.binary_cross_entropy(pred, torch.zeros((len(pred), 1)).to(device))
+                disc_fake_loss.backward()
 
-            disc_optimizer.step()
+                disc_optimizer.step()
 
-            running_disc_real_loss += disc_real_loss.item()
-            running_disc_fake_loss += disc_fake_loss.item()
+                running_disc_real_loss += disc_real_loss.item()
+                running_disc_fake_loss += disc_fake_loss.item()
 
-            if global_step % checkpoint_interval == 0:
-                save_sample_images(x, g, gt, global_step, checkpoint_dir)
+            #if global_step % checkpoint_interval == 0:
+            #    save_sample_images(x, g, gt, global_step, checkpoint_dir)
 
             # Logs
             global_step += 1
@@ -407,10 +408,11 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                 #'lms': runnning_kp / (step + 1),
                 'total': loss
                 }, global_step)
-            writer.add_scalars('disc_loss', {
-                'fake': running_disc_fake_loss / (step + 1),
-                'real': running_disc_real_loss / (step + 1)
-            }, global_step)
+            if args.with_gan:
+                writer.add_scalars('disc_loss', {
+                    'fake': running_disc_fake_loss / (step + 1),
+                    'real': running_disc_real_loss / (step + 1)
+                }, global_step)
             if step == 0 or global_step % 300 == 0:
                 x1, x2 = torch.split(x, 3, dim=1)
                 #x1 = torch.cat([x1[:, :, i] for i in range(syncnet_T)], dim=0)
@@ -445,7 +447,8 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                     if average_sync_loss < .75:
                         hparams.set_hparam('syncnet_wt', 0.03)
 
-            prog_bar.set_description(
+            if args.with_gan:
+                prog_bar.set_description(
                 'L1: {:.4f}, Sync: {:.4f}, Percep: {:.4f}, VGG: {:.4f}, Spectrum: {:.4f}, LMs: {:.4f} | Fake: {:.4f}, Real: {:.4f}'.format(running_l1_loss / (step + 1),
                                                                            running_sync_loss / (step + 1),
                                                                            running_perceptual_loss / (step + 1),
@@ -454,6 +457,15 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                                                                            runnning_kp / (step + 1),
                                                                            running_disc_fake_loss / (step + 1),
                                                                            running_disc_real_loss / (step + 1)))
+            else:
+                prog_bar.set_description(
+                    'L1: {:.4f}, Sync: {:.4f}, Percep: {:.4f}, VGG: {:.4f}, Spectrum: {:.4f}, LMs: {:.4f}'.format(
+                        running_l1_loss / (step + 1),
+                        running_sync_loss / (step + 1),
+                        running_perceptual_loss / (step + 1),
+                        running_vgg_perceptual_loss / (step + 1),
+                        running_spectrum_loss / (step + 1),
+                        runnning_kp / (step + 1)))
 
         global_epoch += 1
 
