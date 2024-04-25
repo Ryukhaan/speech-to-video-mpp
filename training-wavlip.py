@@ -255,7 +255,7 @@ def get_lms_loss(x, y, kp):
     p3d = (32, 32, 32, 32, 0, 0, 0, 0)
     f = lambda x: torch.nn.functional.pad(x, p3d)
     resizer = Resize((128,128))
-    gy = torch.cat([mouth_cascade.detectMultiScale(y[:, :, i], 1.5, 11) for i in range(syncnet_T)], dim=0)
+    gy = torch.cat([mouth_cascade.detectMultiScale(y[:, :, i].cpu().numpy(), 1.5, 11) for i in range(syncnet_T)], dim=0)
     print(gy.shape)
     x = x[:, :, :, gy]
     lmx = torch.cat([torch.from_numpy(kp.extract_keypoint(x[i])) for i in range(gx.shape[0])], dim=0)
