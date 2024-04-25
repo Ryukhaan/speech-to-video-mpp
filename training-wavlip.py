@@ -256,6 +256,7 @@ def get_lms_loss(x, y, kp):
         except:
             lmx = 1.0
             lmy = 1.0
+        print(lmx, lmy)
         total += recon_loss(lmx, lmy)
     return total / x.shape[0]
 
