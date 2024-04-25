@@ -249,13 +249,16 @@ vgg_perceptual = PerceptualLoss(device)
 mse_spectrum = MSESpectrumLoss()
 
 mse_loss = torch.nn.MSELoss()
+
+mouth_cascade = cv2.CascadeClassifier('haarcascade_mcs_mouth.xml')
 def get_lms_loss(x, y, kp):
     p3d = (32, 32, 32, 32, 0, 0, 0, 0)
     f = lambda x: torch.nn.functional.pad(x, p3d)
     resizer = Resize((128,128))
-    gx = torch.cat([f(resizer(x[:, :, i])) for i in range(syncnet_T)], dim=0)
-    gy = torch.cat([f(resizer(y[:, :, i])) for i in range(syncnet_T)], dim=0)
-    lmx = torch.cat([torch.from_numpy(kp.extract_keypoint(gx[i])) for i in range(gx.shape[0])], dim=0)
+    gy = torch.cat([mouth_cascade.detectMultiScale(y[:, :, i], 1.5, 11) for i in range(syncnet_T)], dim=0)
+    print(gy.shape)
+    x = x[:, :, :, gy]
+    lmx = torch.cat([torch.from_numpy(kp.extract_keypoint(x[i])) for i in range(gx.shape[0])], dim=0)
     lmy = torch.cat([torch.from_numpy(kp.extract_keypoint(gy[i])) for i in range(gx.shape[0])], dim=0)
     return mse_loss(lmx, lmy)
 
