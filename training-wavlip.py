@@ -318,21 +318,21 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             vgg_perceptual_loss = vgg_perceptual(g, gt) if hparams.vgg_wt > 0 else 0.
             spectrum_loss = mse_spectrum(g, gt) if hparams.spectrum_wt > 0 else 0.
             l1loss = recon_loss(g, gt)
-            kploss = get_lms_loss(g, gt, kp) if hparams.lms_wt > 0 else 0.
+            #kploss = get_lms_loss(g, gt, kp) if hparams.lms_wt > 0 else 0.
 
             multi_loss = MultiLoss([sync_loss,
                               perceptual_loss,
                               l1loss,
                               spectrum_loss,
                               vgg_perceptual_loss,
-                              kploss
+                              #kploss
             ],
                              [hparams.syncnet_wt,
                               hparams.disc_wt,
                               1.,
                               hparams.spectrum_wt,
                               hparams.vgg_wt,
-                              hparams.lms_wt
+                              #hparams.lms_wt
             ])
             #loss = hparams.syncnet_wt * sync_loss + hparams.disc_wt * perceptual_loss + \
             #       (1. - hparams.syncnet_wt - hparams.disc_wt) * l1loss + \
@@ -392,10 +392,10 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             else:
                 running_spectrum_loss += 0.
 
-            if hparams.lms_wt > 0:
-                runnning_kp += kploss.item()
-            else:
-                runnning_kp += 0.
+            #if hparams.lms_wt > 0:
+            #    runnning_kp += kploss.item()
+            #else:
+            #    runnning_kp += 0.
 
             # Monitoring with Tensorboard
             writer.add_scalars('gen_loss', {
@@ -404,7 +404,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                 'perceptual': running_perceptual_loss / (step + 1),
                 'vgg': running_vgg_perceptual_loss / (step + 1),
                 'spectrum': running_spectrum_loss / (step + 1),
-                'lms': runnning_kp / (step + 1),
+                #'lms': runnning_kp / (step + 1),
                 'total': loss
                 }, global_step)
             writer.add_scalars('disc_loss', {
