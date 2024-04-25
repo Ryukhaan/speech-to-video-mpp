@@ -102,7 +102,8 @@ hparams = HParams(
 	disc_max_grad_norm = 1e10,
 
 	vgg_wt= 1.0,
-	spectrum_wt = 0.1
+	spectrum_wt = 0.1,
+	lms_wt = 1.0
 )
 
 
