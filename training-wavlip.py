@@ -329,7 +329,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             ],
                              [hparams.syncnet_wt,
                               hparams.disc_wt,
-                              1.,
+                              10.,
                               hparams.spectrum_wt,
                               hparams.vgg_wt,
                               #hparams.lms_wt
