@@ -50,7 +50,7 @@ class KeypointExtractor():
                         print(e)
                         break    
                 except TypeError:
-                    print('No face detected in this image')
+                    #print('No face detected in this image')
                     shape = [68, 2]
                     keypoints = -1. * np.ones(shape)                    
                     break
