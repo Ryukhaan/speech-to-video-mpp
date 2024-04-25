@@ -248,8 +248,16 @@ vgg_perceptual = PerceptualLoss(device)
 mse_spectrum = MSESpectrumLoss()
 
 def get_lms_loss(x, y, kp):
-    print(x.shape, y.shape)
-    return torch.mean([recon_loss(kp.extract_keypoint(x[i]), kp.extract_keypoint(y[i])) for i in range(x.shape[0])])
+    total = 0.
+    for i in range(x.shape[0]):
+        try:
+            lmx = kp.extract_keypoint(x[i])
+            lmy = kp.extract_keypoint(y[i])
+        except:
+            lmx = 1.0
+            lmy = 1.0
+        total += recon_loss(lmx, lmy)
+    return total / x.shape[0]
 
 def get_sync_loss(mel, g):
     g = g[:, :, :, g.size(3) // 2:]
