@@ -301,7 +301,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             vgg_perceptual_loss = vgg_perceptual(g, gt) if hparams.vgg_wt > 0 else 0.
             spectrum_loss = mse_spectrum(g, gt) if hparams.spectrum_wt > 0 else 0.
             l1loss = recon_loss(g, gt)
-            kploss = get_lms_loss(g, gt) if hparams.lms_wt > 0 else 0.
+            kploss = get_lms_loss(g, gt, kp) if hparams.lms_wt > 0 else 0.
 
             multi_loss = MultiLoss([sync_loss,
                               perceptual_loss,
