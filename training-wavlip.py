@@ -259,7 +259,7 @@ def get_lms_loss(x, y, kp):
     for i in range(syncnet_T):
         ny = resizer(y[:, :, i]).cpu().numpy()
         ny = cv2.normalize(ny, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-        gy.append(mouth_cascade.detectMultiScale(ny, 1.5, 11))
+        gy.append(mouth_cascade.detectMultiScale(ny, 1.1, 3))
     gy = torch.from_numpy(np.array(gy))
     print(gy.shape)
     x = x[:, :, :, gy]
