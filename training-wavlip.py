@@ -250,7 +250,7 @@ mse_spectrum = MSESpectrumLoss()
 
 mse_loss = torch.nn.MSELoss()
 def get_lms_loss(x, y, kp):
-    p3d = (0, 0, 0, 0, 32, 32, 32, 32)
+    p3d = (32, 32, 32, 32, 0, 0, 0, 0)
     f = lambda x: torch.nn.functional.pad(x, p3d)
     resizer = Resize((256,256))
     gx = torch.cat([f(x[:, :, i]) for i in range(syncnet_T)], dim=0)
