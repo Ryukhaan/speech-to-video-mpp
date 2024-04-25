@@ -249,6 +249,9 @@ mse_spectrum = MSESpectrumLoss()
 
 def get_lms_loss(x, y, kp):
     total = 0.
+    gx = torch.cat([x[:, :, i] for i in range(syncnet_T)], dim=1)
+    gy = torch.cat([y[:, :, i] for i in range(syncnet_T)], dim=1)
+    print(x.shape, y.shape)
     for i in range(x.shape[0]):
         try:
             lmx = kp.extract_keypoint(x[i])
