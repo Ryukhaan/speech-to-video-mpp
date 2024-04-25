@@ -254,7 +254,7 @@ mouth_cascade = cv2.CascadeClassifier('haarcascade_mcs_mouth.xml')
 def get_lms_loss(x, y, kp):
     p3d = (32, 32, 32, 32, 0, 0, 0, 0)
     f = lambda x: torch.nn.functional.pad(x, p3d)
-    resizer = Resize((256,256))
+    resizer = Resize((384,384))
     gy = []
     for i in range(syncnet_T):
         ny = resizer(y[:, :, i]).cpu().numpy()
