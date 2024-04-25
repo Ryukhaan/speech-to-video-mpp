@@ -12,6 +12,7 @@ from torch.nn import functional as F
 from torch import optim
 import torch.backends.cudnn as cudnn
 from torchvision.utils import make_grid
+from torchvision.transforms import Resize
 from torch.utils import data as data_utils
 import numpy as np
 
@@ -249,8 +250,7 @@ mse_spectrum = MSESpectrumLoss()
 
 mse_loss = torch.nn.MSELoss()
 def get_lms_loss(x, y, kp):
-    from torchvision.transforms import Resize
-    resizer = Resize((128,128))
+    resizer = Resize((256,256))
     gx = torch.cat([resizer(x[:, :, i]) for i in range(syncnet_T)], dim=0)
     gy = torch.cat([resizer(y[:, :, i]) for i in range(syncnet_T)], dim=0)
     lmx = torch.cat([torch.from_numpy(kp.extract_keypoint(gx[i])) for i in range(gx.shape[0])], dim=0)
