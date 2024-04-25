@@ -254,6 +254,7 @@ def get_lms_loss(x, y, kp):
     for i in range(gx.shape[0]):
         lmx = kp.extract_keypoint(gx[i])
         lmy = kp.extract_keypoint(gy[i])
+        print(lmx.shape, lmy.shape)
         total += recon_loss(lmx, lmy)
     return total / x.shape[0]
 
