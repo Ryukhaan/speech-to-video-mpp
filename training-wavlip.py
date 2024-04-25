@@ -260,7 +260,7 @@ def get_lms_loss(x, y, kp):
         ny = resizer(y[:, :, i]).cpu().numpy()
         ny = cv2.normalize(ny, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
         gy.append(mouth_cascade.detectMultiScale(ny, 1.5, 11))
-    gy = torch.from_numyp(np.array(gy))
+    gy = torch.from_numpy(np.array(gy))
     print(gy.shape)
     x = x[:, :, :, gy]
     lmx = torch.cat([torch.from_numpy(kp.extract_keypoint(x[i])) for i in range(gx.shape[0])], dim=0)
