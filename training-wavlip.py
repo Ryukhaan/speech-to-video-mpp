@@ -329,7 +329,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             ],
                              [hparams.syncnet_wt,
                               hparams.disc_wt,
-                              10.,
+                              hparams.l1_wt.,
                               hparams.spectrum_wt,
                               hparams.vgg_wt,
                               #hparams.lms_wt
@@ -668,7 +668,7 @@ if __name__ == "__main__":
         os.mkdir(checkpoint_dir)
 
     # Tensorboard writer
-    writer = SummaryWriter('runs/lora')
+    writer = SummaryWriter('runs/lora_2')
 
     # Train!
     train(device, model, disc, train_data_loader, test_data_loader, optimizer, disc_optimizer,
