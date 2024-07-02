@@ -1,4 +1,4 @@
-from HYPERLIPS import Hyperlips
+from Lipsreenact import LipsReenact
 import argparse
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '1'
@@ -33,18 +33,18 @@ args = parser.parse_args()
 
 
 def inference_single():
-    Hyperlips_executor = Hyperlips(checkpoint_path_BASE=args.checkpoint_path_BASE,
-                                    checkpoint_path_HR=args.checkpoint_path_HR,
-                                    segmentation_path=args.segmentation_path,
-                                    face_enhancement_path = args.face_enhancement_path,
-                                    gpu_id = args.gpu_id,
-                                    window =args.filter_window,
-                                    hyper_batch_size=args.hyper_batch_size,
-                                    img_size = args.img_size,
-                                    resize_factor = args.resize_factor,
-                                    pad = args.pads)
-    Hyperlips_executor._HyperlipsLoadModels()
-    Hyperlips_executor._HyperlipsInference(args.face,args.audio,args.outfile)
+    Hyperlips_executor = LipsReenact(checkpoint_path_BASE=args.checkpoint_path_BASE,
+                                     checkpoint_path_HR=args.checkpoint_path_HR,
+                                     segmentation_path=args.segmentation_path,
+                                     face_enhancement_path = args.face_enhancement_path,
+                                     gpu_id = args.gpu_id,
+                                     window =args.filter_window,
+                                     hyper_batch_size=args.hyper_batch_size,
+                                     img_size = args.img_size,
+                                     resize_factor = args.resize_factor,
+                                     pad = args.pads)
+    Hyperlips_executor._LoadModels()
+    Hyperlips_executor._Inference(args.face, args.audio, args.outfile)
 
 
 if __name__ == '__main__':

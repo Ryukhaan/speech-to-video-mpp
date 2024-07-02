@@ -101,18 +101,18 @@ def datagen(mels, detector,frames,img_size,hyper_batch_size,pads):
         yield img_batch, mel_batch, frame_batch, coords_batch
 
     
-def load_HyperLips(window,rescaling,path,path_hr,device):
+def load_LipsReenact(window, rescaling, path, path_hr, device):
     model = HyperLips_inference(window_T =window ,rescaling=rescaling,base_model_checkpoint=path,HRDecoder_model_checkpoint =path_hr)
     model = model.to(device)
     print("Model loaded")
     return model.eval()
     
 def main():
-    Hyperlips_executor = Hyperlips()
-    Hyperlips_executor._HyperlipsLoadModels()
-    Hyperlips_executor._HyperlipsInference()
+    Hyperlips_executor = LipsReenact()
+    Hyperlips_executor._LoadModels()
+    Hyperlips_executor._Inference()
 
-class Hyperlips():
+class LipsReenact():
     def __init__(self,checkpoint_path_BASE=None,
                  checkpoint_path_HR=None,
                  segmentation_path=None,
@@ -145,7 +145,7 @@ class Hyperlips():
                 f'Init error! img_size should be 128 256 or 512!')
         self.window = window
 
-    def _HyperlipsLoadModels(self):
+    def _LoadModels(self):
         gpu_id = self.gpu_id
         if not torch.cuda.is_available() or (gpu_id > (torch.cuda.device_count() - 1)):
             self.device = torch.device('cpu')
@@ -156,11 +156,11 @@ class Hyperlips():
         print('Using {} for inference.'.format(self.device))
         if self.face_enhancement_path is not None:
             self.restorer = GFPGANInit(self.device, self.face_enhancement_path)
-        self.model = load_HyperLips(self.window,self.rescaling,self.checkpoint_path_BASE, self.checkpoint_path_HR,self.device)
+        self.model = load_LipsReenact(self.window, self.rescaling, self.checkpoint_path_BASE, self.checkpoint_path_HR, self.device)
         self.seg_net = init_parser(self.parser_path, self.device)
         print(' models init successed...')
 
-    def _HyperlipsInference(self,face_path,audio_path,outfile_path):
+    def _Inference(self, face_path, audio_path, outfile_path):
         face = face_path
         audiopath =audio_path
         print("The input video path is {}， The intput audio path is {}".format(face_path, audio_path))

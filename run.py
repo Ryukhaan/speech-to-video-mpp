@@ -1,4 +1,4 @@
-from HYPERLIPS import Hyperlips
+from Lipsreenact import LipsReenact as Reenacter
 import argparse
 import os
 import gradio as gr
@@ -34,7 +34,7 @@ parser.add_argument('--gpu_id', type=float, help='gpu id (default: 0)',
 args = parser.parse_args()
 
 def gui_inference_single(face, audio, hyper_batch_size):
-    Hyperlips_executor = Hyperlips(checkpoint_path_BASE=args.checkpoint_path_BASE,
+    executor = Reenacter(checkpoint_path_BASE=args.checkpoint_path_BASE,
                                    checkpoint_path_HR=args.checkpoint_path_HR,
                                    segmentation_path=args.segmentation_path,
                                    face_enhancement_path=args.face_enhancement_path,
@@ -44,8 +44,8 @@ def gui_inference_single(face, audio, hyper_batch_size):
                                    img_size=args.img_size,
                                    resize_factor=args.resize_factor,
                                    pad=args.pads)
-    Hyperlips_executor._HyperlipsLoadModels()
-    Hyperlips_executor._HyperlipsInference(face, audio, args.outfile)
+    executor._LoadModels()
+    executor._Inference(face, audio, args.outfile)
     return args.outfile, args.outfile
 
 face_enhancement_checkbox = gr.Checkbox(label="Face Enhancement",
