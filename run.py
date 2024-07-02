@@ -33,7 +33,8 @@ parser.add_argument('--gpu_id', type=float, help='gpu id (default: 0)',
                     default=0, required=False)
 args = parser.parse_args()
 
-def gui_inference_single(face, video, audio, hyper_batch_size):
+def gui_inference_single(face, audio, hyper_batch_size):
+    print(face, type(face))
     executor = Reenacter(checkpoint_path_BASE=args.checkpoint_path_BASE,
                                    checkpoint_path_HR=args.checkpoint_path_HR,
                                    segmentation_path=args.segmentation_path,
@@ -62,8 +63,7 @@ hyper_batch_size_slider = gr.Slider(label="Batch Size",
                                     maximum=128,
                                     step=4)
 
-video_input = gr.UploadButton(label="Upload a video")
-input_video_show = gr.Video()
+input_video_show = gr.Video(label="Upload a video")
 
 audio_input = gr.UploadButton(label="Upload an audio")
 
