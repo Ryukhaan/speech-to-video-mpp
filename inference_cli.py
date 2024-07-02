@@ -47,8 +47,5 @@ def inference_single():
     Hyperlips_executor._HyperlipsInference(args.face,args.audio,args.outfile)
 
 
-
-
-
 if __name__ == '__main__':
     inference_single()
