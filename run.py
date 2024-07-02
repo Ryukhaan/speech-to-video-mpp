@@ -63,9 +63,9 @@ hyper_batch_size_slider = gr.Slider(label="Batch Size",
                                     maximum=128,
                                     step=4)
 
-input_video = gr.Video(label="Upload a video")
+input_video = gr.Video(label="Upload a video", type='filepath')
 
-audio_input = gr.Audio(label="Upload an audio")
+audio_input = gr.Audio(label="Upload an audio", type='filepath')
 
 output_video = gr.Video()
 download_button = gr.DownloadButton(label="Download generated video")
