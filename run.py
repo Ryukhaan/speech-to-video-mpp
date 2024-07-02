@@ -7,7 +7,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 
 parser = argparse.ArgumentParser(description='Inference code to lip-sync videos in the wild using HyperLipsBase or HyperLipsHR models')
-parser.add_argument('--checkpoint_path_BASE', type=str,help='Name of saved HyperLipsBase checkpoint to load weights from', default="checkpoints/hyperlipsbase_multi.pth")
+parser.add_argument('--checkpoint_path_BASE', type=str,help='Name of saved HyperLipsBase checkpoint to load weights from', default="checkpoints/hyperlipsbase_lrs2.pth")
 parser.add_argument('--checkpoint_path_HR', type=str,help='Name of saved HyperLipsHR checkpoint to load weights from', default=None)#"checkpoints/hyperlipshr_mead_128.pth"
 parser.add_argument('--face', type=str,
                     help='Filepath of video/image that contains faces to use', default="test/video5/video5.mp4")

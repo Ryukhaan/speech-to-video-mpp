@@ -1,6 +1,6 @@
 <div align="center">
 
-<h2>VideoReTalking <br/> <span style="font-size:12px">Audio-based Lip Synchronization for Talking Head Video Editing In the Wild</span> </h2> 
+<h2> Audio-driven Facial Reenactment using Text-to-speech (TTS) <br/> <span style="font-size:12px">Audio-driven Facial Reenactment using Text-to-speech (TTS)</span> </h2> 
 
   <a href='https://arxiv.org/abs/2211.14758'><img src='https://img.shields.io/badge/ArXiv-2211.14758-red'></a> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='https://vinthony.github.io/video-retalking/'><img src='https://img.shields.io/badge/Project-Page-Green'></a>
 
@@ -30,19 +30,33 @@ Link to img
 Link to video
 
 
-## Environment
+## Requirements
+
+- Python 3.8.16
+- torch 1.10.1+cu113
+- torchvision 0.11.2+cu113
+- ffmpeg
+
+We recommend to install [pytorch](https://pytorch.org/) firstly，and then install related toolkit by running
 ```
-git clone https://github.com/vinthony/video-retalking.git
-cd video-retalking
-conda create -n video_retalking python=3.8
-conda activate video_retalking
-pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html
-pip install -r requirements.txt
+pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple
+```
+You also can use environment.yml to install relevant environment by running
+```
+conda env create -f environment.yml
 ```
 
 ## Quick Inference
 
-### Pre-processing datas
+We trained a pretrained model on LRS2 dataset. You can quickly try it by running:
+```
+python inference.py --checkpoint_path_BASE=checkpoints/model_lrs2.pth 
+```
+The result is saved (by default) in `results/result_video.mp4`. To inference on other videos, please specify the `--face` and `--audio` option and see more details in code.
+You can also precise `--text`, if not the text will be automatically extracted from the audio.
+
+
+## Pre-processing datas for Training
 ```
 conda -n mfa-env
 conda install -c conda-forge montreal-forced-aligner
@@ -97,22 +111,6 @@ You can also control the expression by adding the following parameters:
 ```--up_face```: You can choose "surprise" or "angry" to modify the expression of upper face with [GANimation](https://github.com/donydchen/ganimation_replicate).
 
 
-
-## Citation
-
-If you find our work useful in your research, please consider citing:
-
-```
-@misc{cheng2022videoretalking,
-        title={VideoReTalking: Audio-based Lip Synchronization for Talking Head Video Editing In the Wild}, 
-        author={Kun Cheng and Xiaodong Cun and Yong Zhang and Menghan Xia and Fei Yin and Mingrui Zhu and Xuan Wang and Jue Wang and Nannan Wang},
-        year={2022},
-        eprint={2211.14758},
-        archivePrefix={arXiv},
-        primaryClass={cs.CV}
-  }
-```
-
 ## Acknowledgement
 Thanks to
 [Wav2Lip](https://github.com/Rudrabha/Wav2Lip),
@@ -120,9 +118,10 @@ Thanks to
 [GFP-GAN](https://github.com/TencentARC/GFPGAN), 
 [GPEN](https://github.com/yangxy/GPEN),
 [ganimation_replicate](https://github.com/donydchen/ganimation_replicate),
-[STIT](https://github.com/rotemtzaban/STIT)
+[STIT](https://github.com/rotemtzaban/STIT),
+[IP_LAP](https://github.com/Weizhi-Zhong/IP_LAP),
+[VideoRetalking](https://github.com/OpenTalker/video-retalking),
 for sharing their code.
-
 
 ## Related Work
 - [StyleHEAT: One-Shot High-Resolution Editable Talking Face Generation via Pre-trained StyleGAN (ECCV 2022)](https://github.com/FeiiYin/StyleHEAT)
