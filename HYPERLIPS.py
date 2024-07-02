@@ -1,4 +1,5 @@
-import cv2, os, sys,audio
+import cv2, os, sys
+import futils.audio
 import subprocess, random, string
 from tqdm import tqdm
 import torch, face_detection
