@@ -46,7 +46,7 @@ def gui_inference_single(face, audio, hyper_batch_size):
                                    pad=args.pads)
     Hyperlips_executor._HyperlipsLoadModels()
     Hyperlips_executor._HyperlipsInference(face, audio, args.outfile)
-    return args.oufile, args.outfile
+    return args.outfile, args.outfile
 
 face_enhancement_checkbox = gr.Checkbox(label="Face Enhancement",
             value=True,
