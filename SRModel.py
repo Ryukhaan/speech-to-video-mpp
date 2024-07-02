@@ -5,7 +5,9 @@ from basicsr.utils import img2tensor
 from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 from torchvision.transforms.functional import normalize
 import time
-from gfpgan.gfpganv1_clean_arch import GFPGANv1Clean
+#from gfpgan.gfpganv1_clean_arch import GFPGANv1Clean
+from GFPGAN.gfpgan.archs.gfpganv1_clean_arch import GFPGANv1Clean
+from gp
 import time
 import numpy as np
 import torch.nn.functional as F
