@@ -1,13 +1,14 @@
 import cv2, os, sys
-import futils.audio
+import futils.audio as audio
 import subprocess, random, string
 from tqdm import tqdm
 import torch
-import third_part.face_detection
 from models.model_hyperlips import HyperLips_inference
-#from GFPGAN import *
+
 from SRModel import *
-from face_parsing import init_parser,swap_regions
+
+import third_part.face_detection as face_detection
+from third_part.face_parsing import init_parser,swap_regions
 import shutil
 
 def get_smoothened_boxes(boxes, T):

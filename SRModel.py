@@ -2,15 +2,17 @@ import cv2
 import os
 import torch
 import sys
-from basicsr.utils import img2tensor
+
+sys.path.append('third_part')
+
+#from basicsr.utils import img2tensor
 from facexlib.utils.face_restoration_helper import FaceRestoreHelper
 from torchvision.transforms.functional import normalize
 import time
 #from gfpgan.gfpganv1_clean_arch import GFPGANv1Clean
-# GFPGAN.gfpgan.archs.gfpganv1_clean_arch import GFPGANv1Clean
-sys.path.append('third_part')
-#from gfpgan.archs.gfpganv1_clean_arch import GFPGANv1Clean
-import GFPGAN
+#from GFPGAN import *
+#from GFPGAN.gfpgan.archs.gfpganv1_clean_arch import GFPGANv1Clean
+from gfpganv1_clean_arch import GFPGANv1Clean
 import time
 import numpy as np
 import torch.nn.functional as F
@@ -84,6 +86,7 @@ class GFPGANer():
         self.device = device#torch.device('cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         # initialize the GFP-GAN
         if arch == 'clean':
+            #print(vars(GFPGAN))
             self.gfpgan = GFPGANv1Clean(
                 out_size=512,
                 num_style_feat=512,
