@@ -63,16 +63,16 @@ hyper_batch_size_slider = gr.Slider(label="Batch Size",
                                     maximum=128,
                                     step=4)
 
-input_video_show = gr.Video(label="Upload a video")
+input_video = gr.Video(label="Upload a video")
 
-audio_input = gr.UploadButton(label="Upload an audio")
+audio_input = gr.Audio(label="Upload an audio")
 
 output_video = gr.Video()
 download_button = gr.DownloadButton(label="Download generated video")
 
 demo = gr.Interface(
     fn=gui_inference_single,
-    inputs=[video_input, input_video_show, audio_input, hyper_batch_size_slider],
+    inputs=[input_video, audio_input, hyper_batch_size_slider],
     outputs=[output_video, download_button],
 )
 
