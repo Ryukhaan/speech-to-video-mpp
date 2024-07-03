@@ -52,8 +52,8 @@ class FaceAlignment:
         self.verbose = verbose
 
         network_size = int(network_size)
-
-        if 'cuda' in device:
+        str_device = str(device)
+        if 'cuda' in str_device:
             torch.backends.cudnn.benchmark = True
 
         # Get the face detector

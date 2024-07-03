@@ -66,6 +66,7 @@ def datagen(mels, detector,frames,img_size,hyper_batch_size,pads):
     ref, _ = face_det_results[0].copy()
     ref =  cv2.resize(ref, (img_size, img_size))
     for i, m in enumerate(mels):
+        i = i % len(frames)
         frame_to_save = frames[i].copy()
         face, coords = face_det_results[i].copy()
         face = cv2.resize(face, (img_size, img_size))
@@ -173,7 +174,13 @@ class LipsReenact():
             os.mkdir(rest_root_path)
         if not os.path.exists(temp_save_path):
             os.mkdir(temp_save_path)
-        device = 'cuda:{}'.format(self.gpu_id) if torch.cuda.is_available() else 'cpu'
+
+        if torch.backends.mps.is_available():
+            device = torch.device("mps")
+        elif torch.cuda.is_available():
+            device = 'cuda:{}'.format(self.gpu_id)
+        else:
+            device = 'cpu'
         detector = face_detection.FaceAlignment(face_detection.LandmarksType._2D,flip_input=False, device=device)
 
         if not os.path.isfile(face):
