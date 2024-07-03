@@ -238,11 +238,11 @@ class LipsReenact():
         print("Length of mel chunks: {}".format(len(mel_chunks)))
         full_frames = full_frames[:len(mel_chunks)]
         gen = datagen(mel_chunks, detector, full_frames, self.img_size,self.batch_size,self.pad, prog_bar)
-        for i, x in prog_bar.tqdm(gen,
-                                                                        total=int(
-                                                                            np.ceil(
-                                                                                float(len(mel_chunks))/ self.batch_size))):
-            img_batch, mel_batch, frames, coords = x
+        for i, x in enumerate(prog_bar.tqdm(gen, total=int(np.ceil(float(len(mel_chunks))/ self.batch_size)))):
+            #img_batch, mel_batch, frames, coords = x
+            k, j = x
+            print(k, j)
+            img_batch, mel_batch, frames, coords = j
             img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(self.device)
             mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(self.device)
             with torch.no_grad():
