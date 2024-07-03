@@ -33,7 +33,8 @@ parser.add_argument('--gpu_id', type=float, help='gpu id (default: 0)',
                     default=0, required=False)
 args = parser.parse_args()
 
-def gui_inference_single(face, audio, hyper_batch_size):
+def gui_inference_single(face, audio, hyper_batch_size, progress=gr.Progress()):
+    progress(0, desc="Starting...")
     executor = Reenacter(checkpoint_path_BASE=args.checkpoint_path_BASE,
                                    checkpoint_path_HR=args.checkpoint_path_HR,
                                    segmentation_path=args.segmentation_path,
@@ -45,7 +46,7 @@ def gui_inference_single(face, audio, hyper_batch_size):
                                    resize_factor=args.resize_factor,
                                    pad=args.pads)
     executor._LoadModels()
-    executor._Inference(face, audio, args.outfile)
+    executor._Inference(face, audio, args.outfile, progress)
     return args.outfile, args.outfile
 
 face_enhancement_checkbox = gr.Checkbox(label="Face Enhancement",

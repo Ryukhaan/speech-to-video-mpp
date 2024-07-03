@@ -20,13 +20,13 @@ def get_smoothened_boxes(boxes, T):
         boxes[i] = np.mean(window, axis=0)
     return boxes
 
-def face_detect(images, detector,pad):
+def face_detect(images, detector,pad, prog_bar):
     batch_size = 8
 
     while 1:
         predictions = []
         try:
-            for i in range(0, len(images), batch_size):
+            for i in prog_bar.tqdm(range(0, len(images), batch_size), desc="[Step 1]: Face Detection for Data Generation"):
                 predictions.extend(
                     detector.get_detections_for_batch(np.array(images[i:i + batch_size])))  
         except RuntimeError as e:
@@ -59,13 +59,13 @@ def face_detect(images, detector,pad):
     del detector
     return results
 
-def datagen(mels, detector,frames,img_size,hyper_batch_size,pads):
+def datagen(mels, detector,frames,img_size,hyper_batch_size,pads, prog_bar):
     # img_batch, mel_batch, frame_batch, coords_batch = [], [], [], []
     img_batch, mel_batch, frame_batch, coords_batch,ref_batch = [], [], [], [],[]
-    face_det_results = face_detect(frames,detector,pads)
+    face_det_results = face_detect(frames,detector,pads, prog_bar)
     ref, _ = face_det_results[0].copy()
     ref =  cv2.resize(ref, (img_size, img_size))
-    for i, m in enumerate(mels):
+    for i, m in prog_bar.tqdm(enumerate(mels), desc="[Step 2]: Data Generation for Inference"):
         i = i % len(frames)
         frame_to_save = frames[i].copy()
         face, coords = face_det_results[i].copy()
@@ -148,12 +148,19 @@ class LipsReenact():
 
     def _LoadModels(self):
         gpu_id = self.gpu_id
-        if not torch.cuda.is_available() or (gpu_id > (torch.cuda.device_count() - 1)):
-            self.device = torch.device('cpu')
-            #raise ValueError(
-            #    f'Existing gpu configuration problem.(gpu.is_available={torch.cuda.is_available()}| gpu.device_count={torch.cuda.device_count()})')
+        if torch.backends.mps.is_available():
+            self.device = torch.device("mps")
+        elif torch.cuda.is_available():
+            self.device = 'cuda:{}'.format(self.gpu_id)
         else:
-            self.device = torch.device(f'cuda:{gpu_id}')
+            self.device = 'cpu'
+
+        #if not torch.cuda.is_available() and not torch.backends.mps.is_available(): #) or (gpu_id > (torch.cuda.device_count() - 1)):
+        #    self.device = torch.device('cpu')
+        #    #raise ValueError(
+        #    #    f'Existing gpu configuration problem.(gpu.is_available={torch.cuda.is_available()}| gpu.device_count={torch.cuda.device_count()})')
+        #else:
+        #    self.device = torch.device(f'cuda:{gpu_id}')
         print('Using {} for inference.'.format(self.device))
         if self.face_enhancement_path is not None:
             self.restorer = GFPGANInit(self.device, self.face_enhancement_path)
@@ -161,7 +168,7 @@ class LipsReenact():
         self.seg_net = init_parser(self.parser_path, self.device)
         print(' models init successed...')
 
-    def _Inference(self, face_path, audio_path, outfile_path):
+    def _Inference(self, face_path, audio_path, outfile_path, prog_bar):
         face = face_path
         audiopath =audio_path
         print("The input video path is {}， The intput audio path is {}".format(face_path, audio_path))
@@ -181,6 +188,7 @@ class LipsReenact():
             device = 'cuda:{}'.format(self.gpu_id)
         else:
             device = 'cpu'
+        print(device)
         detector = face_detection.FaceAlignment(face_detection.LandmarksType._2D,flip_input=False, device=device)
 
         if not os.path.isfile(face):
@@ -228,11 +236,11 @@ class LipsReenact():
             i += 1
         print("Length of mel chunks: {}".format(len(mel_chunks)))
         full_frames = full_frames[:len(mel_chunks)]
-        gen = datagen(mel_chunks, detector, full_frames, self.img_size,self.batch_size,self.pad)
-        for i, (img_batch, mel_batch, frames, coords) in enumerate(tqdm(gen,
+        gen = datagen(mel_chunks, detector, full_frames, self.img_size,self.batch_size,self.pad, prog_bar)
+        for img_batch, mel_batch, frames, coords in prog_bar.tqdm(gen,
                                                                         total=int(
                                                                             np.ceil(
-                                                                                float(len(mel_chunks))/ self.batch_size)))):
+                                                                                float(len(mel_chunks))/ self.batch_size))):
 
             img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(self.device)
             mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(self.device)

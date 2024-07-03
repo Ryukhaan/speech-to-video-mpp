@@ -20,8 +20,8 @@ def detect(net, img, device):
     img = img - np.array([104, 117, 123])
     img = img.transpose(2, 0, 1)
     img = img.reshape((1,) + img.shape)
-
-    if 'cuda' in device:
+    str_device = str(device)
+    if 'cuda' in str_device:
         torch.backends.cudnn.benchmark = True
 
     img = torch.from_numpy(img).float().to(device)
@@ -58,8 +58,8 @@ def detect(net, img, device):
 def batch_detect(net, imgs, device):
     imgs = imgs - np.array([104, 117, 123])
     imgs = imgs.transpose(0, 3, 1, 2)
-
-    if 'cuda' in device:
+    str_device = str(device)
+    if 'cuda' in str_device:
         torch.backends.cudnn.benchmark = True
 
     imgs = torch.from_numpy(imgs).float().to(device)
