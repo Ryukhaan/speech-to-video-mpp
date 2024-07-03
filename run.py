@@ -34,7 +34,6 @@ parser.add_argument('--gpu_id', type=float, help='gpu id (default: 0)',
 args = parser.parse_args()
 
 def gui_inference_single(face, audio, hyper_batch_size):
-    print(face, type(face))
     executor = Reenacter(checkpoint_path_BASE=args.checkpoint_path_BASE,
                                    checkpoint_path_HR=args.checkpoint_path_HR,
                                    segmentation_path=args.segmentation_path,
@@ -63,7 +62,7 @@ hyper_batch_size_slider = gr.Slider(label="Batch Size",
                                     maximum=128,
                                     step=4)
 
-input_video = gr.Video(label="Upload a video", type='filepath')
+input_video = gr.Video(label="Upload a video")
 
 audio_input = gr.Audio(label="Upload an audio", type='filepath')
 
@@ -75,21 +74,6 @@ demo = gr.Interface(
     inputs=[input_video, audio_input, hyper_batch_size_slider],
     outputs=[output_video, download_button],
 )
-
-#def inference_single():
-#    Hyperlips_executor = Hyperlips(checkpoint_path_BASE=args.checkpoint_path_BASE,
-#                                    checkpoint_path_HR=args.checkpoint_path_HR,
-#                                    segmentation_path=args.segmentation_path,
-##                                    face_enhancement_path = args.face_enhancement_path,
- #                                   gpu_id = args.gpu_id,
- #                                   window =args.filter_window,
-#                                    hyper_batch_size=args.hyper_batch_size,
-#                                    img_size = args.img_size,
-#                                    resize_factor = args.resize_factor,
-#                                    pad = args.pads)
-#    Hyperlips_executor._HyperlipsLoadModels()
-#    Hyperlips_executor._HyperlipsInference(args.face,args.audio,args.outfile)
-
 
 if __name__ == '__main__':
     demo.launch()
