@@ -190,7 +190,7 @@ class LipsReenact():
             device = 'cpu'
         print(device)
         detector = face_detection.FaceAlignment(face_detection.LandmarksType._2D,flip_input=False, device=device)
-
+        prog_bar(1, desc="Reading Videos Frames")
         if not os.path.isfile(face):
             raise ValueError('--face argument must be a valid path to video/image file')
         else:
@@ -212,6 +212,7 @@ class LipsReenact():
         out = cv2.VideoWriter(os.path.join(temp_save_path, 'result.avi'), cv2.VideoWriter_fourcc(*'DIVX'),
                                       fps, (frame_width, frame_height))
 
+        prog_bar(2, desc="Reading Audio Waveform")
         if not audiopath.endswith('.wav'):
             print('Extracting raw audio...')
 
@@ -237,11 +238,11 @@ class LipsReenact():
         print("Length of mel chunks: {}".format(len(mel_chunks)))
         full_frames = full_frames[:len(mel_chunks)]
         gen = datagen(mel_chunks, detector, full_frames, self.img_size,self.batch_size,self.pad, prog_bar)
-        for img_batch, mel_batch, frames, coords in prog_bar.tqdm(gen,
+        for i, x in prog_bar.tqdm(gen,
                                                                         total=int(
                                                                             np.ceil(
                                                                                 float(len(mel_chunks))/ self.batch_size))):
-
+            img_batch, mel_batch, frames, coords = x
             img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(self.device)
             mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(self.device)
             with torch.no_grad():
