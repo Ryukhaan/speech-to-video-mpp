@@ -12,6 +12,21 @@ from third_part.face_parsing import init_parser,swap_regions
 import shutil
 
 def get_smoothened_boxes(boxes, T):
+    '''
+        Moving average sliding window (T frames are used to smooth)
+
+        Args:
+        -----
+            boxes: a list of np.array
+                list of frames
+            T: int
+                number of frames to smooth
+
+        Returns:
+        --------
+            boxes: a list of np.array
+                Smooth array
+    '''
     for i in range(len(boxes)):
         if i + T > len(boxes):
             window = boxes[len(boxes) - T:]
@@ -20,9 +35,27 @@ def get_smoothened_boxes(boxes, T):
         boxes[i] = np.mean(window, axis=0)
     return boxes
 
-def face_detect(images, detector,pad, prog_bar):
-    batch_size = 8
+def face_detect(images, detector, pad, prog_bar):
+    '''
+        Face detection
 
+        Args:
+        -----
+            images: a list of np.array
+                list of original frames
+            detector: face_detection.FaceAlignment
+                number of frames to smooth
+            pad: list of int
+                Padding the bounding box of the detected face. Default [0, 10, 0, 0]
+            prog_bar: gr.Progress()
+                Progress bar to have feedback on browser window
+
+        Returns:
+        --------
+            results: a list of np.array
+                Frames with only faces
+    '''
+    batch_size = 8
     while 1:
         predictions = []
         try:
@@ -59,13 +92,38 @@ def face_detect(images, detector,pad, prog_bar):
     del detector
     return results
 
-def datagen(mels, detector,frames,img_size,hyper_batch_size,pads, prog_bar):
+def datagen(mels, detector, frames, img_size, hyper_batch_size, pads, prog_bar):
+    '''
+        Data input generation
+
+        Args:
+        -----
+            mels: list of np.array
+                list of mels (Audio Features)
+            detector: face_detection.FaceAlignment
+                Face Alignement Detector
+            frames: list of np.array
+                list of original frames
+            img_size: int
+                Input image size (detected faces are resizes to this shape)
+            hyper_batch_size: int
+                Batch size of the datagen
+            pads: list of int
+                Padding the bounding box of the detected face. Default [0, 10, 0, 0]
+            prog_bar: gr.Progress()
+                Progress bar to have feedback on browser window
+
+        Returns:
+        --------
+            generator: a generator
+                The generator consists of img_batch, mel_batch, frame_batch, coords_batch
+    '''
     # img_batch, mel_batch, frame_batch, coords_batch = [], [], [], []
     img_batch, mel_batch, frame_batch, coords_batch,ref_batch = [], [], [], [],[]
     face_det_results = face_detect(frames,detector,pads, prog_bar)
     ref, _ = face_det_results[0].copy()
     ref =  cv2.resize(ref, (img_size, img_size))
-    for i, m in prog_bar.tqdm(enumerate(mels), desc="[Step 2]: Data Generation for Inference"):
+    for i, m in enumerate(prog_bar.tqdm(mels, desc="[Step 2]: Data Generation for Inference")):
         i = i % len(frames)
         frame_to_save = frames[i].copy()
         face, coords = face_det_results[i].copy()
@@ -103,17 +161,69 @@ def datagen(mels, detector,frames,img_size,hyper_batch_size,pads, prog_bar):
 
     
 def load_LipsReenact(window, rescaling, path, path_hr, device):
+    '''
+            Load Lip-Sync Network
+
+            Args:
+            -----
+                window: int
+                    Number of window for average smoothing
+                rescaling: float
+                    rescaling factor
+                path: str
+                    path to the Basic model
+                path_hr: str
+                    path to the Hyper-Resolution model
+                device: torch.device
+                    the selected device
+
+            Returns:
+            --------
+                model: Torch Model
+                    The loaded lip-sync network
+        '''
     model = HyperLips_inference(window_T =window ,rescaling=rescaling,base_model_checkpoint=path,HRDecoder_model_checkpoint =path_hr)
     model = model.to(device)
     print("Model loaded")
     return model.eval()
-    
-def main():
-    Hyperlips_executor = LipsReenact()
-    Hyperlips_executor._LoadModels()
-    Hyperlips_executor._Inference()
 
 class LipsReenact():
+    '''
+        Lip-Sync Network class
+
+        Attributes:
+        -----------
+            checkpoint_path_BASE: a list of nn.Linear()
+                Name of saved HyperLipsBase checkpoint to load weights from
+            checkpoint_path_HR: a list of KANLayer
+                Name of saved HyperLipsHR checkpoint to load weights from
+            segmentation_path: int
+                Name of saved checkpoint of segmentation network
+            face_enhancement_path: list
+                Name of saved checkpoint of segmentation network
+            gpu_id: int
+                GPU id if using GPU
+            window: int
+                Average smoothing size
+            hyper_batch_size: int
+                Batch size for inference (lip-sync model)
+            img_size: int
+                Resize face images of size (img_size, img_size)
+            resize_factor: int
+                If False, the symbolic front is not computed (to save time). Default: True.
+            pad: list of int
+                padding the bounding box of the detected face.
+
+        Methods:
+        --------
+            __init__():
+                initialize a LipsReenact
+            _LoadModels():
+                Loading models
+            _Inference():
+                Make an inference
+
+        '''
     def __init__(self,checkpoint_path_BASE=None,
                  checkpoint_path_HR=None,
                  segmentation_path=None,
@@ -238,7 +348,7 @@ class LipsReenact():
         print("Length of mel chunks: {}".format(len(mel_chunks)))
         full_frames = full_frames[:len(mel_chunks)]
         gen = datagen(mel_chunks, detector, full_frames, self.img_size,self.batch_size,self.pad, prog_bar)
-        for i, (img_batch, mel_batch, frames, coords) in enumerate(prog_bar.tqdm(gen, total=int(np.ceil(float(len(mel_chunks))/ self.batch_size)))):
+        for i, (img_batch, mel_batch, frames, coords) in enumerate(tqdm(gen, total=int(np.ceil(float(len(mel_chunks))/ self.batch_size)))):
             img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(self.device)
             mel_batch = torch.FloatTensor(np.transpose(mel_batch, (0, 3, 1, 2))).to(self.device)
             with torch.no_grad():
@@ -256,9 +366,9 @@ class LipsReenact():
                 mask_out[:,:int(mask_out.shape[1]*0.15),:] = 0.
                 mask_out[:,int(mask_out.shape[1]*0.85):,:] = 0.
                 mask_temp[y1:y2, x1:x2] = mask_out.astype(np.float)
-                kernel = np.ones((5,5),np.uint8)  
+                kernel = np.ones((5,5),np.uint8)
                 mask_temp = cv2.erode(mask_temp,kernel,iterations = 1)
-                mask_temp = cv2.GaussianBlur(mask_temp, (75, 75), 0,0,cv2.BORDER_DEFAULT) 
+                mask_temp = cv2.GaussianBlur(mask_temp, (75, 75), 0,0,cv2.BORDER_DEFAULT)
                 mask_temp = mask_temp.astype(np.float)
                 # cv2.imwrite("mask_temp.jpg", mask_temp)
                 f[y1:y2, x1:x2] = p
@@ -266,8 +376,8 @@ class LipsReenact():
                 f = f_background*(1-mask_temp/255.0)+f*(mask_temp/255.0)
                 # cv2.imwrite("f0.jpg", f)
                 if self.face_enhancement_path is not None:
-                    Code_img = GFPGANInfer(f, self.restorer,aligned=False) 
-                    f=Code_img                
+                    Code_img = GFPGANInfer(f, self.restorer,aligned=False)
+                    f=Code_img
                 # cv2.imwrite("f1.jpg", f)
                 # f = f_background*(1-mask_temp/255.0)+f*(mask_temp/255.0)
                 f = f.astype(np.uint8)
@@ -281,6 +391,12 @@ class LipsReenact():
             shutil.rmtree(temp_save_path)
 
         torch.cuda.empty_cache()
+
+def main():
+    Hyperlips_executor = LipsReenact()
+    Hyperlips_executor._LoadModels()
+    Hyperlips_executor._Inference()
+
 
 if __name__ == '__main__':
     main()
