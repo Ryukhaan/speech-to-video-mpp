@@ -42,7 +42,9 @@ Link to video
 
 Follows the instructions into a Terminal.
 
-1. Open a new Terminal
+1. Download the code and unzip it.
+
+2. Open a new Terminal
 
 Move into the repository by using the following command:
 ```
@@ -61,10 +63,6 @@ conda env create -f environment_macos.yml
 ```
 conda activate mppFake
 ```
-5. Few more installation:
-```
-pip install basicsr==1.4.2
-```
 
 ## Quick Inference using Browser Interface
 
@@ -74,6 +72,11 @@ python run.py
 ```
 The result is saved (by default) in `results/result_video.mp4`. 
 You can also directly download the file into the `Downloads` folder by pressing the corresponding button.
+
+If you running under MacOS and want MPS be used, then execute the following command in the Terminal:
+```
+PYTORCH_ENABLE_MPS_FALLBACK=1 python run.py
+```
 
 ## Pre-processing datas for Training
 ```
