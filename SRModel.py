@@ -107,6 +107,7 @@ class GFPGANer():
             save_ext='png',
             use_parse=True,
             device=self.device)
+        print(model_path)
         loadnet = torch.load(model_path, map_location=device)
         #loadnet = torch.load(model_path)
         if 'params_ema' in loadnet:

@@ -6,12 +6,14 @@ import torch
 from transformers import pipeline, VitsModel, AutoTokenizer
 import scipy
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+#from TTS.api import TTS
+#tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=False)
 
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 parser = argparse.ArgumentParser(description='Inference code to lip-sync videos in the wild using HyperLipsBase or HyperLipsHR models')
 parser.add_argument('--checkpoint_path_BASE', type=str,help='Name of saved HyperLipsBase checkpoint to load weights from', default="checkpoints/hyperlipsbase_lrs2.pth")
-parser.add_argument('--checkpoint_path_HR', type=str,help='Name of saved HyperLipsHR checkpoint to load weights from', default=None)#"checkpoints/hyperlipshr_mead_128.pth"
+parser.add_argument('--checkpoint_path_HR', type=str,help='Name of saved HyperLipsHR checkpoint to load weights from', default="checkpoints/hyperlipshr_lrs2_512.pth")
 parser.add_argument('--face', type=str,
                     help='Filepath of video/image that contains faces to use', default="test/video5/video5.mp4")
 parser.add_argument('--audio', type=str,
@@ -36,19 +38,22 @@ parser.add_argument('--gpu_id', type=float, help='gpu id (default: 0)',
                     default=0, required=False)
 args = parser.parse_args()
 
-def gui_inference_single(face, audio, options, progress=gr.Progress()):
+options = dict()
+
+def gui_inference_single(face, audio):
+    progress = gr.Progress()
     progress(0, desc="Starting...")
-    args.no_faceenhance = not options["face_enhancement"]
-    executor = Reenacter(checkpoint_path_BASE=options["checkpoint_autoencoder"],
-                                   checkpoint_path_HR=args.checkpoint_path_HR,
-                                   segmentation_path=options["face_segmentation"],
-                                   face_enhancement_path=options["face_enhancement"],
-                                   gpu_id=args.gpu_id,
-                                   window=args.filter_window,
-                                   hyper_batch_size=options["hyper_batch_size"],
-                                   img_size=args.img_size,
-                                   resize_factor=args.resize_factor,
-                                   pad=args.pads)
+    print(options["hyper_batch_size"].value)
+    executor = Reenacter(checkpoint_path_BASE=options["checkpoint_autoencoder"].value['path'],
+                         checkpoint_path_HR=options["model_hr"].value['path'],
+                         segmentation_path=options["face_segmentation"].value['path'],
+                         face_enhancement_path=options["face_enhancement"].value['path'],
+                         gpu_id=args.gpu_id,
+                         window=args.filter_window,
+                         hyper_batch_size=options["hyper_batch_size"].value,
+                         img_size=args.img_size,
+                         resize_factor=args.resize_factor,
+                         pad=args.pads)
     executor._LoadModels()
     executor._Inference(face, audio, args.outfile, progress)
     return args.outfile, args.outfile
@@ -56,6 +61,12 @@ def gui_inference_single(face, audio, options, progress=gr.Progress()):
 def get_tts(text, progress=gr.Progress()):
 
     progress(0., "Loading TTS model")
+    # generate speech by cloning a voice using default settings
+    #tts.tts_to_file(
+    #    text=text,
+    #    file_path="./bark_out.wav",
+    #    #speaker_wav="/path/to/target/speaker.wav",
+    #    language="fr")
     model = VitsModel.from_pretrained("facebook/mms-tts-fra")
     tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-fra")
     inputs = tokenizer(text, return_tensors="pt")
@@ -72,7 +83,7 @@ demo = gr.Blocks()
 
 with demo:
     with gr.Row():
-        options = dict()
+
         with gr.Column():
             hyper_batch_size_slider = gr.Slider(label="Batch Size",
                                                 value=32,
@@ -81,23 +92,29 @@ with demo:
                                                 step=4)
             options["hyper_batch_size"] = hyper_batch_size_slider
 
-            face_enhancement_checkbox = gr.Checkbox(True,
-                                                    label="Use Face Enhancement",
-                                                    container=True)
-            options["face_enhancement"] = face_enhancement_checkbox
+            #face_enhancement_checkbox = gr.Checkbox(True,
+            #                                        label="Use Face Enhancement",
+            #                                        container=True)
+            #options["face_enhancement"] = face_enhancement_checkbox
 
-            autoencoder_filepath = gr.File(label="Path to AutoEncoder Lips-Sync Network. By default: checkpoints/hyperlipsbase_lrs2.pth",
-                                           value="checkpoints/hyperlipsbase_lrs2.pth",
+            autoencoder_filepath = gr.File(label="Path to AutoEncoder Lips-Sync Network. default: checkpoints/hyperlipsbase_lrs2.pth",
+                                           value="./checkpoints/hyperlipsbase_lrs2.pth",
                                            interactive=True)
             options["checkpoint_autoencoder"] = autoencoder_filepath
 
-            gpgfpgan_filepath = gr.File(label="Path to Super Resolution Network. By default: checkpoints/GFPGANv1.3.pth",
+            own_srmodel_filepath = gr.File(label="Path to Own Super Resolution Network. default: checkpoints/hyperlipshr_lrs2_128.pth",
+                                        value="./checkpoints/hyperlipshr_lrs2_128.pth",
+                                        interactive=True)
+            options["model_hr"] = own_srmodel_filepath
+
+            gpgfpgan_filepath = gr.File(label="Path to Super Resolution Network. default: checkpoints/GFPGANv1.3.pth",
                                         value="./checkpoints/GFPGANv1.3.pth",
                                         interactive=True)
             options["face_enhancement"] = gpgfpgan_filepath
 
-            face_segmentation_filepath = gr.File("Checkpoint of segmentation network default=checkpoints/face_segmentation.pth",
-                                                 value="checkpoints/face_segmentation.pth",
+
+            face_segmentation_filepath = gr.File(label="Checkpoint of segmentation network. default: checkpoints/face_segmentation.pth",
+                                                 value="./checkpoints/face_segmentation.pth",
                                                  interactive=True)
             options["face_segmentation"] = face_segmentation_filepath
 
@@ -123,7 +140,7 @@ with demo:
             download_button = gr.DownloadButton(label="Download generated video")
 
             reenactment_button.click(gui_inference_single,
-                                     inputs=[input_video, audio_input, options],
+                                     inputs=[input_video, audio_input],
                                      outputs=[output_video, download_button])
 
 if __name__ == '__main__':
